@@ -1,0 +1,20 @@
+[
+  {
+    "id": "s1",
+    "title": "Pieseň radosti",
+    "category": "hymns",
+    "lyrics": "1. Pieseň radosti\nRef: Sláva Bohu\n2. Spievajme dnes"
+  },
+  {
+    "id": "s2",
+    "title": "Tichá modlitba",
+    "category": "chorales",
+    "lyrics": "Tichá modlitba, smelé srdce."
+  },
+  {
+    "id": "s3",
+    "title": "Svetlo na ceste",
+    "category": "gospels",
+    "lyrics": "Svetlo vedie nás, kráčaj s nádejou."
+  }
+]
