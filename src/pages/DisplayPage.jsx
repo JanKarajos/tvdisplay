@@ -9,11 +9,29 @@ import 'react-pdf/dist/Page/TextLayer.css';
 // Configure PDF.js worker
 pdfjs.GlobalWorkerOptions.workerSrc = `//unpkg.com/pdfjs-dist@${pdfjs.version}/build/pdf.worker.min.mjs`;
 
+const defaultGithubRawUrl = 'https://raw.githubusercontent.com/JanKarajos/tvdisplay/main/songs.json';
+
 export default function DisplayPage() {
-  const [state, setState] = useState({ currentSongId: null, background: null, isHidden: false });
+  const [state, setState] = useState({ currentSongId: null, background: null, isHidden: false, currentPage: 0 });
   const [song, setSong] = useState(null);
-  const [currentPage, setCurrentPage] = useState(1);
+  const [pdfCurrentPage, setPdfCurrentPage] = useState(1);
   const [numPages, setNumPages] = useState(null);
+  
+  // Auto-load songs from GitHub on mount
+  useEffect(() => {
+    const autoLoad = async () => {
+      const savedUrl = localStorage.getItem('tvdisplay-github-raw') || defaultGithubRawUrl;
+      try {
+        console.log('[DisplayPage] Auto-loading songs from URL:', savedUrl);
+        await api.loadRemoteSongs(savedUrl);
+        console.log('[DisplayPage] Songs loaded successfully');
+        localStorage.setItem('tvdisplay-github-raw', savedUrl);
+      } catch (e) {
+        console.error('[DisplayPage] Failed to auto-load songs:', e);
+      }
+    };
+    autoLoad();
+  }, []);
   
   // Load initial state
   useEffect(() => {
@@ -43,11 +61,11 @@ export default function DisplayPage() {
       if (msg.state.currentSongId) {
         api.getSong(msg.state.currentSongId).then(song => {
           setSong(song);
-          setCurrentPage(1); // Reset to first page on new content
+          setPdfCurrentPage(1); // Reset to first page on new content
         });
       } else {
         setSong(null);
-        setCurrentPage(1);
+        setPdfCurrentPage(1);
       }
     }
   });
@@ -58,13 +76,13 @@ export default function DisplayPage() {
 
     const handleKeyPress = (e) => {
       if (e.key === 'ArrowRight' || e.key === 'PageDown') {
-        setCurrentPage(prev => Math.min(prev + 1, song.pageCount || numPages || 1));
+        setPdfCurrentPage(prev => Math.min(prev + 1, song.pageCount || numPages || 1));
       } else if (e.key === 'ArrowLeft' || e.key === 'PageUp') {
-        setCurrentPage(prev => Math.max(prev - 1, 1));
+        setPdfCurrentPage(prev => Math.max(prev - 1, 1));
       } else if (e.key === 'Home') {
-        setCurrentPage(1);
+        setPdfCurrentPage(1);
       } else if (e.key === 'End') {
-        setCurrentPage(song.pageCount || numPages || 1);
+        setPdfCurrentPage(song.pageCount || numPages || 1);
       }
     };
 
@@ -138,7 +156,7 @@ export default function DisplayPage() {
 
   const onDocumentLoadSuccess = ({ numPages }) => {
     setNumPages(numPages);
-    setCurrentPage(1);
+    setPdfCurrentPage(1);
   };
 
   return (
@@ -162,7 +180,7 @@ export default function DisplayPage() {
                   }
                 >
                   <Page
-                    pageNumber={currentPage}
+                    pageNumber={pdfCurrentPage}
                     renderTextLayer={true}
                     renderAnnotationLayer={true}
                     width={Math.min(window.innerWidth * 0.95, 1400)}
@@ -175,20 +193,20 @@ export default function DisplayPage() {
                 {/* PDF Controls */}
                 <div className="mt-4 flex items-center gap-4 bg-black bg-opacity-70 px-6 py-3 rounded-lg">
                   <button
-                    onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
-                    disabled={currentPage <= 1}
+                    onClick={() => setPdfCurrentPage(prev => Math.max(prev - 1, 1))}
+                    disabled={pdfCurrentPage <= 1}
                     className="px-4 py-2 bg-white text-black rounded disabled:opacity-30 hover:bg-gray-200"
                   >
                     ← Predchádzajúca
                   </button>
                   
                   <div className="text-white text-lg">
-                    Strana {currentPage} z {numPages || song.pageCount || '?'}
+                    Strana {pdfCurrentPage} z {numPages || song.pageCount || '?'}
                   </div>
                   
                   <button
-                    onClick={() => setCurrentPage(prev => Math.min(prev + 1, numPages || song.pageCount || 1))}
-                    disabled={currentPage >= (numPages || song.pageCount || 1)}
+                    onClick={() => setPdfCurrentPage(prev => Math.min(prev + 1, numPages || song.pageCount || 1))}
+                    disabled={pdfCurrentPage >= (numPages || song.pageCount || 1)}
                     className="px-4 py-2 bg-white text-black rounded disabled:opacity-30 hover:bg-gray-200"
                   >
                     Ďalšia →
@@ -197,8 +215,8 @@ export default function DisplayPage() {
               </div>
             ) : (
               <div className="flex-1 w-full h-full flex items-center justify-center">
-                {console.log('Rendering SongRenderer with song:', song)}
-                <SongRenderer {...song} />
+                {console.log('Rendering SongRenderer with song:', song, 'currentPage:', state.currentPage)}
+                <SongRenderer {...song} currentPage={state.currentPage || 0} />
               </div>
             )}
           </>

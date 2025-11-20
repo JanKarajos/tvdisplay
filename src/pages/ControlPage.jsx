@@ -41,17 +41,18 @@ export default function ControlPage() {
   const [githubLoading, setGithubLoading] = useState(false);
 
   useEffect(() => { 
-    // Auto-load from GitHub if URL is saved
+    // Auto-load from GitHub - vždy použiť URL (buď uloženú alebo predvolenú)
     const autoLoad = async () => {
-      const savedUrl = localStorage.getItem('tvdisplay-github-raw');
-      if (savedUrl) {
-        try {
-          console.log('Auto-loading songs from saved URL:', savedUrl);
-          await api.loadRemoteSongs(savedUrl);
-          console.log('Songs loaded, now loading categories');
-        } catch (e) {
-          console.warn('Failed to auto-load songs:', e);
-        }
+      const savedUrl = localStorage.getItem('tvdisplay-github-raw') || defaultGithubRawUrl;
+      try {
+        console.log('Auto-loading songs from URL:', savedUrl);
+        await api.loadRemoteSongs(savedUrl);
+        console.log('Songs loaded successfully');
+        // Ulož URL pre budúce použitie
+        localStorage.setItem('tvdisplay-github-raw', savedUrl);
+      } catch (e) {
+        console.error('Failed to auto-load songs:', e);
+        alert('Nepodarilo sa načítať piesne z GitHub. Skontroluj konzolu.');
       }
       // Načítaj kategórie po načítaní piesní
       const cats = await api.getCategories();
@@ -96,9 +97,32 @@ export default function ControlPage() {
 
   const addToQueue = (song) => setQueue(q => [...q, song]);
   const removeFromQueue = (i) => setQueue(q => q.filter((_, idx) => idx !== i));
-  const showSong = async (s) => await api.setState({ currentSongId: s.id, isHidden: false });
+  const showSong = async (s) => await api.setState({ currentSongId: s.id, isHidden: false, currentPage: 0 });
   const toggleHide = async () => await api.setState({ isHidden: !state.isHidden });
-  const clearSong = async () => await api.setState({ currentSongId: null, isHidden: false });
+  const clearSong = async () => await api.setState({ currentSongId: null, isHidden: false, currentPage: 0 });
+  
+  // Vypočítaj počet strán (strof) v piesni
+  const getPageCount = (song) => {
+    if (!song?.lyrics) return 0;
+    const allLines = song.lyrics.split('\n');
+    let pageCount = 0;
+    let hasContent = false;
+    
+    for (let i = 0; i < allLines.length; i++) {
+      const line = allLines[i];
+      if (!line.trim() && hasContent) {
+        pageCount++;
+        hasContent = false;
+      } else if (line.trim()) {
+        hasContent = true;
+      }
+    }
+    
+    if (hasContent) pageCount++;
+    return pageCount;
+  };
+  
+  const currentPageCount = currentSong ? getPageCount(currentSong) : 0;
   const setBackground = async (v) => {
     try {
       console.log('Setting background, current state:', state);
@@ -260,6 +284,38 @@ export default function ControlPage() {
                 <button onClick={() => setBackground(null)} className="px-3 py-1.5 text-sm border rounded">Vypnúť pozadie</button>
               )}
             </div>
+            
+            {/* Navigácia strán piesne */}
+            {currentSong?.lyrics && (
+              <div className="mt-4 pt-4 border-t">
+                <div className="text-sm font-medium mb-2">Strana piesne:</div>
+                <div className="flex items-center gap-3">
+                  <button 
+                    onClick={() => api.setState({ ...state, currentPage: Math.max((state.currentPage || 0) - 1, 0) })}
+                    disabled={(state.currentPage || 0) === 0}
+                    className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 disabled:bg-gray-300 disabled:cursor-not-allowed"
+                  >
+                    ← Predošlá
+                  </button>
+                  <div className="text-sm font-medium">
+                    Strana {(state.currentPage || 0) + 1} / {currentPageCount}
+                  </div>
+                  <button 
+                    onClick={() => api.setState({ ...state, currentPage: Math.min((state.currentPage || 0) + 1, currentPageCount - 1) })}
+                    disabled={(state.currentPage || 0) >= currentPageCount - 1}
+                    className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 disabled:bg-gray-300 disabled:cursor-not-allowed"
+                  >
+                    Ďalšia →
+                  </button>
+                  <button 
+                    onClick={() => api.setState({ ...state, currentPage: 0 })}
+                    className="px-3 py-2 text-sm border rounded hover:bg-gray-50"
+                  >
+                    Prvá strana
+                  </button>
+                </div>
+              </div>
+            )}
           </Card>
 
           <Card title="Kategórie">
@@ -338,29 +394,6 @@ export default function ControlPage() {
             </div>
           </Card>
         </div>
-
-        <Card title="Aktuálny stav">
-          <div className="text-sm mb-2">Aktuálna pieseň: <span className="font-medium">{currentSong ? currentSong.title : '—'}</span></div>
-          <div className="text-sm mb-2">Stav: <span className="font-medium">{state.isHidden ? 'Skrytý' : 'Zobrazený'}</span></div>
-          <div className="text-sm mb-3">Pozadie: <span className="font-medium">{state.background ? 'Nastavené' : '—'}</span></div>
-          <div className="flex flex-wrap gap-2">
-            {state.currentSongId && (
-              <>
-                <button onClick={clearSong} className="px-3 py-2 border rounded">Vymazať obsah</button>
-                <button onClick={toggleHide} className={`px-3 py-2 ${state.isHidden ? 'bg-blue-500 text-white' : 'border'} rounded`}>
-                  {state.isHidden ? 'Zobraziť obsah' : 'Skryť obsah'}
-                </button>
-              </>
-            )}
-            {state.background && (
-              <button onClick={() => setBackground(null)} className="px-3 py-2 border rounded">Vypnúť pozadie</button>
-            )}
-          </div>
-        </Card>
-
-        <Card title="Preview">
-          <Preview state={state} song={currentSong} />
-        </Card>
 
         <Card title="Pridať vlastný text do kategórie">
           <form className="space-y-2" onSubmit={handleAddText}>

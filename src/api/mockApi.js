@@ -1,17 +1,10 @@
 import { realtime } from '../hooks/useRealtime';
 
-const DEMO_CATEGORIES = [
-  { id: 'hymns', name: 'Hymny' },
-  { id: 'chorales', name: 'Chorály' },
-  { id: 'gospels', name: 'Gospely' },
-  { id: 'psalms', name: 'Žalmy' }
-];
+// Kategórie sa načítajú dynamicky z piesní
+let DEMO_CATEGORIES = [];
 
-let DEMO_SONGS = [
-  { id: 's1', title: 'Pieseň radosti', category: 'hymns', lyrics: `1. Pieseň radosti\nRef: Sláva Bohu\n2. Spievajme dnes` },
-  { id: 's2', title: 'Tichá modlitba', category: 'chorales', lyrics: `Tichá modlitba, smelé srdce.` },
-  { id: 's3', title: 'Svetlo na ceste', category: 'gospels', lyrics: `Svetlo vedie nás, kráčaj s nádejou.` }
-];
+// Piesne sa načítajú z GitHub
+let DEMO_SONGS = [];
 
 function pause(ms) { return new Promise(res => setTimeout(res, ms)); }
 
@@ -51,9 +44,15 @@ export const api = {
     if (!Array.isArray(DEMO_SONGS)) return [];
     return DEMO_SONGS.filter(s => s.type === 'pdf');
   },
-  getSong: async (id) => { await pause(80); return DEMO_SONGS.find(s => s.id === id) || null; },
+  getSong: async (id) => { 
+    await pause(80); 
+    console.log('getSong called with id:', id, 'Total songs:', DEMO_SONGS.length);
+    const song = DEMO_SONGS.find(s => s.id === id);
+    console.log('Found song:', song);
+    return song || null; 
+  },
   loadPsalm: async () => { await pause(300); return { id: 'psalm-today', title: 'Responzóriový žalm (dnes)', lyrics: 'Hospodin je môj pastier\nNenúdím sa' }; },
-  state: JSON.parse(localStorage.getItem('tvdisplay-api-state') || '{"currentSongId":null,"background":null,"isHidden":false}'),
+  state: JSON.parse(localStorage.getItem('tvdisplay-api-state') || '{"currentSongId":null,"background":null,"isHidden":false,"currentPage":0}'),
   getState: async () => { 
     await pause(50); 
     const savedState = localStorage.getItem('tvdisplay-api-state');
@@ -75,10 +74,10 @@ export const api = {
       // Načítaj aktuálny stav
       let currentState;
       try {
-        currentState = JSON.parse(localStorage.getItem('tvdisplay-api-state') || '{"currentSongId":null,"background":null,"isHidden":false}');
+        currentState = JSON.parse(localStorage.getItem('tvdisplay-api-state') || '{"currentSongId":null,"background":null,"isHidden":false,"currentPage":0}');
       } catch (e) {
         console.error('Error parsing stored state, using default:', e);
-        currentState = {"currentSongId":null,"background":null,"isHidden":false};
+        currentState = {"currentSongId":null,"background":null,"isHidden":false,"currentPage":0};
       }
 
       // Vytvor nový stav
