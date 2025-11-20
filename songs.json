@@ -1,20 +1,62 @@
 [
   {
     "id": "s1",
-    "title": "Pieseň radosti",
-    "category": "hymns",
-    "lyrics": "1. Pieseň radosti\nRef: Sláva Bohu\n2. Spievajme dnes"
+    "title": "Ach, povstaňme, bratia milí",
+    "category": "vianocne",
+    "lyrics": "1. Ach, povstaňme, bratia milí,\ndo Betlema naponáhľajme sa,\nbo sa tam anjeli zjavili,\na o narodení Spasiteľa\nzvesť veselú ohlasujú nám.\n\n2. Čo to za div nový,\nčo sa to za znak!\nZ neba padla rosa,\nspadla na ten lán.\n\n3. Aká to rosa spadla?\nSpadol Kristus Pán!\nAký to je ten lán?\nPrečistá Panna!\n\n4. Panna, kdekoľvek kráčala,\nčerstvá tráva vyrastala,\naby mala Ježiško\nna čom by si poležalo."
   },
   {
     "id": "s2",
-    "title": "Tichá modlitba",
-    "category": "chorales",
-    "lyrics": "Tichá modlitba, smelé srdce."
+    "title": "Anjel Gabriel",
+    "category": "vianocne",
+    "lyrics": "1. Anjel Gabriel Panne zvestoval\nosoblivé Božie tajomstvo,\nže z nej vzíde Kvet preslávený,\nSlovo večné sa stane Telom.\n\n2. Zármutok Evy odvrátiť\nprišlo v panenstve dietatko,\naby celé pokolenie\nzviedol tam, kde vládne večné blaho.\n\n3. Preto spievaj, Matka milá,\ntvojmu Synu dnes chválu vzdaj,\non ti v nebi veniec slávy\nna hlavu tvojou položí hneď."
   },
   {
     "id": "s3",
-    "title": "Svetlo na ceste",
-    "category": "gospels",
-    "lyrics": "Svetlo vedie nás, kráčaj s nádejou."
+    "title": "Anjel Pána",
+    "category": "vianocne",
+    "lyrics": "1. Anjel Pána pastierom povedal:\nBojte sa, v Betleheme\nsa vám dnes Kristus Pán\nz Panny Márie narodil!\n\n2. Úprimných sŕdc vďačný hlas,\nslávny deň, slávna hodina nás,\nchválime Pána z milosti,\nbo sa nám narodil v túto noc radosti.\n\n3. Zvelebme Boha z večnosti,\nktorý, že nás miloval do bezmeznosti,\npreto zoslal Syna svojho nám,\naby sme mohli dostať sa do neba chrám."
+  },
+  {
+    "id": "s4",
+    "title": "Biely anjel z neba k nám prišiel",
+    "category": "vianocne",
+    "lyrics": "1. Biely anjel z neba k nám prišiel,\nzvesť radostnú všetkým zvestoval:\nUrčite v Betleheme zrodený\nje Mesiáš, náš Vykupiteľ!\n\n2. Pastierkom anjelský počet mnohý\nnadchnutý chválil milého Boha:\nSláva Bohu na výsosti,\npokoj ľuďom na tejto zemi!\n\n3. My vlastne sa tiež rozradujme,\nveselé piesne dnes spievajme,\nžeJežiš Kristus narodený,\nBožský Spasiteľ nám daný je!"
+  },
+  {
+    "id": "s5",
+    "title": "Boh sa láskavý deň narodil",
+    "category": "vianocne",
+    "lyrics": "1. Boh sa láskavý deň narodil,\nz lásky k človeku svetlo dal,\nz tmy nás vyvedšie, Pán nadveselie,\na spásu nesie každému z nás.\n\n2. On k nám prichádza, Láska preláska,\nv pokornej maštaľ tíško dnes,\ntunel tmavosti rozžiari jasnosťou,\nsvojej svätosti ozdobí nás.\n\n3. Chvála, sláva Mu, našmu Pánu,\nktorý sa ponížil vtelený,\naby svojmu ľudu udelil pomoc stálú,\na svojmu ľudu vlasť dal nebesnú."
+  },
+  {
+    "id": "s6",
+    "title": "Boh sa nám narodil",
+    "category": "vianocne",
+    "lyrics": "1. Boh sa nám narodil,\nz lásky vtelil sa,\nradujme sa z toho,\nchváľme ho!\n\n2. Anjelov Pán vstal k nám,\nPrečistej Matky Syn,\nradujme sa z toho,\nchváľme ho!\n\n3. My, Ježiškovi,\npiesne spievame,\nradujme sa z toho,\nchváľme ho!\n\n4. Bratia, sestry milí,\nslávme narodenie,\nradujme sa z toho,\nchváľme ho!"
+  },
+  {
+    "id": "s7",
+    "title": "Bratia, sestry, spievajme",
+    "category": "vianocne",
+    "lyrics": "1. Bratia, sestry, spievajme,\nveseľme sa všetci,\nbo sa nám dnes narodil\nBožský Spasiteľ!\n\nRefrén:\nSláva na výsosti Bohu,\npokoj na zemi ľuďom!\n\n2. Anjeli už zvestovali,\npastierom hlásali,\nže sa v Betleheme zrodil\nKristus, Pán milý!\n\n3. Spievajte, či ste starí,\nči mladí ľudia,\nChristus sa vám narodil,\nspievajte radostne!"
+  },
+  {
+    "id": "s8",
+    "title": "Budeme spievať zbožne",
+    "category": "vianocne",
+    "lyrics": "1. Budeme spievať zbožne,\nChristus sa nám narodil,\nsláva budeme vzdávať,\nbo nás milostne vykúpil.\n\n2. Slávme narodenie,\nkráľa večných časov,\nktorý sa ponížil,\nna svet prišiel k nám.\n\n3. Vďačne spievajme\nanjelský mocný zbor,\nktorý vždy oznamuje,\nslávny príchod Pán.\n\n4. Radujme sa z lásky,\nktorú on nám preukázal,\npred večnými mukami\nkeď nás zachránil."
+  },
+  {
+    "id": "s9",
+    "title": "Čo to za jasné svetlo",
+    "category": "vianocne",
+    "lyrics": "1. Čo to za jasné svetlo dnes v noci svieti,\nže pastieri stráže nebadane chytia?\nČo to za anjelský spev náhle zaznel,\nktorý v tmavej noci jas veľký rozliehol?\n\n2. Anjel im hovorí, Pána netešte,\nk Betlehemu rýchlo teraz spiechaťejte,\ntam v jasliach položený dnes uvidíte,\nBoha večnéhoho, čo sa vtelený!\n\n3. Pastieri k Betlehemu rýchlo bežali,\nDieťatko v jasliach nato našli,\nzímnymi nohami skromne obute,\npred ním sa klaňali s radosťou veľkou."
+  },
+  {
+    "id": "s10",
+    "title": "Dnes Kristus k nám prišiel",
+    "category": "vianocne",
+    "lyrics": "1. Dnes Kristus k nám prišiel,\nv Betleheme narodený,\nradujme sa všetci,\nspievajme chválu Bohu!\n\n2. Oslavme narodenie\nPána nášho Ježiša,\nktorý nás vykúpil,\nláskyplný Spasiteľ náš!\n\n3. Pastierovia slávili,\nprišli k Nemu s obetmi,\nanjelský spev počuli,\nchválu vzdali svätému!\n\n4. Radujme sa spolu dnes,\nslávme tohto krásneho,\nktorý z neba prichádza,\na večný život nám dáva!"
   }
 ]

@@ -16,8 +16,17 @@ let DEMO_SONGS = [
 function pause(ms) { return new Promise(res => setTimeout(res, ms)); }
 
 export const api = {
-  getCategories: async () => { await pause(100); return DEMO_CATEGORIES; },
-  getSongsByCategory: async (cat) => { await pause(100); return DEMO_SONGS.filter(s => s.category === cat); },
+  getCategories: async () => { 
+    await pause(100); 
+    console.log('getCategories called, returning:', DEMO_CATEGORIES);
+    return DEMO_CATEGORIES; 
+  },
+  getSongsByCategory: async (cat) => { 
+    await pause(100); 
+    const filtered = DEMO_SONGS.filter(s => s.category === cat);
+    console.log('getSongsByCategory called for', cat, 'found', filtered.length, 'songs from total', DEMO_SONGS.length);
+    return filtered;
+  },
   getImages: async () => {
     await pause(50);
     if (!Array.isArray(DEMO_SONGS)) return [];
@@ -108,19 +117,24 @@ export const api = {
     if (!target) throw new Error('No remote URL provided');
     await pause(100);
     try {
+      console.log('Loading songs from:', target);
       const res = await fetch(target);
       if (!res.ok) throw new Error('Failed to fetch remote songs: ' + res.statusText);
       const data = await res.json();
+      console.log('Loaded data:', data);
       if (Array.isArray(data)) {
         DEMO_SONGS = data;
+        console.log('Updated DEMO_SONGS to:', DEMO_SONGS.length, 'songs');
         // Rebuild categories from loaded songs (unique non-empty categories)
         try {
           const cats = Array.from(new Set(data.map(s => s.category).filter(Boolean)))
             .map(id => ({ id, name: id.replace(/[-_]/g, ' ').replace(/\b\w/g, c=>c.toUpperCase()) }));
+          console.log('Rebuilt categories:', cats);
           if (cats.length) {
             // replace demo categories with those inferred from data
             DEMO_CATEGORIES.length = 0;
             cats.forEach(c => DEMO_CATEGORIES.push(c));
+            console.log('Updated DEMO_CATEGORIES to:', DEMO_CATEGORIES);
           }
         } catch (e) {
           console.warn('Could not rebuild categories from remote data', e);
