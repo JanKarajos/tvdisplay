@@ -196,10 +196,8 @@ export default function DisplayPage() {
                 </div>
               </div>
             ) : (
-              <div className="flex-1 flex items-center justify-center max-w-5xl mx-auto px-8">
-                <div className="rounded-lg p-6">
-                  <SongRenderer {...song} />
-                </div>
+              <div className="flex-1 w-full h-full flex items-center justify-center">
+                <SongRenderer {...song} />
               </div>
             )}
           </>

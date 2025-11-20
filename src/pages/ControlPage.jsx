@@ -32,16 +32,30 @@ export default function ControlPage() {
   const [addingPdf, setAddingPdf] = useState(false);
   const [presentations, setPresentations] = useState([]);
   // Stav pre GitHub sync
-  const [githubRawUrl, setGithubRawUrl] = useState(localStorage.getItem('tvdisplay-github-raw') || '');
-  const [githubOwner, setGithubOwner] = useState(localStorage.getItem('tvdisplay-github-owner') || '');
-  const [githubRepo, setGithubRepo] = useState(localStorage.getItem('tvdisplay-github-repo') || '');
+  const defaultGithubRawUrl = 'https://raw.githubusercontent.com/JanKarajos/tvdisplay/main/songs.json';
+  const [githubRawUrl, setGithubRawUrl] = useState(localStorage.getItem('tvdisplay-github-raw') || defaultGithubRawUrl);
+  const [githubOwner, setGithubOwner] = useState(localStorage.getItem('tvdisplay-github-owner') || 'JanKarajos');
+  const [githubRepo, setGithubRepo] = useState(localStorage.getItem('tvdisplay-github-repo') || 'tvdisplay');
   const [githubPath, setGithubPath] = useState(localStorage.getItem('tvdisplay-github-path') || 'songs.json');
   const [githubToken, setGithubToken] = useState(localStorage.getItem('tvdisplay-github-token') || '');
   const [githubLoading, setGithubLoading] = useState(false);
 
   useEffect(() => { 
-    api.getCategories().then(setCategories); 
-    api.getState().then(setState); 
+    // Auto-load from GitHub if URL is saved
+    const autoLoad = async () => {
+      const savedUrl = localStorage.getItem('tvdisplay-github-raw');
+      if (savedUrl) {
+        try {
+          console.log('Auto-loading songs from saved URL:', savedUrl);
+          await api.loadRemoteSongs(savedUrl);
+        } catch (e) {
+          console.warn('Failed to auto-load songs:', e);
+        }
+      }
+      api.getCategories().then(setCategories);
+      api.getState().then(setState);
+    };
+    autoLoad();
   }, []);
 
   useEffect(() => { 
