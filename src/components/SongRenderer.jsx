@@ -4,8 +4,13 @@ export default function SongRenderer({ lyrics, title, imageUrl }) {
   const containerRef = useRef(null);
   const [fontSize, setFontSize] = useState(48);
 
+  console.log('SongRenderer props:', { lyrics, title, imageUrl, lyricsLength: lyrics?.length });
+
   useEffect(() => {
-    if (!lyrics || !containerRef.current) return;
+    if (!lyrics || !containerRef.current) {
+      console.log('SongRenderer: No lyrics or container', { hasLyrics: !!lyrics, hasContainer: !!containerRef.current });
+      return;
+    }
 
     const adjustFontSize = () => {
       const container = containerRef.current;
@@ -13,8 +18,11 @@ export default function SongRenderer({ lyrics, title, imageUrl }) {
 
       const viewportHeight = window.innerHeight;
       const viewportWidth = window.innerWidth;
-      const lines = lyrics.split('\n').filter(Boolean);
-      const lineCount = lines.length;
+      // Pre výpočet použijeme len neprázdne riadky
+      const allLines = lyrics.split('\n');
+      const nonEmptyLines = allLines.filter(Boolean);
+      const lineCount = allLines.length; // Celkový počet riadkov vrátane prázdnych
+      const contentLineCount = nonEmptyLines.length; // Len riadky s obsahom
       
       // Vypočítaj ideálnu veľkosť písma podľa počtu riadkov a výšky obrazovky
       let newFontSize;
@@ -30,13 +38,14 @@ export default function SongRenderer({ lyrics, title, imageUrl }) {
       }
 
       // Zohľadni šírku obrazovky
-      const maxLineLength = Math.max(...lines.map(l => l.length));
+      const maxLineLength = Math.max(...nonEmptyLines.map(l => l.length), 1);
       const widthBasedSize = (viewportWidth * 0.8) / (maxLineLength * 0.6);
       newFontSize = Math.min(newFontSize, widthBasedSize);
 
       // Minimálna a maximálna veľkosť
       newFontSize = Math.max(24, Math.min(96, newFontSize));
       
+      console.log('Font size calculated:', newFontSize, 'for', lineCount, 'lines (', contentLineCount, 'with content)');
       setFontSize(newFontSize);
     };
 
@@ -54,7 +63,18 @@ export default function SongRenderer({ lyrics, title, imageUrl }) {
     );
   }
 
-  const lines = lyrics ? lyrics.split('\n').filter(Boolean) : [];
+  if (!lyrics) {
+    console.log('No lyrics to display');
+    return (
+      <div className="text-white text-2xl text-center">
+        Žiadny text k dispozícii
+      </div>
+    );
+  }
+
+  // Rozdeliť na riadky, ale NEODSTRAŇOVAŤ prázdne riadky
+  const lines = lyrics.split('\n');
+  console.log('Displaying', lines.length, 'lines');
   
   return (
     <div ref={containerRef} className="text-white w-full h-full flex flex-col items-center justify-center px-8 py-6">

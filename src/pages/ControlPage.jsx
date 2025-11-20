@@ -48,11 +48,15 @@ export default function ControlPage() {
         try {
           console.log('Auto-loading songs from saved URL:', savedUrl);
           await api.loadRemoteSongs(savedUrl);
+          console.log('Songs loaded, now loading categories');
         } catch (e) {
           console.warn('Failed to auto-load songs:', e);
         }
       }
-      api.getCategories().then(setCategories);
+      // Načítaj kategórie po načítaní piesní
+      const cats = await api.getCategories();
+      console.log('Categories loaded:', cats);
+      setCategories(cats);
       api.getState().then(setState);
     };
     autoLoad();

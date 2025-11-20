@@ -197,6 +197,7 @@ export default function DisplayPage() {
               </div>
             ) : (
               <div className="flex-1 w-full h-full flex items-center justify-center">
+                {console.log('Rendering SongRenderer with song:', song)}
                 <SongRenderer {...song} />
               </div>
             )}
