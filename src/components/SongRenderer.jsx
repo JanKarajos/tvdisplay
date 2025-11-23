@@ -1,11 +1,11 @@
 import React, { useEffect, useRef, useState } from 'react';
 
-export default function SongRenderer({ lyrics, title, imageUrl, currentPage = 0, isPreview = false }) {
+export default function SongRenderer({ lyrics, title, number, imageUrl, currentPage = 0, isPreview = false }) {
   const containerRef = useRef(null);
   const [fontSize, setFontSize] = useState(48);
   const [pages, setPages] = useState([]);
 
-  console.log('SongRenderer props:', { lyrics, title, imageUrl, lyricsLength: lyrics?.length, currentPage, isPreview });
+  console.log('SongRenderer props:', { lyrics, title, number, imageUrl, lyricsLength: lyrics?.length, currentPage, isPreview });
 
   // Rozdeliť text na strany a nastaviť veľkosť písma
   useEffect(() => {
@@ -50,19 +50,17 @@ export default function SongRenderer({ lyrics, title, imageUrl, currentPage = 0,
     let calculatedFontSize;
     
     if (isPreview) {
-      // Pre preview použiť menšie písmo
-      calculatedFontSize = Math.min(
-        viewportHeight / (maxLinesInPage * 2.5),
-        viewportWidth * 0.025
-      );
-      calculatedFontSize = Math.max(8, Math.min(24, calculatedFontSize));
+      // Pre preview - počítame s lineHeight 1.5 a rezervou pre nadpis/okraje
+      const availableHeight = viewportHeight - 80; // rezerva pre nadpis a okraje
+      calculatedFontSize = availableHeight / (maxLinesInPage * 1.5);
+      calculatedFontSize = Math.max(8, Math.min(20, calculatedFontSize));
     } else {
-      // Pre fullscreen displej
-      calculatedFontSize = Math.min(
-        viewportHeight / (maxLinesInPage * 1.8),
-        viewportWidth * 0.05
-      );
-      calculatedFontSize = Math.max(36, Math.min(80, calculatedFontSize));
+      // Pre fullscreen displej - zväčšený koeficient pre viac priestoru
+      // lineHeight je 1.5, takže skutočná výška je lines * fontSize * 1.5
+      // Pridáme priestor pre nadpis (cca 100px) a okraje (cca 100px)
+      const availableHeight = viewportHeight - 200;
+      calculatedFontSize = availableHeight / (maxLinesInPage * 1.5);
+      calculatedFontSize = Math.max(28, Math.min(72, calculatedFontSize));
     }
     
     setFontSize(calculatedFontSize);
@@ -93,25 +91,25 @@ export default function SongRenderer({ lyrics, title, imageUrl, currentPage = 0,
   console.log('Displaying page', currentPage + 1, 'of', pages.length, 'with', currentPageLines.length, 'lines');
   
   return (
-    <div ref={containerRef} className="text-white w-full h-full flex flex-col items-center justify-center px-8 py-6 relative">
+    <div ref={containerRef} className="text-white w-full h-full flex flex-col items-center justify-center px-8 py-4 relative">
       {title && (
         <div 
-          className="mb-6 font-bold text-center"
-          style={{ fontSize: `${Math.min(fontSize * 1.3, 64)}px` }}
+          className="mb-4 font-bold text-center"
+          style={{ fontSize: `${Math.min(fontSize * 1.2, 56)}px` }}
         >
-          {title}
+          {number && `${number}. `}{title}
         </div>
       )}
       <div 
-        className="text-center max-w-full flex-1 flex items-center justify-center"
+        className="text-center max-w-full flex-1 flex items-center justify-center overflow-hidden"
         style={{ 
           fontSize: `${fontSize}px`,
           lineHeight: '1.5'
         }}
       >
-        <div>
+        <div className="w-full">
           {currentPageLines.map((l, i) => (
-            <div key={i} className="mb-1">{l || '\u00A0'}</div>
+            <div key={i} className="whitespace-pre-wrap">{l || '\u00A0'}</div>
           ))}
         </div>
       </div>
