@@ -66,12 +66,21 @@ export default function ControlPage() {
   }, []);
 
   useEffect(() => { 
-    if (selectedCategory) {
-      api.getSongsByCategory(selectedCategory).then(setSongs);
-    } else {
-      setSongs([]);
-    }
-  }, [selectedCategory]);
+    const loadSongs = async () => {
+      if (searchQuery.trim()) {
+        // Ak je zadané vyhľadávanie, načítaj všetky piesne
+        const allSongs = await api.getAllSongs();
+        setSongs(allSongs);
+      } else if (selectedCategory) {
+        // Inak načítaj len piesne z vybranej kategórie
+        const categorySongs = await api.getSongsByCategory(selectedCategory);
+        setSongs(categorySongs);
+      } else {
+        setSongs([]);
+      }
+    };
+    loadSongs();
+  }, [selectedCategory, searchQuery]);
 
   useEffect(() => {
     if (state.currentSongId) {
@@ -369,7 +378,7 @@ export default function ControlPage() {
           </Card>
         </div>
 
-        <Card title={`Piesne v ${selectedCategory || '...'}`}>
+        <Card title={searchQuery.trim() ? 'Vyhľadávanie vo všetkých piesňach' : `Piesne v ${selectedCategory || '...'}`}>
           {/* Vyhľadávacie pole */}
           <div className="mb-3 pb-3 border-b">
             <input
@@ -394,6 +403,11 @@ export default function ControlPage() {
                     {s.number && <span className="text-gray-500 mr-2">#{s.number}</span>}
                     {s.title}
                   </div>
+                  {searchQuery.trim() && s.category && (
+                    <div className="text-xs text-gray-500 mt-1">
+                      {categories.find(c => c.id === s.category)?.name || s.category}
+                    </div>
+                  )}
                 </div>
                 <div className="flex gap-2">
                   <button onClick={() => addToQueue(s)} className="px-2 py-1 text-xs border rounded hover:bg-gray-50">Pridať</button>
@@ -401,12 +415,12 @@ export default function ControlPage() {
                 </div>
               </div>
             ))}
-            {!filteredSongs.length && selectedCategory && (
+            {!filteredSongs.length && (searchQuery || selectedCategory) && (
               <div className="text-sm text-gray-500 p-3">
                 {searchQuery ? 'Nenašli sa žiadne piesne' : 'Žiadne piesne v tejto kategórii'}
               </div>
             )}
-            {!selectedCategory && <div className="text-sm text-gray-500 p-3">Vyber kategóriu</div>}
+            {!selectedCategory && !searchQuery && <div className="text-sm text-gray-500 p-3">Vyber kategóriu alebo začni vyhľadávať</div>}
           </div>
         </Card>
       </div>

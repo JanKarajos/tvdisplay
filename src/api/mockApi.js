@@ -20,6 +20,11 @@ export const api = {
     console.log('getSongsByCategory called for', cat, 'found', filtered.length, 'songs from total', DEMO_SONGS.length);
     return filtered;
   },
+  getAllSongs: async () => {
+    await pause(100);
+    console.log('getAllSongs called, returning:', DEMO_SONGS.length, 'songs');
+    return DEMO_SONGS.filter(s => s.category); // Vráti všetky piesne s kategóriou (nie obrázky/prezentácie)
+  },
   getImages: async () => {
     await pause(50);
     if (!Array.isArray(DEMO_SONGS)) return [];
