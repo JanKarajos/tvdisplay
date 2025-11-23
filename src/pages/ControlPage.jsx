@@ -11,6 +11,8 @@ export default function ControlPage() {
   const [queue, setQueue] = useState([]);
   const [state, setState] = useState({ currentSongId: null, background: null, isHidden: false });
   const [currentSong, setCurrentSong] = useState(null);
+  // Stav pre vyhľadávanie
+  const [searchQuery, setSearchQuery] = useState("");
   // Stav pre text
   const [textTitle, setTextTitle] = useState("");
   const [textLyrics, setTextLyrics] = useState("");
@@ -98,6 +100,24 @@ export default function ControlPage() {
   const addToQueue = (song) => setQueue(q => [...q, song]);
   const removeFromQueue = (i) => setQueue(q => q.filter((_, idx) => idx !== i));
   const showSong = async (s) => await api.setState({ currentSongId: s.id, isHidden: false, currentPage: 0 });
+
+  // Filtrovanie piesní podľa vyhľadávania
+  const filteredSongs = songs.filter(song => {
+    if (!searchQuery.trim()) return true;
+    
+    const query = searchQuery.toLowerCase().trim();
+    
+    // Hľadaj v názve
+    if (song.title.toLowerCase().includes(query)) return true;
+    
+    // Hľadaj v texte
+    if (song.lyrics && song.lyrics.toLowerCase().includes(query)) return true;
+    
+    // Hľadaj podľa čísla piesne
+    if (song.number && song.number.toString().includes(query)) return true;
+    
+    return false;
+  });
   const toggleHide = async () => await api.setState({ isHidden: !state.isHidden });
   const clearSong = async () => await api.setState({ currentSongId: null, isHidden: false, currentPage: 0 });
   
@@ -350,17 +370,43 @@ export default function ControlPage() {
         </div>
 
         <Card title={`Piesne v ${selectedCategory || '...'}`}>
+          {/* Vyhľadávacie pole */}
+          <div className="mb-3 pb-3 border-b">
+            <input
+              type="text"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              placeholder="Hľadaj podľa názvu, textu alebo čísla..."
+              className="w-full px-3 py-2 text-sm border rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
+            />
+            {searchQuery && (
+              <div className="mt-2 text-xs text-gray-600">
+                Nájdených: {filteredSongs.length} {filteredSongs.length === 1 ? 'pieseň' : filteredSongs.length < 5 ? 'piesne' : 'piesní'}
+              </div>
+            )}
+          </div>
+          
           <div className="h-[calc(100vh-32rem)] min-h-[12rem] overflow-auto">
-            {songs.map(s => (
-              <div key={s.id} className="flex justify-between p-2 border-b">
-                <div className="text-sm">{s.title}</div>
+            {filteredSongs.map(s => (
+              <div key={s.id} className="flex justify-between items-center p-2 border-b hover:bg-gray-50">
+                <div className="flex-1">
+                  <div className="text-sm font-medium">
+                    {s.number && <span className="text-gray-500 mr-2">#{s.number}</span>}
+                    {s.title}
+                  </div>
+                </div>
                 <div className="flex gap-2">
                   <button onClick={() => addToQueue(s)} className="px-2 py-1 text-xs border rounded hover:bg-gray-50">Pridať</button>
                   <button onClick={() => showSong(s)} className="px-2 py-1 text-xs bg-blue-500 text-white rounded hover:bg-blue-600">Zobraziť</button>
                 </div>
               </div>
             ))}
-            {!songs.length && <div className="text-sm text-gray-500 p-3">Vyber kategóriu</div>}
+            {!filteredSongs.length && selectedCategory && (
+              <div className="text-sm text-gray-500 p-3">
+                {searchQuery ? 'Nenašli sa žiadne piesne' : 'Žiadne piesne v tejto kategórii'}
+              </div>
+            )}
+            {!selectedCategory && <div className="text-sm text-gray-500 p-3">Vyber kategóriu</div>}
           </div>
         </Card>
       </div>
