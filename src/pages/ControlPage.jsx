@@ -69,13 +69,18 @@ export default function ControlPage() {
     const loadSongs = async () => {
       if (searchQuery.trim()) {
         // Ak je zadané vyhľadávanie, načítaj všetky piesne
+        console.log('Načítavam všetky piesne pre vyhľadávanie:', searchQuery);
         const allSongs = await api.getAllSongs();
+        console.log('Načítaných piesní:', allSongs.length);
         setSongs(allSongs);
       } else if (selectedCategory) {
         // Inak načítaj len piesne z vybranej kategórie
+        console.log('Načítavam piesne kategórie:', selectedCategory);
         const categorySongs = await api.getSongsByCategory(selectedCategory);
+        console.log('Načítaných piesní:', categorySongs.length);
         setSongs(categorySongs);
       } else {
+        console.log('Žiadna kategória ani vyhľadávanie');
         setSongs([]);
       }
     };
@@ -110,23 +115,44 @@ export default function ControlPage() {
   const removeFromQueue = (i) => setQueue(q => q.filter((_, idx) => idx !== i));
   const showSong = async (s) => await api.setState({ currentSongId: s.id, isHidden: false, currentPage: 0 });
 
+  // Funkcia na normalizáciu textu (odstránenie diakritiky)
+  const normalizeText = (text) => {
+    return text
+      .toLowerCase()
+      .normalize('NFD')
+      .replace(/[\u0300-\u036f]/g, '') // Odstráni diakritiku
+      .replace(/[^\w\s]/g, ' ') // Nahradí špeciálne znaky medzerami
+      .replace(/\s+/g, ' ') // Normalizuje medzery
+      .trim();
+  };
+
   // Filtrovanie piesní podľa vyhľadávania
   const filteredSongs = songs.filter(song => {
     if (!searchQuery.trim()) return true;
     
     const query = searchQuery.toLowerCase().trim();
+    const normalizedQuery = normalizeText(searchQuery);
     
-    // Hľadaj v názve
+    // Hľadaj v názve (s diakritikou aj bez)
     if (song.title.toLowerCase().includes(query)) return true;
+    if (normalizeText(song.title).includes(normalizedQuery)) return true;
     
-    // Hľadaj v texte
-    if (song.lyrics && song.lyrics.toLowerCase().includes(query)) return true;
+    // Hľadaj v texte (s diakritikou aj bez)
+    if (song.lyrics) {
+      if (song.lyrics.toLowerCase().includes(query)) return true;
+      if (normalizeText(song.lyrics).includes(normalizedQuery)) return true;
+    }
     
     // Hľadaj podľa čísla piesne
     if (song.number && song.number.toString().includes(query)) return true;
     
     return false;
   });
+
+  // Debug log pri zmene vyhľadávania
+  if (searchQuery) {
+    console.log('Vyhľadávanie:', searchQuery, '| Celkom piesní:', songs.length, '| Nájdených:', filteredSongs.length);
+  }
   const toggleHide = async () => await api.setState({ isHidden: !state.isHidden });
   const clearSong = async () => await api.setState({ currentSongId: null, isHidden: false, currentPage: 0 });
   
