@@ -126,7 +126,7 @@ export default function ControlPage() {
       .trim();
   };
 
-  // Filtrovanie piesní podľa vyhľadávania
+  // Filtrovanie piesní podľa vyhľadávania (len názov a číslo)
   const filteredSongs = songs.filter(song => {
     if (!searchQuery.trim()) return true;
     
@@ -136,12 +136,6 @@ export default function ControlPage() {
     // Hľadaj v názve (s diakritikou aj bez)
     if (song.title.toLowerCase().includes(query)) return true;
     if (normalizeText(song.title).includes(normalizedQuery)) return true;
-    
-    // Hľadaj v texte (s diakritikou aj bez)
-    if (song.lyrics) {
-      if (song.lyrics.toLowerCase().includes(query)) return true;
-      if (normalizeText(song.lyrics).includes(normalizedQuery)) return true;
-    }
     
     // Hľadaj podľa čísla piesne
     if (song.number && song.number.toString().includes(query)) return true;
@@ -411,7 +405,7 @@ export default function ControlPage() {
               type="text"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              placeholder="Hľadaj podľa názvu, textu alebo čísla..."
+              placeholder="Hľadaj podľa názvu alebo čísla piesne..."
               className="w-full px-3 py-2 text-sm border rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
             />
             {searchQuery && (
