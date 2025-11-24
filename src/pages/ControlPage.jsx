@@ -229,7 +229,7 @@ export default function ControlPage() {
       api.getCategories().then(setCategories);
       setNewCategoryName("");
       
-      // Automaticky ulož na GitHub
+      // Automaticky ulož na GitHub (songs.json aj images.json)
       console.log('[Auto-save] Checking credentials:', { 
         hasOwner: !!githubOwner, 
         hasRepo: !!githubRepo, 
@@ -239,6 +239,18 @@ export default function ControlPage() {
       if (githubOwner && githubRepo && githubPath && githubToken) {
         console.log('[Auto-save] Credentials OK, saving to GitHub after adding category...');
         await handleSaveToGitHub(true); // true = autoSave mode
+        // Ulož aj images.json
+        try {
+          await api.saveImagesToGitHub({ 
+            owner: githubOwner, 
+            repo: githubRepo, 
+            path: 'images.json', 
+            token: githubToken 
+          });
+          console.log('[Auto-save] Images saved to GitHub');
+        } catch (e) {
+          console.error('[Auto-save] Failed to save images:', e);
+        }
       } else {
         console.warn('[Auto-save] Missing GitHub credentials - skipping auto-save');
       }
@@ -252,7 +264,7 @@ export default function ControlPage() {
     e.preventDefault();
     if (!textTitle || !textCategory || !textLyrics) return;
     setAddingText(true);
-    await api.addCustomSong({
+    const newSong = await api.addCustomSong({
       title: textTitle,
       lyrics: textLyrics,
       category: textCategory,
@@ -261,7 +273,7 @@ export default function ControlPage() {
     setTextLyrics("");
     setTextCategory("");
     
-    // Automaticky ulož na GitHub
+    // Automaticky ulož na GitHub (songs.json aj images.json)
     console.log('[Auto-save] Checking credentials:', { 
       hasOwner: !!githubOwner, 
       hasRepo: !!githubRepo, 
@@ -271,6 +283,18 @@ export default function ControlPage() {
     if (githubOwner && githubRepo && githubPath && githubToken) {
       console.log('[Auto-save] Credentials OK, saving to GitHub after adding text...');
       await handleSaveToGitHub(true); // true = autoSave mode
+      // Ulož aj images.json
+      try {
+        await api.saveImagesToGitHub({ 
+          owner: githubOwner, 
+          repo: githubRepo, 
+          path: 'images.json', 
+          token: githubToken 
+        });
+        console.log('[Auto-save] Images saved to GitHub');
+      } catch (e) {
+        console.error('[Auto-save] Failed to save images:', e);
+      }
     } else {
       console.warn('[Auto-save] Missing GitHub credentials - skipping auto-save');
     }
@@ -278,6 +302,11 @@ export default function ControlPage() {
     setAddingText(false);
     if (selectedCategory === textCategory) {
       api.getSongsByCategory(selectedCategory).then(setSongs);
+    }
+    
+    // Automaticky zobraz pridaný text na obrazovke
+    if (newSong && newSong.id) {
+      showSong(newSong);
     }
   };
 
@@ -296,7 +325,7 @@ export default function ControlPage() {
     e.preventDefault();
     if (!imageTitle || !imageUrl) return;
     setAddingImage(true);
-    await api.addCustomSong({
+    const newImage = await api.addCustomSong({
       title: imageTitle,
       imageUrl: imageUrl,
     });
@@ -304,7 +333,7 @@ export default function ControlPage() {
     setImageFile(null);
     setImageUrl("");
     
-    // Automaticky ulož na GitHub
+    // Automaticky ulož na GitHub (songs.json aj images.json)
     console.log('[Auto-save] Checking credentials:', { 
       hasOwner: !!githubOwner, 
       hasRepo: !!githubRepo, 
@@ -314,12 +343,29 @@ export default function ControlPage() {
     if (githubOwner && githubRepo && githubPath && githubToken) {
       console.log('[Auto-save] Credentials OK, saving to GitHub after adding image...');
       await handleSaveToGitHub(true); // true = autoSave mode
+      // Ulož aj images.json
+      try {
+        await api.saveImagesToGitHub({ 
+          owner: githubOwner, 
+          repo: githubRepo, 
+          path: 'images.json', 
+          token: githubToken 
+        });
+        console.log('[Auto-save] Images saved to GitHub');
+      } catch (e) {
+        console.error('[Auto-save] Failed to save images:', e);
+      }
     } else {
       console.warn('[Auto-save] Missing GitHub credentials - skipping auto-save');
     }
     
     setAddingImage(false);
     api.getImages().then(setImages);
+    
+    // Automaticky zobraz pridaný obrázok na obrazovke (ako pozadie)
+    if (newImage && newImage.imageUrl) {
+      setBackground(newImage.imageUrl);
+    }
   };
 
   const handlePdfFile = (e) => {
