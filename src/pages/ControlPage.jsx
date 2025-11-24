@@ -228,6 +228,12 @@ export default function ControlPage() {
       await api.addCategory({ name: newCategoryName });
       api.getCategories().then(setCategories);
       setNewCategoryName("");
+      
+      // Automaticky ulož na GitHub
+      if (githubOwner && githubRepo && githubPath && githubToken) {
+        console.log('Auto-saving to GitHub after adding category...');
+        await handleSaveToGitHub(true); // true = autoSave mode
+      }
     } catch (error) {
       console.error('Error adding category:', error);
     }
@@ -246,6 +252,13 @@ export default function ControlPage() {
     setTextTitle("");
     setTextLyrics("");
     setTextCategory("");
+    
+    // Automaticky ulož na GitHub
+    if (githubOwner && githubRepo && githubPath && githubToken) {
+      console.log('Auto-saving to GitHub after adding text...');
+      await handleSaveToGitHub(true); // true = autoSave mode
+    }
+    
     setAddingText(false);
     if (selectedCategory === textCategory) {
       api.getSongsByCategory(selectedCategory).then(setSongs);
@@ -274,6 +287,13 @@ export default function ControlPage() {
     setImageTitle("");
     setImageFile(null);
     setImageUrl("");
+    
+    // Automaticky ulož na GitHub
+    if (githubOwner && githubRepo && githubPath && githubToken) {
+      console.log('Auto-saving to GitHub after adding image...');
+      await handleSaveToGitHub(true); // true = autoSave mode
+    }
+    
     setAddingImage(false);
     api.getImages().then(setImages);
   };
@@ -329,8 +349,11 @@ export default function ControlPage() {
     setGithubLoading(false);
   };
 
-  const handleSaveToGitHub = async () => {
-    if (!githubOwner || !githubRepo || !githubPath || !githubToken) return alert('Please fill owner, repo, path and token');
+  const handleSaveToGitHub = async (autoSave = false) => {
+    if (!githubOwner || !githubRepo || !githubPath || !githubToken) {
+      if (!autoSave) alert('Please fill owner, repo, path and token');
+      return;
+    }
     setGithubLoading(true);
     try {
       const res = await api.saveSongsToGitHub({ owner: githubOwner, repo: githubRepo, path: githubPath, token: githubToken });
@@ -339,10 +362,16 @@ export default function ControlPage() {
       localStorage.setItem('tvdisplay-github-repo', githubRepo);
       localStorage.setItem('tvdisplay-github-path', githubPath);
       localStorage.setItem('tvdisplay-github-token', githubToken);
-      alert('Uložené na GitHub: ' + (res.content && res.content.path ? res.content.path : 'OK'));
+      if (!autoSave) {
+        alert('Uložené na GitHub: ' + (res.content && res.content.path ? res.content.path : 'OK'));
+      } else {
+        console.log('Auto-saved to GitHub:', res.content?.path || 'OK');
+      }
     } catch (e) {
       console.error(e);
-      alert('Chyba pri ukladaní na GitHub: ' + e.message);
+      if (!autoSave) {
+        alert('Chyba pri ukladaní na GitHub: ' + e.message);
+      }
     }
     setGithubLoading(false);
   };
