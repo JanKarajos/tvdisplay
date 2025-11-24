@@ -47,6 +47,13 @@ export default function SongRenderer({ lyrics, title, number, imageUrl, currentP
     
     // Vypočítaj veľkosť písma pre najdlhšiu strofu
     const maxLinesInPage = Math.max(...newPages.map(p => p.length), 1);
+    
+    // Vypočítaj aj najdlhší riadok v znakoch
+    const maxLineLength = Math.max(
+      ...newPages.flatMap(page => page.map(line => line.length)),
+      1
+    );
+    
     let calculatedFontSize;
     
     if (isPreview) {
@@ -57,19 +64,22 @@ export default function SongRenderer({ lyrics, title, number, imageUrl, currentP
     } else {
       // Pre fullscreen displej
       // lineHeight je 1.5, takže skutočná výška je lines * fontSize * 1.5
-      // Pridáme priestor pre nadpis (približne 1.2x fontSize) + padding (32px top + 32px bottom)
-      // Celková výška: nadpis + margin + (riadky * fontSize * lineHeight) + padding
-      // viewportHeight = titleSize + 32 + (maxLines * fontSize * 1.5) + 64
-      // Zjednodušíme: titleSize ≈ fontSize * 1.2, margin ≈ 32px
+      // Ak má riadok viac ako 80 znakov, pravdepodobne sa zalomí na 2-3 riadky
+      const estimatedLinesPerRow = maxLineLength > 100 ? 2.5 : 
+                                    maxLineLength > 80 ? 2 : 
+                                    maxLineLength > 60 ? 1.5 : 1;
+      
+      const estimatedTotalLines = maxLinesInPage * estimatedLinesPerRow;
+      
       const reservedSpace = 150; // priestor pre nadpis, padding a okraje
       const availableHeight = viewportHeight - reservedSpace;
-      calculatedFontSize = availableHeight / (maxLinesInPage * 1.5);
-      calculatedFontSize = Math.max(24, Math.min(64, calculatedFontSize));
+      calculatedFontSize = availableHeight / (estimatedTotalLines * 1.5);
+      calculatedFontSize = Math.max(20, Math.min(56, calculatedFontSize));
     }
     
     setFontSize(calculatedFontSize);
     
-    console.log('Split into', newPages.length, 'stanzas/pages with font size', calculatedFontSize, 'isPreview:', isPreview);
+    console.log('Split into', newPages.length, 'stanzas/pages with font size', calculatedFontSize, 'max line length:', maxLineLength, 'isPreview:', isPreview);
     setPages(newPages);
   }, [lyrics, isPreview]);
 
@@ -106,14 +116,14 @@ export default function SongRenderer({ lyrics, title, number, imageUrl, currentP
           </div>
         )}
         <div 
-          className="text-center w-full"
+          className="text-center w-full max-w-5xl"
           style={{ 
             fontSize: `${fontSize}px`,
             lineHeight: '1.5'
           }}
         >
           {currentPageLines.map((l, i) => (
-            <div key={i} className="whitespace-pre-wrap">{l || '\u00A0'}</div>
+            <div key={i} className="break-words whitespace-pre-wrap">{l || '\u00A0'}</div>
           ))}
         </div>
       </div>
