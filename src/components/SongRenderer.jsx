@@ -65,16 +65,18 @@ export default function SongRenderer({ lyrics, title, number, imageUrl, currentP
       // Pre fullscreen displej
       // lineHeight je 1.5, takže skutočná výška je lines * fontSize * 1.5
       // Ak má riadok viac ako 80 znakov, pravdepodobne sa zalomí na 2-3 riadky
-      const estimatedLinesPerRow = maxLineLength > 100 ? 2.5 : 
-                                    maxLineLength > 80 ? 2 : 
-                                    maxLineLength > 60 ? 1.5 : 1;
+      // Zvýšený koeficient pre istotu že sa text zmestí
+      const estimatedLinesPerRow = maxLineLength > 120 ? 3.5 : 
+                                    maxLineLength > 100 ? 3 : 
+                                    maxLineLength > 80 ? 2.5 : 
+                                    maxLineLength > 60 ? 2 : 1.5;
       
       const estimatedTotalLines = maxLinesInPage * estimatedLinesPerRow;
       
-      const reservedSpace = 150; // priestor pre nadpis, padding a okraje
+      const reservedSpace = 180; // priestor pre nadpis, padding a okraje (zvýšené)
       const availableHeight = viewportHeight - reservedSpace;
       calculatedFontSize = availableHeight / (estimatedTotalLines * 1.5);
-      calculatedFontSize = Math.max(20, Math.min(56, calculatedFontSize));
+      calculatedFontSize = Math.max(18, Math.min(48, calculatedFontSize));
     }
     
     setFontSize(calculatedFontSize);
@@ -102,21 +104,21 @@ export default function SongRenderer({ lyrics, title, number, imageUrl, currentP
   }
 
   const currentPageLines = pages[currentPage] || [];
-  console.log('Displaying page', currentPage + 1, 'of', pages.length, 'with', currentPageLines.length, 'lines');
+  console.log('Displaying page', currentPage + 1, 'of', pages.length, 'with', currentPageLines.length, 'lines', 'fontSize:', fontSize);
   
   return (
-    <div ref={containerRef} className="text-white w-full h-full flex flex-col items-center justify-center px-8 py-8 relative">
-      <div className="flex flex-col items-center justify-center max-h-full">
+    <div ref={containerRef} className="text-white w-full h-full flex flex-col items-center justify-center px-4 py-4 relative overflow-hidden">
+      <div className="flex flex-col items-center justify-center w-full" style={{ maxHeight: '95vh' }}>
         {title && (
           <div 
-            className="mb-8 font-bold text-center"
-            style={{ fontSize: `${Math.min(fontSize * 1.2, 56)}px` }}
+            className="mb-6 font-bold text-center flex-shrink-0"
+            style={{ fontSize: `${Math.min(fontSize * 1.2, 48)}px` }}
           >
             {number && `${number}. `}{title}
           </div>
         )}
         <div 
-          className="text-center w-full max-w-5xl"
+          className="text-center w-full max-w-5xl px-4 overflow-hidden"
           style={{ 
             fontSize: `${fontSize}px`,
             lineHeight: '1.5'
