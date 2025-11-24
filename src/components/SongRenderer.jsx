@@ -55,12 +55,16 @@ export default function SongRenderer({ lyrics, title, number, imageUrl, currentP
       calculatedFontSize = availableHeight / (maxLinesInPage * 1.5);
       calculatedFontSize = Math.max(8, Math.min(20, calculatedFontSize));
     } else {
-      // Pre fullscreen displej - zväčšený koeficient pre viac priestoru
+      // Pre fullscreen displej
       // lineHeight je 1.5, takže skutočná výška je lines * fontSize * 1.5
-      // Pridáme priestor pre nadpis (cca 100px) a okraje (cca 100px)
-      const availableHeight = viewportHeight - 200;
+      // Pridáme priestor pre nadpis (približne 1.2x fontSize) + padding (32px top + 32px bottom)
+      // Celková výška: nadpis + margin + (riadky * fontSize * lineHeight) + padding
+      // viewportHeight = titleSize + 32 + (maxLines * fontSize * 1.5) + 64
+      // Zjednodušíme: titleSize ≈ fontSize * 1.2, margin ≈ 32px
+      const reservedSpace = 150; // priestor pre nadpis, padding a okraje
+      const availableHeight = viewportHeight - reservedSpace;
       calculatedFontSize = availableHeight / (maxLinesInPage * 1.5);
-      calculatedFontSize = Math.max(28, Math.min(72, calculatedFontSize));
+      calculatedFontSize = Math.max(24, Math.min(64, calculatedFontSize));
     }
     
     setFontSize(calculatedFontSize);
@@ -91,25 +95,27 @@ export default function SongRenderer({ lyrics, title, number, imageUrl, currentP
   console.log('Displaying page', currentPage + 1, 'of', pages.length, 'with', currentPageLines.length, 'lines');
   
   return (
-    <div ref={containerRef} className="text-white w-full h-full flex flex-col items-center justify-center px-8 py-4 relative">
-      {title && (
+    <div ref={containerRef} className="text-white w-full h-full flex flex-col items-center justify-center px-8 py-8 relative">
+      <div className="flex flex-col items-center justify-center max-h-full">
+        {title && (
+          <div 
+            className="mb-8 font-bold text-center"
+            style={{ fontSize: `${Math.min(fontSize * 1.2, 56)}px` }}
+          >
+            {number && `${number}. `}{title}
+          </div>
+        )}
         <div 
-          className="mb-8 font-bold text-center"
-          style={{ fontSize: `${Math.min(fontSize * 1.2, 56)}px` }}
+          className="text-center w-full"
+          style={{ 
+            fontSize: `${fontSize}px`,
+            lineHeight: '1.5'
+          }}
         >
-          {number && `${number}. `}{title}
+          {currentPageLines.map((l, i) => (
+            <div key={i} className="whitespace-pre-wrap">{l || '\u00A0'}</div>
+          ))}
         </div>
-      )}
-      <div 
-        className="text-center w-full"
-        style={{ 
-          fontSize: `${fontSize}px`,
-          lineHeight: '1.5'
-        }}
-      >
-        {currentPageLines.map((l, i) => (
-          <div key={i} className="whitespace-pre-wrap">{l || '\u00A0'}</div>
-        ))}
       </div>
       
       {/* Indikátor strany */}
