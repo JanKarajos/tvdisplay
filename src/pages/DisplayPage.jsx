@@ -96,9 +96,15 @@ export default function DisplayPage() {
 
   console.log('Rendering DisplayPage with state:', state, 'and song:', song);
   
+  // Pozadie zobrazíme len keď:
+  // 1. Nie je pieseň/prezentácia ALEBO
+  // 2. Je pieseň ale je skrytá (isHidden=true)
   const showBackground = (!song?.lyrics && !song?.pdfUrl) || state.isHidden;
+  const showContent = song && !state.isHidden;
+  
   console.log('Display state:', {
     showBackground,
+    showContent,
     hasLyrics: !!song?.lyrics,
     hasPdf: !!song?.pdfUrl,
     isHidden: state.isHidden,
@@ -148,16 +154,6 @@ export default function DisplayPage() {
     );
   };
 
-  // Reset any previous state if needed
-  useEffect(() => {
-    const cleanup = async () => {
-      if (state.background && (song?.lyrics || song?.pdfUrl) && !state.isHidden) {
-        await api.setState({ ...state, background: null });
-      }
-    };
-    cleanup();
-  }, [song?.lyrics, song?.pdfUrl, state.isHidden]);
-
   const onDocumentLoadSuccess = ({ numPages }) => {
     setNumPages(numPages);
     setPdfCurrentPage(1);
@@ -169,7 +165,7 @@ export default function DisplayPage() {
 
       {/* Obsah */}
       <div className="relative z-10 w-full h-full flex flex-col">
-        {song && !state.isHidden ? (
+        {showContent ? (
           <>
             {song.pdfUrl ? (
               <div className="flex-1 flex flex-col items-center justify-center">
