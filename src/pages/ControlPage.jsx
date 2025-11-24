@@ -131,7 +131,13 @@ export default function ControlPage() {
   const removeFromQueue = (i) => setQueue(q => q.filter((_, idx) => idx !== i));
   const showSong = async (s) => {
     console.log('[ControlPage] Showing song:', s);
-    const newState = await api.setState({ currentSongId: s.id, isHidden: false, currentPage: 0 });
+    // Zachovaj aktuálny stav isHidden - nemeniť pri prepínaní piesní
+    const currentState = await api.getState();
+    const newState = await api.setState({ 
+      currentSongId: s.id, 
+      isHidden: currentState.isHidden, // zachovaj aktuálny stav
+      currentPage: 0 
+    });
     console.log('[ControlPage] State updated:', newState);
   };
 
