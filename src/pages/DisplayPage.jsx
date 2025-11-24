@@ -220,14 +220,7 @@ export default function DisplayPage() {
               </div>
             )}
           </>
-        ) : (
-          <div className="flex-1 flex items-center justify-center">
-            <div className="text-white opacity-80 text-2xl">
-              {state.isHidden ? '' : ''}
-              {state.background && showBackground && ' (zobrazené pozadie)'}
-            </div>
-          </div>
-        )}
+        ) : null}
       </div>
     </div>
   );

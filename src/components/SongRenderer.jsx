@@ -94,24 +94,22 @@ export default function SongRenderer({ lyrics, title, number, imageUrl, currentP
     <div ref={containerRef} className="text-white w-full h-full flex flex-col items-center justify-center px-8 py-4 relative">
       {title && (
         <div 
-          className="mb-4 font-bold text-center"
+          className="mb-8 font-bold text-center"
           style={{ fontSize: `${Math.min(fontSize * 1.2, 56)}px` }}
         >
           {number && `${number}. `}{title}
         </div>
       )}
       <div 
-        className="text-center max-w-full flex-1 flex items-center justify-center overflow-hidden"
+        className="text-center w-full"
         style={{ 
           fontSize: `${fontSize}px`,
           lineHeight: '1.5'
         }}
       >
-        <div className="w-full">
-          {currentPageLines.map((l, i) => (
-            <div key={i} className="whitespace-pre-wrap">{l || '\u00A0'}</div>
-          ))}
-        </div>
+        {currentPageLines.map((l, i) => (
+          <div key={i} className="whitespace-pre-wrap">{l || '\u00A0'}</div>
+        ))}
       </div>
       
       {/* Indikátor strany */}
