@@ -230,9 +230,17 @@ export default function ControlPage() {
       setNewCategoryName("");
       
       // Automaticky ulož na GitHub
+      console.log('[Auto-save] Checking credentials:', { 
+        hasOwner: !!githubOwner, 
+        hasRepo: !!githubRepo, 
+        hasPath: !!githubPath, 
+        hasToken: !!githubToken 
+      });
       if (githubOwner && githubRepo && githubPath && githubToken) {
-        console.log('Auto-saving to GitHub after adding category...');
+        console.log('[Auto-save] Credentials OK, saving to GitHub after adding category...');
         await handleSaveToGitHub(true); // true = autoSave mode
+      } else {
+        console.warn('[Auto-save] Missing GitHub credentials - skipping auto-save');
       }
     } catch (error) {
       console.error('Error adding category:', error);
@@ -254,9 +262,17 @@ export default function ControlPage() {
     setTextCategory("");
     
     // Automaticky ulož na GitHub
+    console.log('[Auto-save] Checking credentials:', { 
+      hasOwner: !!githubOwner, 
+      hasRepo: !!githubRepo, 
+      hasPath: !!githubPath, 
+      hasToken: !!githubToken 
+    });
     if (githubOwner && githubRepo && githubPath && githubToken) {
-      console.log('Auto-saving to GitHub after adding text...');
+      console.log('[Auto-save] Credentials OK, saving to GitHub after adding text...');
       await handleSaveToGitHub(true); // true = autoSave mode
+    } else {
+      console.warn('[Auto-save] Missing GitHub credentials - skipping auto-save');
     }
     
     setAddingText(false);
@@ -289,9 +305,17 @@ export default function ControlPage() {
     setImageUrl("");
     
     // Automaticky ulož na GitHub
+    console.log('[Auto-save] Checking credentials:', { 
+      hasOwner: !!githubOwner, 
+      hasRepo: !!githubRepo, 
+      hasPath: !!githubPath, 
+      hasToken: !!githubToken 
+    });
     if (githubOwner && githubRepo && githubPath && githubToken) {
-      console.log('Auto-saving to GitHub after adding image...');
+      console.log('[Auto-save] Credentials OK, saving to GitHub after adding image...');
       await handleSaveToGitHub(true); // true = autoSave mode
+    } else {
+      console.warn('[Auto-save] Missing GitHub credentials - skipping auto-save');
     }
     
     setAddingImage(false);
@@ -432,6 +456,11 @@ export default function ControlPage() {
           </Card>
 
           <Card title="Kategórie">
+            {!githubToken && (
+              <div className="mb-3 p-2 bg-yellow-50 border border-yellow-200 rounded text-sm text-yellow-800">
+                ⚠️ Upozornenie: Nové kategórie sa neuložia na GitHub. Vyplň GitHub token v sekcii "GitHub Sync".
+              </div>
+            )}
             <div className="space-y-4">
               <div className="flex flex-wrap gap-2">
                 {categories.map(c => (
@@ -540,6 +569,11 @@ export default function ControlPage() {
         </div>
 
         <Card title="Pridať vlastný text do kategórie">
+          {!githubToken && (
+            <div className="mb-3 p-2 bg-yellow-50 border border-yellow-200 rounded text-sm text-yellow-800">
+              ⚠️ Upozornenie: Pridané texty sa neuložia na GitHub. Vyplň GitHub token v sekcii "GitHub Sync" pre automatické ukladanie.
+            </div>
+          )}
           <form className="space-y-2" onSubmit={handleAddText}>
             <div className="flex gap-2">
               <select
@@ -578,6 +612,11 @@ export default function ControlPage() {
           </form>
         </Card>
         <Card title="Pridať obrázok (bez kategórie)">
+          {!githubToken && (
+            <div className="mb-3 p-2 bg-yellow-50 border border-yellow-200 rounded text-sm text-yellow-800">
+              ⚠️ Upozornenie: Obrázky sa neuložia na GitHub. Vyplň GitHub token v sekcii "GitHub Sync".
+            </div>
+          )}
           <form className="space-y-2" onSubmit={handleAddImage}>
             <input
               className="border rounded px-2 py-1 w-full"
