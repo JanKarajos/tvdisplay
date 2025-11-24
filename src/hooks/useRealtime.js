@@ -4,9 +4,11 @@ export function createMockRealtime() {
   
   // Listen for storage events to sync across tabs/windows
   window.addEventListener('storage', (event) => {
-    if (event.key === 'tvdisplay-state') {
+    if (event.key === 'tvdisplay-api-state') {
       try {
-        const payload = JSON.parse(event.newValue);
+        const stateData = JSON.parse(event.newValue);
+        const payload = { type: 'state', state: stateData };
+        console.log('[Realtime] Storage event received:', payload);
         listeners.forEach(cb => cb(payload));
       } catch (e) {
         console.error('Failed to parse state:', e);
@@ -16,9 +18,10 @@ export function createMockRealtime() {
 
   // Initial state load
   try {
-    const savedState = localStorage.getItem('tvdisplay-state');
+    const savedState = localStorage.getItem('tvdisplay-api-state');
     if (savedState) {
-      const payload = JSON.parse(savedState);
+      const stateData = JSON.parse(savedState);
+      const payload = { type: 'state', state: stateData };
       setTimeout(() => {
         listeners.forEach(cb => cb(payload));
       }, 0);
@@ -33,8 +36,11 @@ export function createMockRealtime() {
       return () => listeners.delete(cb); 
     },
     emit: (payload) => {
-      localStorage.setItem('tvdisplay-state', JSON.stringify(payload));
+      console.log('[Realtime] Emitting:', payload);
+      // Zavolaj všetkých listenerov priamo (pre rovnakú stránku)
       listeners.forEach(cb => cb(payload));
+      // storage event sa aktivuje len medzi rôznymi oknami/kartami,
+      // takže pre lokálnu synchronizáciu voláme listenery priamo
     }
   };
 }

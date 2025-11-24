@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { api } from '../api/mockApi';
 import { useRealtime } from '../hooks/useRealtime';
 import SongRenderer from '../components/SongRenderer';
@@ -59,11 +59,14 @@ export default function DisplayPage() {
   }, []);
 
   // Listen for realtime updates
-  useRealtime(msg => {
+  const handleRealtimeUpdate = useCallback((msg) => {
+    console.log('[DisplayPage] Realtime message received:', msg);
     if (msg.type === 'state') {
+      console.log('[DisplayPage] Updating state:', msg.state);
       setState(msg.state);
       if (msg.state.currentSongId) {
         api.getSong(msg.state.currentSongId).then(song => {
+          console.log('[DisplayPage] Loading song:', song);
           setSong(song);
           setPdfCurrentPage(1); // Reset to first page on new content
         });
@@ -72,7 +75,9 @@ export default function DisplayPage() {
         setPdfCurrentPage(1);
       }
     }
-  });
+  }, []);
+
+  useRealtime(handleRealtimeUpdate);
 
   // Keyboard navigation for PDF
   useEffect(() => {

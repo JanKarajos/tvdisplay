@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { api } from '../api/mockApi';
 import { useRealtime } from '../hooks/useRealtime';
 import Card from '../components/Card';
@@ -112,8 +112,10 @@ export default function ControlPage() {
     api.getPresentations().then(setPresentations);
   }, [songs]);
 
-  useRealtime(msg => { 
+  const handleRealtimeUpdate = useCallback((msg) => {
+    console.log('[ControlPage] Realtime message received:', msg);
     if (msg.type === 'state') {
+      console.log('[ControlPage] Updating state:', msg.state);
       setState(msg.state);
       if (msg.state.currentSongId) {
         api.getSong(msg.state.currentSongId).then(setCurrentSong);
@@ -121,11 +123,17 @@ export default function ControlPage() {
         setCurrentSong(null);
       }
     }
-  });
+  }, []);
+
+  useRealtime(handleRealtimeUpdate);
 
   const addToQueue = (song) => setQueue(q => [...q, song]);
   const removeFromQueue = (i) => setQueue(q => q.filter((_, idx) => idx !== i));
-  const showSong = async (s) => await api.setState({ currentSongId: s.id, isHidden: false, currentPage: 0 });
+  const showSong = async (s) => {
+    console.log('[ControlPage] Showing song:', s);
+    const newState = await api.setState({ currentSongId: s.id, isHidden: false, currentPage: 0 });
+    console.log('[ControlPage] State updated:', newState);
+  };
 
   // Funkcia na normalizáciu textu (odstránenie diakritiky)
   const normalizeText = (text) => {
