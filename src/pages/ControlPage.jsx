@@ -42,10 +42,13 @@ export default function ControlPage() {
   const [githubToken, setGithubToken] = useState(localStorage.getItem('tvdisplay-github-token') || '');
   const [githubLoading, setGithubLoading] = useState(false);
 
+  const defaultImagesUrl = 'https://raw.githubusercontent.com/JanKarajos/tvdisplay/main/images.json';
+
   useEffect(() => { 
     // Auto-load from GitHub - vždy použiť URL (buď uloženú alebo predvolenú)
     const autoLoad = async () => {
       const savedUrl = localStorage.getItem('tvdisplay-github-raw') || defaultGithubRawUrl;
+      const savedImagesUrl = localStorage.getItem('tvdisplay-github-images-raw') || defaultImagesUrl;
       try {
         console.log('Auto-loading songs from URL:', savedUrl);
         await api.loadRemoteSongs(savedUrl);
@@ -55,6 +58,15 @@ export default function ControlPage() {
       } catch (e) {
         console.error('Failed to auto-load songs:', e);
         alert('Nepodarilo sa načítať piesne z GitHub. Skontroluj konzolu.');
+      }
+      try {
+        console.log('Auto-loading images from URL:', savedImagesUrl);
+        await api.loadRemoteImages(savedImagesUrl);
+        console.log('Images loaded successfully');
+        localStorage.setItem('tvdisplay-github-images-raw', savedImagesUrl);
+      } catch (e) {
+        console.error('Failed to auto-load images:', e);
+        // Neblokovať aplikáciu ak obrázky nie sú dostupné
       }
       // Načítaj kategórie po načítaní piesní
       const cats = await api.getCategories();
@@ -147,8 +159,17 @@ export default function ControlPage() {
   if (searchQuery) {
     console.log('Vyhľadávanie:', searchQuery, '| Celkom piesní:', songs.length, '| Nájdených:', filteredSongs.length);
   }
-  const toggleHide = async () => await api.setState({ isHidden: !state.isHidden });
-  const clearSong = async () => await api.setState({ currentSongId: null, isHidden: false, currentPage: 0 });
+  const toggleHide = async () => {
+    const currentState = await api.getState();
+    console.log('Toggling hide, current state:', currentState);
+    const newState = await api.setState({ isHidden: !currentState.isHidden });
+    console.log('New state after toggle:', newState);
+    setState(newState);
+  };
+  const clearSong = async () => {
+    const newState = await api.setState({ currentSongId: null, isHidden: false, currentPage: 0 });
+    setState(newState);
+  };
   
   // Vypočítaj počet strán (strof) v piesni
   const getPageCount = (song) => {

@@ -38,10 +38,14 @@ export default function DisplayPage() {
     const loadState = async () => {
       try {
         const currentState = await api.getState();
+        console.log('[DisplayPage] Loaded state:', currentState);
         setState(currentState);
         if (currentState.currentSongId) {
           const songData = await api.getSong(currentState.currentSongId);
+          console.log('[DisplayPage] Loaded song:', songData);
           setSong(songData);
+        } else {
+          setSong(null);
         }
       } catch (e) {
         console.error('Failed to load initial state:', e);

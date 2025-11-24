@@ -6,6 +6,9 @@ let DEMO_CATEGORIES = [];
 // Piesne sa načítajú z GitHub
 let DEMO_SONGS = [];
 
+// Obrázky na pozadie sa načítajú z GitHub
+let DEMO_IMAGES = [];
+
 function pause(ms) { return new Promise(res => setTimeout(res, ms)); }
 
 export const api = {
@@ -27,12 +30,21 @@ export const api = {
   },
   getImages: async () => {
     await pause(50);
-    if (!Array.isArray(DEMO_SONGS)) return [];
-    return DEMO_SONGS.filter(s => s.imageUrl && !s.category);
+    console.log('getImages called, returning:', DEMO_IMAGES.length, 'images');
+    return DEMO_IMAGES;
   },
   addCustomSong: async ({ title, lyrics, imageUrl, category, pdfUrl, pageCount }) => {
     await pause(100);
     const id = 'custom-' + Math.random().toString(36).slice(2, 10);
+    
+    // Ak je to iba obrázok (bez lyrics a pdfUrl), pridaj do DEMO_IMAGES
+    if (imageUrl && !lyrics && !pdfUrl) {
+      const newImage = { id, title, imageUrl };
+      DEMO_IMAGES.push(newImage);
+      return newImage;
+    }
+    
+    // Inak pridaj do DEMO_SONGS
     const newSong = { id, title, category };
     if (imageUrl) newSong.imageUrl = imageUrl;
     if (lyrics) newSong.lyrics = lyrics;
@@ -111,8 +123,13 @@ export const api = {
 
   // --- Remote / GitHub helpers ---
   remoteSource: null,
+  remoteImagesSource: null,
   setRemoteSource: async (url) => {
     api.remoteSource = url;
+    return url;
+  },
+  setRemoteImagesSource: async (url) => {
+    api.remoteImagesSource = url;
     return url;
   },
   // Load songs from a raw JSON URL (for example raw.githubusercontent.com/.../songs.json)
@@ -147,6 +164,27 @@ export const api = {
       return data;
     } catch (e) {
       console.error('Error loading remote songs:', e);
+      throw e;
+    }
+  },
+  // Load images from a raw JSON URL (for example raw.githubusercontent.com/.../images.json)
+  loadRemoteImages: async (url) => {
+    const target = url || api.remoteImagesSource;
+    if (!target) throw new Error('No remote images URL provided');
+    await pause(100);
+    try {
+      console.log('Loading images from:', target);
+      const res = await fetch(target);
+      if (!res.ok) throw new Error('Failed to fetch remote images: ' + res.statusText);
+      const data = await res.json();
+      console.log('Loaded images:', data);
+      if (Array.isArray(data)) {
+        DEMO_IMAGES = data;
+        console.log('Updated DEMO_IMAGES to:', DEMO_IMAGES.length, 'images');
+      }
+      return data;
+    } catch (e) {
+      console.error('Error loading remote images:', e);
       throw e;
     }
   },
@@ -197,6 +235,58 @@ export const api = {
     if (!putRes.ok) {
       const errText = await putRes.text();
       throw new Error('Failed to save to GitHub: ' + putRes.status + ' ' + errText);
+    }
+
+    const resData = await putRes.json();
+    return resData;
+  },
+  // Save current DEMO_IMAGES to a GitHub repo path using the contents API.
+  // params: { owner, repo, path, token, message }
+  saveImagesToGitHub: async ({ owner, repo, path, token, message = 'Update images.json from tvdisplay' }) => {
+    if (!owner || !repo || !path || !token) throw new Error('owner, repo, path and token are required');
+    const apiUrl = `https://api.github.com/repos/${owner}/${repo}/contents/${path}`;
+    const contentStr = JSON.stringify(DEMO_IMAGES, null, 2);
+    // GitHub expects base64 encoded content
+    const encodeBase64 = (str) => {
+      try {
+        return btoa(unescape(encodeURIComponent(str)));
+      } catch (e) {
+        // fallback for environments without btoa/unescape
+        return Buffer.from(str, 'utf8').toString('base64');
+      }
+    };
+
+    // First try to GET the existing file to obtain sha (if exists)
+    let sha = undefined;
+    try {
+      const getRes = await fetch(apiUrl, { headers: { Authorization: `Bearer ${token}`, Accept: 'application/vnd.github.v3+json' } });
+      if (getRes.ok) {
+        const getData = await getRes.json();
+        sha = getData.sha;
+      }
+    } catch (e) {
+      console.warn('Could not get existing file (it may not exist):', e);
+    }
+
+    const body = {
+      message,
+      content: encodeBase64(contentStr),
+    };
+    if (sha) body.sha = sha;
+
+    const putRes = await fetch(apiUrl, {
+      method: 'PUT',
+      headers: {
+        Authorization: `Bearer ${token}`,
+        Accept: 'application/vnd.github.v3+json',
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify(body)
+    });
+
+    if (!putRes.ok) {
+      const errText = await putRes.text();
+      throw new Error('Failed to save images to GitHub: ' + putRes.status + ' ' + errText);
     }
 
     const resData = await putRes.json();
