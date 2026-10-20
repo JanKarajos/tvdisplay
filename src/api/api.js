@@ -253,27 +253,30 @@ export const library = {
     return saveFile('images.json', images, `Vymazaný obrázok: ${img?.title || id}`);
   },
 
-  // PDF sa nahrá na server (nie do JSON ako base64), v songs.json je iba odkaz
-  async addPdf({ title, file, pageCount }) {
-    let url;
+  // Prezentácia (PDF, PPT, PPTX, ODP) sa nahrá na server; PowerPoint server prevedie na PDF
+  // a zistí počet strán. V songs.json je iba odkaz, nie celý súbor.
+  async addPresentation({ title, file }) {
+    let uploaded;
     try {
       const res = await fetch(`${SERVER_URL}/api/uploads`, {
         method: 'POST',
-        headers: { ...writeHeaders(), 'Content-Type': 'application/pdf', 'X-Filename': encodeURIComponent(file.name) },
+        headers: { ...writeHeaders(), 'Content-Type': file.type || 'application/octet-stream', 'X-Filename': encodeURIComponent(file.name) },
         body: file,
       });
       if (res.status === 401) {
         markAuthRequired();
         return { ok: false, error: 'Je potrebný PIN' };
       }
-      if (!res.ok) return { ok: false, error: 'Nahranie PDF na server zlyhalo' };
-      ({ url } = await res.json());
+      uploaded = await res.json().catch(() => ({}));
+      if (!res.ok) return { ok: false, error: uploaded.error || 'Nahranie prezentácie zlyhalo' };
     } catch {
-      return { ok: false, error: 'Server nie je dostupný – PDF sa nedá nahrať' };
+      return { ok: false, error: 'Server nie je dostupný – prezentácia sa nedá nahrať' };
     }
-    songs = [...songs, { id: newId('pdf'), title, type: 'pdf', pdfUrl: url, pageCount: pageCount || 1 }];
+    const item = { id: newId('pdf'), title, type: 'pdf', pdfUrl: uploaded.url, pageCount: uploaded.pageCount || 1 };
+    songs = [...songs, item];
     notify();
-    return saveFile('songs.json', songs, `Pridaná prezentácia: ${title}`);
+    const saved = await saveFile('songs.json', songs, `Pridaná prezentácia: ${title}`);
+    return { ...saved, item };
   },
 
   async getSong(id) {

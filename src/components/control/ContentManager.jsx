@@ -3,6 +3,7 @@ import Card from '../Card';
 import { actions } from '../../lib/actions';
 import { library, loadLibrary } from '../../api/api';
 import { reportSave } from '../../lib/notify';
+import { toast } from '../../lib/toast';
 
 const input = 'field';
 const primary = 'btn-primary';
@@ -98,33 +99,62 @@ function Images({ images }) {
   );
 }
 
-function Pdfs({ presentations }) {
+const PRESENTATION_ACCEPT = '.pdf,.ppt,.pptx,.pps,.ppsx,.odp,application/pdf';
+
+function titleFromFile(name) {
+  return name.replace(/\.[^.]+$/, '').replace(/[_-]+/g, ' ').trim();
+}
+
+function Presentations({ presentations, canConvert }) {
   const [title, setTitle] = useState('');
   const [file, setFile] = useState(null);
-  const [pageCount, setPageCount] = useState(1);
   const [busy, setBusy] = useState(false);
+  const isPowerPoint = file && !/\.pdf$/i.test(file.name);
 
   const submit = async (e) => {
     e.preventDefault();
+    const form = e.target;
     setBusy(true);
-    reportSave(await library.addPdf({ title, file, pageCount }), 'Prezentácia sa neuložila');
+    const result = await library.addPresentation({ title, file });
+    setBusy(false);
+    if (!result.item) {
+      window.alert(result.error || 'Prezentáciu sa nepodarilo pridať');
+      return;
+    }
+    toast(`${result.item.title} – ${result.item.pageCount} ${pluralPages(result.item.pageCount)}`, { tone: 'ok' });
+    reportSave(result, 'Prezentácia je na serveri, ale zoznam sa neuložil');
     setTitle('');
     setFile(null);
-    setPageCount(1);
-    e.target.reset();
-    setBusy(false);
+    form.reset();
   };
 
   return (
     <div className="space-y-4">
-      <form className="flex flex-wrap items-end gap-2" onSubmit={submit}>
-        <input className={`${input} flex-1 min-w-[10rem]`} placeholder="Názov prezentácie" value={title} onChange={(e) => setTitle(e.target.value)} required />
-        <input type="file" accept="application/pdf" required className="text-sm flex-1 min-w-[10rem] file:btn file:mr-3 file:!min-h-[40px]" onChange={(e) => setFile(e.target.files?.[0] || null)} />
-        <label className="text-xs text-muted">
-          Strán
-          <input type="number" min="1" value={pageCount} onChange={(e) => setPageCount(parseInt(e.target.value, 10) || 1)} className={`${input} w-20 mt-1`} />
-        </label>
-        <button className={primary} disabled={busy || !title || !file}>{busy ? 'Nahrávam…' : 'Pridať'}</button>
+      <form className="space-y-2" onSubmit={submit}>
+        <div className="flex flex-wrap items-end gap-2">
+          <input
+            type="file"
+            accept={PRESENTATION_ACCEPT}
+            required
+            className="text-sm flex-1 min-w-[12rem] file:btn file:mr-3 file:!min-h-[40px]"
+            onChange={(e) => {
+              const f = e.target.files?.[0] || null;
+              setFile(f);
+              if (f && !title) setTitle(titleFromFile(f.name));
+            }}
+          />
+          <input className={`${input} flex-1 min-w-[10rem]`} placeholder="Názov prezentácie" value={title} onChange={(e) => setTitle(e.target.value)} required />
+          <button className={primary} disabled={busy || !title || !file}>
+            {busy ? (isPowerPoint ? 'Prevádzam…' : 'Nahrávam…') : 'Pridať'}
+          </button>
+        </div>
+        <p className="text-xs text-muted">
+          PDF alebo PowerPoint (PPT, PPTX), prípadne ODP. Počet strán sa zistí automaticky.
+          {isPowerPoint && ' Prevod PowerPointu môže trvať do minúty.'}
+        </p>
+        {isPowerPoint && !canConvert && (
+          <p className="text-xs text-warn">Na serveri zatiaľ nie je LibreOffice, PowerPoint sa nepodarí previesť. Na Raspberry Pi: <code>sudo apt install libreoffice-impress</code></p>
+        )}
       </form>
       <div className="space-y-1">
         {!presentations.length && <div className="text-sm text-muted">Žiadne prezentácie</div>}
@@ -132,7 +162,7 @@ function Pdfs({ presentations }) {
           <div key={p.id} className="flex items-center gap-2 pl-3 rounded-xl hover:bg-sunken">
             <span>📄</span>
             <span className="flex-1 text-sm truncate">{p.title}</span>
-            <span className="text-xs text-muted">{p.pageCount} str.</span>
+            <span className="text-xs text-muted">{p.pageCount} {pluralPages(p.pageCount)}</span>
             <button onClick={() => actions.addToPlaylist(p.id)} className="btn !min-h-[36px] !px-3 text-xs">+ Do poradia</button>
             <button onClick={() => actions.show(p)} className="btn-icon" title="Zobraziť hneď" aria-label={`Zobraziť hneď: ${p.title}`}>▶</button>
           </div>
@@ -140,6 +170,11 @@ function Pdfs({ presentations }) {
       </div>
     </div>
   );
+}
+
+function pluralPages(n) {
+  if (n === 1) return 'strana';
+  return n >= 2 && n <= 4 ? 'strany' : 'strán';
 }
 
 function Sync({ lib, health }) {
@@ -167,7 +202,7 @@ function Sync({ lib, health }) {
 const TABS = [
   ['text', 'Nový text'],
   ['images', 'Obrázky'],
-  ['pdf', 'PDF'],
+  ['pdf', 'Prezentácie'],
   ['sync', 'Synchronizácia'],
 ];
 
@@ -188,7 +223,7 @@ export default function ContentManager({ lib, health }) {
       </div>
       {tab === 'text' && <AddText categories={lib.categories} />}
       {tab === 'images' && <Images images={lib.images} />}
-      {tab === 'pdf' && <Pdfs presentations={lib.presentations} />}
+      {tab === 'pdf' && <Presentations presentations={lib.presentations} canConvert={Boolean(health?.converter?.powerpoint)} />}
       {tab === 'sync' && <Sync lib={lib} health={health} />}
     </Card>
   );

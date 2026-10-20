@@ -29,7 +29,9 @@ Mobil / PC (ovládanie) ──PATCH /api/state──►  server (port 3002)  ─
 - **Piesne a obrázky** sa načítavajú z GitHubu. Keď nie je dostupný, použije sa lokálna kópia na serveri
   a potom posledná verzia uložená v prehliadači.
 - **Ukladanie** (nový text, obrázok, PDF) ide cez server, ktorý súbor uloží lokálne aj na GitHub.
-- **PDF** sa nahrávajú na server do `uploads/`, v `songs.json` je iba odkaz.
+- **Prezentácie** (PDF, PPT, PPTX, ODP) sa nahrávajú na server do `uploads/`, v `songs.json` je iba odkaz.
+  Počet strán sa zistí automaticky. PowerPoint server prevedie na PDF cez LibreOffice:
+  na Raspberry Pi `sudo apt install libreoffice-impress` (bez neho funguje iba PDF).
 - **Žalmy** sú v `Texty/Žalmy RRRR.json`. Nový rok stiahneš cez `node scripts/fetch_psalms_2027.js`.
 - **PIN**: ak je v `.env` nastavený `CONTROL_PIN`, ovládanie si ho vypýta. Displej PIN nepotrebuje.
 

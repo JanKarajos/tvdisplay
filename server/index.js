@@ -13,6 +13,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { WebSocketServer } from 'ws';
+import { ACCEPTED_EXTENSIONS, PRESENTATION_EXTENSIONS, convertToPdf, countPdfPages, findSoffice } from './presentations.js';
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const STATE_FILE = path.join(ROOT, 'state.json');
@@ -131,11 +132,12 @@ function requirePin(req, res, next) {
   return res.status(401).json({ error: 'Nesprávny alebo chýbajúci PIN' });
 }
 
-app.get('/health', (req, res) => {
+app.get('/health', async (req, res) => {
   res.json({
     status: 'ok',
     clients: sockets.size,
     auth: { pinRequired: Boolean(CONTROL_PIN) },
+    converter: { powerpoint: Boolean(await findSoffice()) },
     github: {
       owner: GITHUB.owner,
       repo: GITHUB.repo,
@@ -173,18 +175,32 @@ app.get('/api/data/:file', (req, res) => {
   res.sendFile(full);
 });
 
-// PDF prezentácie: ukladajú sa do uploads/, v songs.json je iba relatívny odkaz /uploads/...
+// Prezentácie (PDF, PowerPoint, Impress): ukladajú sa do uploads/ ako PDF,
+// v songs.json je iba relatívny odkaz /uploads/... a zistený počet strán
 app.use('/uploads', express.static(UPLOADS_DIR));
-app.post('/api/uploads', requirePin, express.raw({ type: 'application/pdf', limit: '50mb' }), (req, res) => {
+app.post('/api/uploads', requirePin, express.raw({ type: () => true, limit: '100mb' }), async (req, res) => {
   if (!Buffer.isBuffer(req.body) || !req.body.length) return res.status(400).json({ error: 'Prázdny súbor' });
   const original = decodeURIComponent(req.get('x-filename') || 'prezentacia.pdf');
-  const safe = original
-    .normalize('NFD').replace(/[̀-ͯ]/g, '')
-    .replace(/\.pdf$/i, '').replace(/[^a-zA-Z0-9_-]+/g, '-').slice(0, 60) || 'prezentacia';
-  const name = `${Date.now()}-${safe}.pdf`;
-  fs.mkdirSync(UPLOADS_DIR, { recursive: true });
-  fs.writeFileSync(path.join(UPLOADS_DIR, name), req.body);
-  res.json({ url: `/uploads/${name}` });
+  const ext = path.extname(original).toLowerCase();
+  if (!ACCEPTED_EXTENSIONS.has(ext)) {
+    return res.status(400).json({ error: `Nepodporovaný typ súboru ${ext || ''} – použi PDF, PPT, PPTX alebo ODP` });
+  }
+  try {
+    const converted = PRESENTATION_EXTENSIONS.has(ext);
+    const pdf = converted ? await convertToPdf(req.body, ext) : req.body;
+    const pageCount = await countPdfPages(pdf);
+    const safe = path.basename(original, path.extname(original))
+      .normalize('NFD').replace(/[\u0300-\u036f]/g, '')
+      .replace(/[^a-zA-Z0-9_-]+/g, '-').slice(0, 60) || 'prezentacia';
+    const name = `${Date.now()}-${safe}.pdf`;
+    fs.mkdirSync(UPLOADS_DIR, { recursive: true });
+    fs.writeFileSync(path.join(UPLOADS_DIR, name), pdf);
+    res.json({ url: `/uploads/${name}`, pageCount, converted });
+  } catch (e) {
+    console.error('[uploads] Spracovanie zlyhalo:', e.message);
+    const status = e.status || 422;
+    res.status(status).json({ error: status === 501 ? e.message : `Súbor sa nepodarilo spracovať: ${e.message}` });
+  }
 });
 
 async function githubRequest(url, options = {}) {
