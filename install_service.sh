@@ -56,5 +56,6 @@ fi
 
 echo "🌐 Aplikácia je dostupná na:"
 echo "   http://$IP_ADDRESS:5173"
-echo "   Admin: http://$IP_ADDRESS:5173/admin"
+echo "   Ovládanie: http://$IP_ADDRESS:5173/#control"
+echo "   Displej:   http://$IP_ADDRESS:5173/#display"
 echo ""

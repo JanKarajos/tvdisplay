@@ -1,16 +1,16 @@
 {
   "name": "songdisplay",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "private": true,
   "type": "module",
   "scripts": {
-    "dev": "vite",
-    "start": "vite --host",
-    "start:alt": "vite --host --port 5174",
-    "server": "node server/github-proxy.js",
-    "state-server": "node server/state-server.js",
-    "start:all": "concurrently \"npm run server\" \"npm run state-server\" \"npm run start\"",
+    "dev": "concurrently -n server,vite \"npm run server\" \"vite\"",
+    "server": "node server/index.js",
     "build": "vite build",
+    "prod": "vite build && node server/index.js --serve",
+    "start": "node server/index.js --serve",
+    "start:all": "npm run dev",
+    "start:alt": "vite --host --port 5174",
     "preview": "vite preview",
     "create-github-repo": "node ./scripts/create_github_repo.js"
   },
@@ -21,10 +21,11 @@
     "dotenv": "^16.6.1",
     "express": "^4.22.1",
     "node-fetch": "^2.6.7",
-    "pdfjs-dist": "^5.4.394",
+    "pdfjs-dist": "5.4.296",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
-    "react-pdf": "^10.2.0"
+    "react-pdf": "^10.2.0",
+    "ws": "^8.18.0"
   },
   "devDependencies": {
     "autoprefixer": "^10.4.21",

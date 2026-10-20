@@ -148,7 +148,8 @@ async function main() {
   const psalms = await fetchAllPsalms();
   const jsonData = createJSON(psalms);
 
-  const outputPath = '/home/kari/Desktop/tvdisplay/Texty/Žalmy 2027.json';
+  const outputPath = new URL('../Texty/Žalmy 2027.json', import.meta.url);
+  fs.mkdirSync(new URL('../Texty/', import.meta.url), { recursive: true });
   fs.writeFileSync(outputPath, JSON.stringify(jsonData, null, 2), 'utf8');
 
   console.log(`\n✓ Successfully created: ${outputPath}`);

@@ -2,7 +2,24 @@
 @tailwind components;
 @tailwind utilities;
 
-/* voliteľné vlastné štýly */
-body {
-  @apply bg-gray-50 text-gray-900;
+@keyframes fade-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@layer utilities {
+  .animate-fade-in {
+    animation: fade-in 350ms ease-out;
+  }
+}
+
+/* Text na TV: dobre čitateľné písmo s diakritikou a jemný tieň pre čitateľnosť na obrázkoch */
+.song-text,
+.song-title {
+  font-family: 'Segoe UI', 'Noto Sans', 'DejaVu Sans', system-ui, sans-serif;
+  text-shadow: 0 2px 8px rgba(0, 0, 0, 0.5);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .animate-fade-in { animation: none; }
 }

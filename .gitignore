@@ -4,3 +4,4 @@ node_modules
 *.tar.gz
 state.json
 .DS_Store
+uploads/

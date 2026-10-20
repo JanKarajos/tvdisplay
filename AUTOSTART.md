@@ -32,8 +32,8 @@ sudo systemctl status tvdisplay
 
 Po spustení služby bude aplikácia dostupná na IP adrese zariadenia na porte 5173:
 
-- **Display stránka**: `http://<IP_ADRESA>:5173`
-- **Admin panel**: `http://<IP_ADRESA>:5173/admin`
+- **Displej**: `http://<IP_ADRESA>:5173/#display`
+- **Ovládanie**: `http://<IP_ADRESA>:5173/#control`
 
 Zistite IP adresu zariadenia príkazom:
 ```bash
@@ -112,7 +112,7 @@ sudo systemctl restart tvdisplay
 
 3. Otestujte manuálne spustenie:
    ```bash
-   npm run start
+   npm run prod
    ```
 
 ### Aplikácia nie je dostupná na IP adrese

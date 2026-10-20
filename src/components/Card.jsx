@@ -1,9 +1,15 @@
 import React from 'react';
-export default function Card({ title, children }) {
+
+export default function Card({ title, actions, children, className = '' }) {
   return (
-    <div className="bg-white border rounded p-4 shadow-sm">
-      <div className="font-semibold mb-3">{title}</div>
-      <div>{children}</div>
-    </div>
+    <section className={`bg-white border rounded-lg p-4 shadow-sm ${className}`}>
+      {(title || actions) && (
+        <div className="flex items-center justify-between gap-2 mb-3">
+          <h2 className="font-semibold">{title}</h2>
+          {actions}
+        </div>
+      )}
+      {children}
+    </section>
   );
 }
