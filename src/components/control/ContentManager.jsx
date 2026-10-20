@@ -6,6 +6,7 @@ import { reportSave } from '../../lib/notify';
 import { toast } from '../../lib/toast';
 import { normalizeText } from '../../lib/lyrics';
 import { stateClient } from '../../api/stateClient';
+import SongEditor from './SongEditor';
 
 const input = 'field';
 const primary = 'btn-primary';
@@ -187,9 +188,10 @@ async function removeSong(song, what) {
   toast(`Vymazané: ${song.title}`);
 }
 
-// Správa piesní: vyhľadanie a vymazanie
+// Správa piesní: vyhľadanie, úprava a vymazanie
 function ManageSongs({ songs, categories }) {
   const [query, setQuery] = useState('');
+  const [editing, setEditing] = useState(null);
   const q = normalizeText(query);
   const results = q
     ? songs.filter((s) => s.category && (normalizeText(s.title).includes(q) || String(s.number || '').startsWith(q))).slice(0, 100)
@@ -198,7 +200,7 @@ function ManageSongs({ songs, categories }) {
 
   return (
     <div className="space-y-3">
-      <input type="search" className={`${input} text-base`} placeholder="Nájdi pieseň na vymazanie (názov alebo číslo)…" value={query} onChange={(e) => setQuery(e.target.value)} />
+      <input type="search" className={`${input} text-base`} placeholder="Nájdi pieseň (názov alebo číslo)…" value={query} onChange={(e) => setQuery(e.target.value)} />
       {!q && <p className="text-sm text-muted">Začni písať názov alebo číslo piesne.</p>}
       {q && !results.length && <p className="text-sm text-muted">Nič sa nenašlo.</p>}
       <div className="space-y-1">
@@ -209,10 +211,12 @@ function ManageSongs({ songs, categories }) {
               <span className="block text-sm truncate">{s.title}</span>
               <span className="block text-xs text-muted">{categoryName(s.category)}</span>
             </span>
-            <button onClick={() => removeSong(s, 'pieseň')} className="btn !min-h-[36px] !px-3 text-xs hover:!text-danger hover:!border-danger">Vymazať</button>
+            <button onClick={() => setEditing(s)} className="btn !min-h-[36px] !px-3 text-xs">Upraviť</button>
+            <button onClick={() => removeSong(s, 'pieseň')} className="btn-icon hover:!text-danger" title="Vymazať" aria-label={`Vymazať: ${s.title}`}>🗑</button>
           </div>
         ))}
       </div>
+      {editing && <SongEditor song={editing} categories={categories} onClose={() => setEditing(null)} />}
     </div>
   );
 }

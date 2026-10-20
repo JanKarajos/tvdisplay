@@ -143,11 +143,10 @@ async function fetchFromGithub(rawUrl) {
 }
 
 // Poradie: GitHub → lokálna kópia na serveri → posledná úspešná verzia v prehliadači
-async function loadList(file, remoteUrl) {
-  const sources = [
-    ['GitHub', () => fetchFromGithub(remoteUrl)],
-    ['server', () => fetchJson(`${SERVER_URL}/api/data/${file}`, 4000)],
-  ];
+async function loadList(file, remoteUrl, preferServer = false) {
+  const github = ['GitHub', () => fetchFromGithub(remoteUrl)];
+  const server = ['server', () => fetchJson(`${SERVER_URL}/api/data/${file}`, 4000)];
+  const sources = preferServer ? [server, github] : [github, server];
   for (const [name, load] of sources) {
     try {
       const data = await load();
@@ -174,12 +173,12 @@ function songsUrl() {
 
 let loadingPromise = null;
 
-export function loadLibrary({ force = false } = {}) {
+export function loadLibrary({ force = false, preferServer = false } = {}) {
   if (loadingPromise && !force) return loadingPromise;
   loadingPromise = (async () => {
     const [songsResult, imagesResult] = await Promise.all([
-      loadList('songs.json', songsUrl()),
-      loadList('images.json', IMAGES_URL),
+      loadList('songs.json', songsUrl(), preferServer),
+      loadList('images.json', IMAGES_URL, preferServer),
     ]);
     songs = songsResult.data;
     images = imagesResult.data;
@@ -216,6 +215,11 @@ async function saveFile(file, content, message) {
 
 const missingIds = new Map();
 
+// Server oznámil zmenu knižnice (iné zariadenie pridalo/upravilo/zmazalo) – jeho kópia je najnovšia
+window.addEventListener('tvdisplay:library', () => {
+  if (loadInfo.loaded) loadLibrary({ force: true, preferServer: true });
+});
+
 function newId(prefix) {
   return `${prefix}-${Math.random().toString(36).slice(2, 10)}`;
 }
@@ -251,6 +255,23 @@ export const library = {
     images = images.filter((i) => i.id !== id);
     notify();
     return saveFile('images.json', images, `Vymazaný obrázok: ${img?.title || id}`);
+  },
+
+  async updateSong(id, fields) {
+    const clean = { ...fields };
+    for (const key of Object.keys(clean)) {
+      if (typeof clean[key] === 'string') clean[key] = clean[key].trim();
+    }
+    let updated = null;
+    songs = songs.map((s) => {
+      if (s.id !== id) return s;
+      updated = { ...s, ...clean };
+      if (!updated.number) delete updated.number;
+      return updated;
+    });
+    if (!updated) return { ok: false, error: 'Pieseň sa nenašla' };
+    notify();
+    return saveFile('songs.json', songs, `Upravené: ${updated.title}`);
   },
 
   // Zmaže pieseň alebo prezentáciu zo songs.json; pri prezentácii aj súbor na serveri

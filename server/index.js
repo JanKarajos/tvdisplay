@@ -93,8 +93,8 @@ function applyPatch(patch) {
 
 const sockets = new Set();
 
-function broadcast() {
-  const msg = JSON.stringify({ type: 'state', state, version });
+function broadcast(message = { type: 'state', state, version }) {
+  const msg = JSON.stringify(message);
   for (const ws of sockets) {
     if (ws.readyState === ws.OPEN) ws.send(msg);
   }
@@ -234,6 +234,8 @@ app.put('/api/github/:file', requirePin, async (req, res) => {
   const text = JSON.stringify(content, null, 2);
   try {
     fs.writeFileSync(path.join(ROOT, file), text, 'utf8');
+    // Ostatné zariadenia si knižnicu hneď načítajú znova (napr. upravená pieseň na TV)
+    broadcast({ type: 'library', file });
   } catch (e) {
     console.error(`[github] Lokálne uloženie ${file} zlyhalo:`, e.message);
   }

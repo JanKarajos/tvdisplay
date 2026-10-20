@@ -91,7 +91,7 @@ export default function ControlPage() {
         {tab === 'mass' && (
           <div className="grid grid-cols-1 lg:grid-cols-[minmax(0,1.1fr)_minmax(0,1fr)] gap-4">
             <div className="space-y-4">
-              <NowPlaying state={state} song={shownSong} nextSong={nextId ? nextSong : null} />
+              <NowPlaying state={state} song={shownSong} nextSong={nextId ? nextSong : null} categories={lib.categories} />
               <Playlist items={playlist} currentId={state.currentSongId} nextId={nextId} playedIndex={playedIndex} />
             </div>
             <SongBrowser lib={lib} playlistIds={playlistIds} />

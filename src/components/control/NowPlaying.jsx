@@ -1,10 +1,14 @@
-import React from 'react';
+import React, { useState } from 'react';
 import Card from '../Card';
 import Preview from '../Preview';
+import SongEditor from './SongEditor';
 import { actions } from '../../lib/actions';
 import { getPageCount } from '../../lib/lyrics';
 
-export default function NowPlaying({ state, song, nextSong }) {
+export default function NowPlaying({ state, song, nextSong, categories }) {
+  const [editing, setEditing] = useState(false);
+  // Upravovať sa dajú piesne z knižnice (nie žalm, obrázok ani PDF)
+  const editable = Boolean(song?.lyrics && song.category && !String(song.id).startsWith('psalm-'));
   const pageCount = getPageCount(song);
   const page = Math.min(state.currentPage || 0, Math.max(0, pageCount - 1));
 
@@ -17,7 +21,10 @@ export default function NowPlaying({ state, song, nextSong }) {
     <Card
       title="Teraz na TV"
       actions={
-        <button onClick={actions.clear} disabled={!song} className="btn !min-h-[36px] !px-3 text-xs">Vyčistiť TV</button>
+        <div className="flex gap-2">
+          {editable && <button onClick={() => setEditing(true)} className="btn !min-h-[36px] !px-3 text-xs">✎ Upraviť</button>}
+          <button onClick={actions.clear} disabled={!song} className="btn !min-h-[36px] !px-3 text-xs">Vyčistiť TV</button>
+        </div>
       }
     >
       <div className="grid grid-cols-[3fr_2fr] gap-3">
@@ -52,6 +59,7 @@ export default function NowPlaying({ state, song, nextSong }) {
           ))}
         </div>
       )}
+      {editing && song && <SongEditor song={song} categories={categories} onClose={() => setEditing(false)} />}
     </Card>
   );
 }
