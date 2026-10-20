@@ -1,5 +1,9 @@
 // Jedno miesto pre adresu servera. Dá sa prepísať cez VITE_SERVER_URL v .env.
-const fallback = `${window.location.protocol}//${window.location.hostname}:3002`;
+// V produkcii (npm run prod) server poskytuje API aj aplikáciu na tom istom porte, takže
+// ostatné zariadenia potrebujú iba jednu adresu. Pri vývoji beží Vite zvlášť a API na porte 3002.
+const fallback = import.meta.env.DEV
+  ? `${window.location.protocol}//${window.location.hostname}:3002`
+  : window.location.origin;
 
 export const SERVER_URL = (import.meta.env.VITE_SERVER_URL || fallback).replace(/\/$/, '');
 export const WS_URL = SERVER_URL.replace(/^http/, 'ws') + '/ws';
