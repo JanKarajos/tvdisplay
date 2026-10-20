@@ -1,0 +1,1163 @@
+import React, { useState, useEffect, useCallback } from 'react';
+import { api } from '../api/mockApi';
+import { useRealtime } from '../hooks/useRealtime';
+import Card from '../components/Card';
+import Preview from '../components/Preview';
+
+export default function ControlPage() {
+  const [categories, setCategories] = useState([]);
+  const [selectedCategory, setSelectedCategory] = useState(null);
+  const [songs, setSongs] = useState([]);
+  const [state, setState] = useState({ currentSongId: null, background: null, isHidden: false });
+  const [currentSong, setCurrentSong] = useState(null);
+  const [selectedSongsResolved, setSelectedSongsResolved] = useState([]);
+  const [nextSongResolved, setNextSongResolved] = useState(null);
+  // Stav pre vyhľadávanie
+  const [searchQuery, setSearchQuery] = useState("");
+  // Stav pre text
+  const [textTitle, setTextTitle] = useState("");
+  const [textLyrics, setTextLyrics] = useState("");
+  const [textCategory, setTextCategory] = useState("");
+  const [addingText, setAddingText] = useState(false);
+  // Stav pre obrázok
+  const [imageTitle, setImageTitle] = useState("");
+  const [imageFile, setImageFile] = useState(null);
+  const [imageUrl, setImageUrl] = useState("");
+  const [addingImage, setAddingImage] = useState(false);
+  const [images, setImages] = useState([]);
+  const [newCategoryName, setNewCategoryName] = useState("");
+  const [addingCategory, setAddingCategory] = useState(false);
+  // Stav pre PDF prezentácie
+  const [pdfTitle, setPdfTitle] = useState("");
+  const [pdfFile, setPdfFile] = useState(null);
+  const [pdfUrl, setPdfUrl] = useState("");
+  const [pdfPageCount, setPdfPageCount] = useState(1);
+  const [addingPdf, setAddingPdf] = useState(false);
+  const [presentations, setPresentations] = useState([]);
+  // Stav pre GitHub sync
+  const defaultGithubRawUrl = 'https://raw.githubusercontent.com/JanKarajos/tvdisplay/main/songs.json';
+  const [githubRawUrl, setGithubRawUrl] = useState(localStorage.getItem('tvdisplay-github-raw') || defaultGithubRawUrl);
+  const [githubOwner, setGithubOwner] = useState(localStorage.getItem('tvdisplay-github-owner') || 'JanKarajos');
+  const [githubRepo, setGithubRepo] = useState(localStorage.getItem('tvdisplay-github-repo') || 'tvdisplay');
+  const [githubPath, setGithubPath] = useState(localStorage.getItem('tvdisplay-github-path') || 'songs.json');
+  const [githubToken, setGithubToken] = useState(localStorage.getItem('tvdisplay-github-token') || '');
+  const [githubLoading, setGithubLoading] = useState(false);
+  const [proxyServerAvailable, setProxyServerAvailable] = useState(false);
+
+  const defaultImagesUrl = 'https://raw.githubusercontent.com/JanKarajos/tvdisplay/main/images.json';
+
+  // Kontrola dostupnosti proxy servera
+  useEffect(() => {
+    const checkProxy = async () => {
+      const proxyUrl = window.location.hostname === 'localhost' 
+        ? 'http://localhost:3001' 
+        : `http://${window.location.hostname}:3001`;
+      
+      try {
+        const response = await fetch(`${proxyUrl}/health`, {
+          method: 'GET',
+          signal: AbortSignal.timeout(2000)
+        });
+        if (response.ok) {
+          const data = await response.json();
+          if (data.status === 'ok' && data.github.tokenConfigured) {
+            setProxyServerAvailable(true);
+            console.log('✅ Proxy server je dostupný - GitHub sync bude fungovať automaticky');
+          }
+        }
+      } catch (error) {
+        console.log('⚠️ Proxy server nie je dostupný - GitHub sync vyžaduje token');
+      }
+    };
+    checkProxy();
+  }, []);
+
+  useEffect(() => { 
+    // Auto-load from GitHub - vždy použiť URL (buď uloženú alebo predvolenú)
+    const autoLoad = async () => {
+      const savedUrl = localStorage.getItem('tvdisplay-github-raw') || defaultGithubRawUrl;
+      const savedImagesUrl = localStorage.getItem('tvdisplay-github-images-raw') || defaultImagesUrl;
+      try {
+        console.log('Auto-loading songs from URL:', savedUrl);
+        await api.loadRemoteSongs(savedUrl);
+        console.log('Songs loaded successfully');
+        // Ulož URL pre budúce použitie
+        localStorage.setItem('tvdisplay-github-raw', savedUrl);
+      } catch (e) {
+        console.error('Failed to auto-load songs:', e);
+        alert('Nepodarilo sa načítať piesne z GitHub. Skontroluj konzolu.');
+      }
+      try {
+        console.log('Auto-loading images from URL:', savedImagesUrl);
+        // Pridaj timestamp pre obídenie GitHub cache
+        const cacheBreaker = `?t=${Date.now()}`;
+        await api.loadRemoteImages(savedImagesUrl + cacheBreaker);
+        console.log('Images loaded successfully');
+        localStorage.setItem('tvdisplay-github-images-raw', savedImagesUrl);
+        // Načítaj obrázky do UI
+        const loadedImages = await api.getImages();
+        setImages(loadedImages);
+        console.log('Images set in UI, total:', loadedImages.length);
+      } catch (e) {
+        console.error('Failed to auto-load images:', e);
+        // Neblokovať aplikáciu ak obrázky nie sú dostupné
+      }
+      // Načítaj kategórie po načítaní piesní
+      const cats = await api.getCategories();
+      console.log('Categories loaded:', cats);
+      setCategories(cats);
+      api.getState().then(setState);
+    };
+    autoLoad();
+  }, []);
+
+  useEffect(() => { 
+    const loadSongs = async () => {
+      if (searchQuery.trim()) {
+        // Ak je zadané vyhľadávanie, načítaj všetky piesne
+        console.log('Načítavam všetky piesne pre vyhľadávanie:', searchQuery);
+        const allSongs = await api.getAllSongs();
+        console.log('Načítaných piesní:', allSongs.length);
+        setSongs(allSongs);
+      } else if (selectedCategory) {
+        // Inak načítaj len piesne z vybranej kategórie
+        console.log('Načítavam piesne kategórie:', selectedCategory);
+        const categorySongs = await api.getSongsByCategory(selectedCategory);
+        console.log('Načítaných piesní:', categorySongs.length);
+        setSongs(categorySongs);
+      } else {
+        console.log('Žiadna kategória ani vyhľadávanie');
+        setSongs([]);
+      }
+    };
+    loadSongs();
+  }, [selectedCategory, searchQuery]);
+
+  useEffect(() => {
+    if (state.currentSongId) {
+      api.getSong(state.currentSongId).then(setCurrentSong);
+    } else {
+      setCurrentSong(null);
+    }
+  }, [state.currentSongId]);
+
+  const selectedSongIds = Array.isArray(state?.selectedSongIds) ? state.selectedSongIds : [];
+  const nextSongId = typeof state?.nextSongId === 'string' && state.nextSongId.trim() ? state.nextSongId : null;
+
+  useEffect(() => {
+    let cancelled = false;
+    const resolveSelected = async () => {
+      if (!selectedSongIds.length) {
+        setSelectedSongsResolved([]);
+        return;
+      }
+      try {
+        const resolved = await Promise.all(selectedSongIds.map((id) => api.getSong(id)));
+        if (cancelled) return;
+        setSelectedSongsResolved(resolved.filter(Boolean));
+      } catch (e) {
+        if (cancelled) return;
+        setSelectedSongsResolved([]);
+      }
+    };
+    resolveSelected();
+    return () => {
+      cancelled = true;
+    };
+  }, [selectedSongIds.join('|')]);
+
+  useEffect(() => {
+    let cancelled = false;
+    const resolveNext = async () => {
+      if (!nextSongId) {
+        setNextSongResolved(null);
+        return;
+      }
+      try {
+        const song = await api.getSong(nextSongId);
+        if (cancelled) return;
+        setNextSongResolved(song || null);
+      } catch (e) {
+        if (cancelled) return;
+        setNextSongResolved(null);
+      }
+    };
+    resolveNext();
+    return () => {
+      cancelled = true;
+    };
+  }, [nextSongId]);
+
+  useEffect(() => {
+    api.getImages().then(setImages);
+    api.getPresentations().then(setPresentations);
+  }, [songs]);
+
+  const handleRealtimeUpdate = useCallback((msg) => {
+    console.log('[ControlPage] Realtime message received:', msg);
+    if (msg.type === 'state') {
+      console.log('[ControlPage] Updating state:', msg.state);
+      setState(msg.state);
+      if (msg.state.currentSongId) {
+        api.getSong(msg.state.currentSongId).then(setCurrentSong);
+      } else {
+        setCurrentSong(null);
+      }
+    }
+  }, []);
+
+  useRealtime(handleRealtimeUpdate);
+
+  const addSelectedSong = async (song) => {
+    if (!song?.id) return;
+    const currentState = await api.getState();
+    const ids = Array.isArray(currentState?.selectedSongIds) ? currentState.selectedSongIds : [];
+    if (ids.includes(song.id)) return;
+    const newState = await api.setState({ selectedSongIds: [...ids, song.id] });
+    setState(newState);
+    setSelectedSongsResolved((prev) => (prev.some((s) => s?.id === song.id) ? prev : [...prev, song]));
+  };
+
+  const removeSelectedSong = async (songId) => {
+    const currentState = await api.getState();
+    const ids = Array.isArray(currentState?.selectedSongIds) ? currentState.selectedSongIds : [];
+    const newIds = ids.filter((id) => id !== songId);
+    const newState = await api.setState({ selectedSongIds: newIds });
+    setState(newState);
+    setSelectedSongsResolved((prev) => prev.filter((s) => s?.id !== songId));
+  };
+
+  const clearSelectedSongs = async () => {
+    const newState = await api.setState({ selectedSongIds: [] });
+    setState(newState);
+    setSelectedSongsResolved([]);
+  };
+  const showSong = async (s) => {
+    console.log('[ControlPage] Showing song:', s);
+    // Zachovaj aktuálny stav isHidden - nemeniť pri prepínaní piesní
+    const currentState = await api.getState();
+    const newState = await api.setState({ 
+      currentSongId: s.id, 
+      isHidden: currentState.isHidden, // zachovaj aktuálny stav
+      nextSongId: null,
+      currentPage: 0 
+    });
+    console.log('[ControlPage] State updated:', newState);
+    // Okamžite synchronizuj lokálny stav UI (realtime/polling môže byť oneskorený)
+    setState(newState);
+    setCurrentSong(s);
+  };
+
+  // Keď už niečo hrá, tak nové "Zobraziť" iba pripraví do "Ďalšia" (neprepíše hneď obrazovku)
+  const stageOrShowSong = async (song) => {
+    const currentState = await api.getState();
+    if (currentState?.currentSongId) {
+      const newState = await api.setState({ nextSongId: song.id });
+      setState(newState);
+      setNextSongResolved(song);
+      return;
+    }
+    await showSong(song);
+  };
+
+  const showNextSong = async () => {
+    const currentState = await api.getState();
+    const stagedId = typeof currentState?.nextSongId === 'string' ? currentState.nextSongId : null;
+    if (!stagedId) return;
+    const songToShow = nextSongResolved || (await api.getSong(stagedId));
+    if (!songToShow) {
+      const newState = await api.setState({ nextSongId: null });
+      setState(newState);
+      setNextSongResolved(null);
+      return;
+    }
+    await showSong(songToShow);
+  };
+
+
+  // Funkcia na normalizáciu textu (odstránenie diakritiky)
+  const normalizeText = (text) => {
+    return text
+      .toLowerCase()
+      .normalize('NFD')
+      .replace(/[\u0300-\u036f]/g, '') // Odstráni diakritiku
+      .replace(/[^\w\s]/g, ' ') // Nahradí špeciálne znaky medzerami
+      .replace(/\s+/g, ' ') // Normalizuje medzery
+      .trim();
+  };
+
+  // Filtrovanie piesní podľa vyhľadávania (len názov a číslo)
+  const filteredSongs = songs.filter(song => {
+    if (!searchQuery.trim()) return true;
+    
+    const query = searchQuery.toLowerCase().trim();
+    const normalizedQuery = normalizeText(searchQuery);
+    
+    // Hľadaj v názve (s diakritikou aj bez)
+    if (song.title.toLowerCase().includes(query)) return true;
+    if (normalizeText(song.title).includes(normalizedQuery)) return true;
+    
+    // Hľadaj podľa čísla piesne
+    if (song.number && song.number.toString().includes(query)) return true;
+    
+    return false;
+  });
+
+  // Debug log pri zmene vyhľadávania
+  if (searchQuery) {
+    console.log('Vyhľadávanie:', searchQuery, '| Celkom piesní:', songs.length, '| Nájdených:', filteredSongs.length);
+  }
+  const toggleHide = async () => {
+    const currentState = await api.getState();
+    console.log('Toggling hide, current state:', currentState);
+    const newState = await api.setState({ isHidden: !currentState.isHidden });
+    console.log('New state after toggle:', newState);
+    setState(newState);
+  };
+  const clearSong = async () => {
+    const newState = await api.setState({ currentSongId: null, isHidden: false, currentPage: 0 });
+    setState(newState);
+  };
+  
+  // Vypočítaj počet strán (strof) v piesni
+  const getPageCount = (song) => {
+    if (!song?.lyrics) return 0;
+    const allLines = song.lyrics.split('\n');
+    let pageCount = 0;
+    let hasContent = false;
+    
+    for (let i = 0; i < allLines.length; i++) {
+      const line = allLines[i];
+      if (!line.trim() && hasContent) {
+        pageCount++;
+        hasContent = false;
+      } else if (line.trim()) {
+        hasContent = true;
+      }
+    }
+    
+    if (hasContent) pageCount++;
+    return pageCount;
+  };
+
+  const goPrevPage = async () => {
+    const current = state.currentPage || 0;
+    const newState = await api.setState({ ...state, currentPage: Math.max(current - 1, 0) });
+    setState(newState);
+  };
+
+  const goFirstPage = async () => {
+    const newState = await api.setState({ ...state, currentPage: 0 });
+    setState(newState);
+  };
+
+  const goNextPage = async () => {
+    if (!currentSong?.lyrics) return;
+    const pageCount = getPageCount(currentSong);
+    const current = state.currentPage || 0;
+    const next = Math.min(current + 1, Math.max(0, pageCount - 1));
+    const newState = await api.setState({ ...state, currentPage: next });
+    setState(newState);
+  };
+
+  // Tlačidlo "Ďalšia": ak je pripravená ďalšia pieseň, zobrazí ju; inak ide na ďalšiu stranu
+  const goNextAction = async () => {
+    if (nextSongId) {
+      await showNextSong();
+      return;
+    }
+    await goNextPage();
+  };
+  
+  const currentPageCount = currentSong ? getPageCount(currentSong) : 0;
+  const setBackground = async (v) => {
+    try {
+      console.log('Setting background, current state:', state);
+      const newState = { ...state, background: v };
+      console.log('New state before update:', newState);
+      await api.setState(newState);
+      console.log('Background set successfully');
+    } catch (error) {
+      console.error('Error setting background:', error);
+    }
+  };
+  const loadPsalm = async () => {
+    const ps = await api.loadPsalm();
+    await stageOrShowSong(ps);
+  };
+
+  const handleAddCategory = async (e) => {
+    e.preventDefault();
+    if (!newCategoryName) return;
+    setAddingCategory(true);
+    try {
+      await api.addCategory({ name: newCategoryName });
+      api.getCategories().then(setCategories);
+      setNewCategoryName("");
+      
+      // Automaticky ulož na GitHub (songs.json aj images.json)
+      console.log('[Auto-save] Checking credentials:', { 
+        hasOwner: !!githubOwner, 
+        hasRepo: !!githubRepo, 
+        hasPath: !!githubPath, 
+        hasToken: !!githubToken 
+      });
+      if (githubOwner && githubRepo && githubPath && githubToken) {
+        console.log('[Auto-save] Credentials OK, saving to GitHub after adding category...');
+        try {
+          await handleSaveToGitHub(true); // true = autoSave mode
+          console.log('[Auto-save] Songs.json saved successfully');
+        } catch (e) {
+          console.error('[Auto-save] Failed to save songs.json:', e);
+        }
+        // Ulož aj images.json
+        try {
+          console.log('[Auto-save] Saving images.json to GitHub...');
+          const imagesResult = await api.saveImagesToGitHub({ 
+            owner: githubOwner, 
+            repo: githubRepo, 
+            path: 'images.json', 
+            token: githubToken 
+          });
+          console.log('[Auto-save] Images.json saved successfully:', imagesResult);
+        } catch (e) {
+          console.error('[Auto-save] Failed to save images.json:', e);
+        }
+      } else {
+        console.warn('[Auto-save] Missing GitHub credentials - skipping auto-save');
+      }
+    } catch (error) {
+      console.error('Error adding category:', error);
+    }
+    setAddingCategory(false);
+  };
+
+  const handleAddText = async (e) => {
+    e.preventDefault();
+    if (!textTitle || !textCategory || !textLyrics) return;
+    setAddingText(true);
+    const newSong = await api.addCustomSong({
+      title: textTitle,
+      lyrics: textLyrics,
+      category: textCategory,
+    });
+    setTextTitle("");
+    setTextLyrics("");
+    setTextCategory("");
+    
+    // Automaticky ulož na GitHub (songs.json aj images.json)
+    console.log('[Auto-save] Checking credentials:', { 
+      hasOwner: !!githubOwner, 
+      hasRepo: !!githubRepo, 
+      hasPath: !!githubPath, 
+      hasToken: !!githubToken 
+    });
+    if (githubOwner && githubRepo && githubPath && githubToken) {
+      console.log('[Auto-save] Credentials OK, saving to GitHub after adding text...');
+      try {
+        await handleSaveToGitHub(true); // true = autoSave mode
+        console.log('[Auto-save] Songs.json saved successfully');
+      } catch (e) {
+        console.error('[Auto-save] Failed to save songs.json:', e);
+      }
+      // Ulož aj images.json
+      try {
+        console.log('[Auto-save] Saving images.json to GitHub...');
+        const imagesResult = await api.saveImagesToGitHub({ 
+          owner: githubOwner, 
+          repo: githubRepo, 
+          path: 'images.json', 
+          token: githubToken 
+        });
+        console.log('[Auto-save] Images.json saved successfully:', imagesResult);
+      } catch (e) {
+        console.error('[Auto-save] Failed to save images.json:', e);
+      }
+    } else {
+      console.warn('[Auto-save] Missing GitHub credentials - skipping auto-save');
+    }
+    
+    setAddingText(false);
+    if (selectedCategory === textCategory) {
+      api.getSongsByCategory(selectedCategory).then(setSongs);
+    }
+  };
+
+  const handleImageFile = (e) => {
+    const file = e.target.files && e.target.files[0];
+    if (!file) return;
+    setImageFile(file);
+    const reader = new window.FileReader();
+    reader.onload = (ev) => {
+      setImageUrl(ev.target.result);
+    };
+    reader.readAsDataURL(file);
+  };
+
+  const handleAddImage = async (e) => {
+    e.preventDefault();
+    if (!imageTitle || !imageUrl) return;
+    setAddingImage(true);
+    const newImage = await api.addCustomSong({
+      title: imageTitle,
+      imageUrl: imageUrl,
+    });
+    setImageTitle("");
+    setImageFile(null);
+    setImageUrl("");
+    
+    // Automaticky ulož na GitHub (songs.json aj images.json)
+    console.log('[Auto-save] Checking credentials:', { 
+      hasOwner: !!githubOwner, 
+      hasRepo: !!githubRepo, 
+      hasPath: !!githubPath, 
+      hasToken: !!githubToken 
+    });
+    if (githubOwner && githubRepo && githubPath && githubToken) {
+      console.log('[Auto-save] Credentials OK, saving to GitHub after adding image...');
+      try {
+        await handleSaveToGitHub(true); // true = autoSave mode
+        console.log('[Auto-save] Songs.json saved successfully');
+      } catch (e) {
+        console.error('[Auto-save] Failed to save songs.json:', e);
+      }
+      // Ulož aj images.json
+      try {
+        console.log('[Auto-save] Saving images.json to GitHub...');
+        const imagesResult = await api.saveImagesToGitHub({ 
+          owner: githubOwner, 
+          repo: githubRepo, 
+          path: 'images.json', 
+          token: githubToken 
+        });
+        console.log('[Auto-save] Images.json saved successfully:', imagesResult);
+      } catch (e) {
+        console.error('[Auto-save] Failed to save images.json:', e);
+        const errorMessage = e.message || String(e);
+        alert(`❌ CHYBA pri ukladaní obrázka na GitHub:\n\n${errorMessage}\n\n💡 Riešenie:\n` +
+              `• Skontroluj GitHub token v sekcii "GitHub Sync"\n` +
+              `• Token musí mať "repo" oprávnenie\n` +
+              `• Pozri podrobnosti v konzole (F12)`);
+      }
+    } else {
+      console.warn('[Auto-save] Missing GitHub credentials - skipping auto-save');
+    }
+    
+    setAddingImage(false);
+    
+    // Aktualizuj zoznam obrázkov v UI (použi lokálne dáta, ktoré sú už aktuálne)
+    const updatedImages = await api.getImages();
+    setImages(updatedImages);
+    console.log('[handleAddImage] Images updated in UI, total:', updatedImages.length);
+    
+    // NEAUTOMATICKY nastavovať pozadie - nech si užívateľ sám vyberie
+  };
+
+  const handleDeleteImage = async (imageId) => {
+    if (!confirm('Naozaj chceš vymazať tento obrázok?')) return;
+
+    console.log('[handleDeleteImage] Deleting image id:', imageId);
+    try {
+      // Najprv načítaj aktuálny stav z GitHubu (aby sme mali správne dáta pred vymazaním)
+      if (githubOwner && githubRepo && githubToken) {
+        try {
+          const savedImagesUrl = localStorage.getItem('tvdisplay-github-images-raw') || defaultImagesUrl;
+          console.log('[Pre-delete] Loading current images from GitHub:', savedImagesUrl);
+          // Pridaj timestamp pre obídenie GitHub cache
+          const cacheBreaker = `?t=${Date.now()}`;
+          await api.loadRemoteImages(savedImagesUrl + cacheBreaker);
+        } catch (e) {
+          console.error('[Pre-delete] Failed to load images from GitHub:', e);
+          // Pokračuj aj keď sa nepodarilo načítať
+        }
+      }
+
+      // Vymaž obrázok z pamäte
+      const deleted = await api.deleteImage(imageId);
+      console.log('[handleDeleteImage] deleteImage returned:', deleted);
+      if (!deleted) {
+        alert('Obrázok sa nenašiel alebo sa nepodarilo vymazať');
+        return;
+      }
+
+      // Automaticky ulož zmeny na GitHub (images.json)
+      if (githubOwner && githubRepo && githubToken) {
+        try {
+          console.log('[Auto-save] Saving images.json after delete...');
+          const res = await api.saveImagesToGitHub({
+            owner: githubOwner,
+            repo: githubRepo,
+            path: 'images.json',
+            token: githubToken,
+            message: `Delete image ${imageId} from images.json`
+          });
+          console.log('[Auto-save] Images.json saved successfully after delete:', res && res.content && res.content.path);
+        } catch (e) {
+          console.error('[Auto-save] Failed to save images.json after delete:', e);
+          const errorMessage = e.message || String(e);
+          alert(`❌ CHYBA pri ukladaní na GitHub:\n\n${errorMessage}\n\n💡 Riešenie:\n` +
+                `• Skontroluj GitHub token v sekcii "GitHub Sync"\n` +
+                `• Token musí mať "repo" oprávnenie\n` +
+                `• Pozri podrobnosti v konzole (F12)`);
+        }
+      } else {
+        console.warn('[handleDeleteImage] Missing GitHub credentials - images.json not saved to GitHub');
+        alert('Obrázok bol vymazaný lokálne, ale GitHub credentials chýbajú. Ulož ho ručne alebo nakonfiguruj GitHub token.');
+      }
+
+      // Obnov zoznam obrázkov - použi lokálne dáta (už sú aktuálne po vymazaní)
+      const updatedImages = await api.getImages();
+      setImages(updatedImages);
+      console.log('[handleDeleteImage] Images updated in UI, total:', updatedImages.length);
+    } catch (error) {
+      console.error('Chyba pri mazaní obrázka:', error);
+      alert('Nepodarilo sa vymazať obrázok (pozri konzolu)');
+    }
+  };
+
+  const handlePdfFile = (e) => {
+    const file = e.target.files && e.target.files[0];
+    if (!file || file.type !== 'application/pdf') {
+      alert('Prosím vyberte PDF súbor');
+      return;
+    }
+    setPdfFile(file);
+    const reader = new window.FileReader();
+    reader.onload = (ev) => {
+      setPdfUrl(ev.target.result);
+    };
+    reader.readAsDataURL(file);
+  };
+
+  const handleAddPdf = async (e) => {
+    e.preventDefault();
+    if (!pdfTitle || !pdfUrl) return;
+    setAddingPdf(true);
+    await api.addCustomSong({
+      title: pdfTitle,
+      pdfUrl: pdfUrl,
+      pageCount: pdfPageCount,
+    });
+    setPdfTitle("");
+    setPdfFile(null);
+    setPdfUrl("");
+    setPdfPageCount(1);
+    setAddingPdf(false);
+    api.getPresentations().then(setPresentations);
+  };
+
+  const handleLoadFromRawUrl = async () => {
+    if (!githubRawUrl) return alert('Zadajte raw URL na JSON súbor (raw.githubusercontent.com)');
+    setGithubLoading(true);
+    try {
+      await api.loadRemoteSongs(githubRawUrl);
+      // Refresh local views
+      api.getCategories().then(setCategories);
+      api.getPresentations().then(setPresentations);
+      api.getImages().then(setImages);
+      setSongs([]);
+      alert('Načítané piesne z: ' + githubRawUrl);
+      // Persist the raw url for convenience
+      localStorage.setItem('tvdisplay-github-raw', githubRawUrl);
+    } catch (e) {
+      console.error(e);
+      alert('Chyba pri načítaní remote JSON: ' + e.message);
+    }
+    setGithubLoading(false);
+  };
+
+  const handleSaveToGitHub = async (autoSave = false) => {
+    if (!githubOwner || !githubRepo || !githubPath || !githubToken) {
+      if (!autoSave) alert('Please fill owner, repo, path and token');
+      return;
+    }
+    setGithubLoading(true);
+    try {
+      const res = await api.saveSongsToGitHub({ owner: githubOwner, repo: githubRepo, path: githubPath, token: githubToken });
+      // persist config locally (token optional)
+      localStorage.setItem('tvdisplay-github-owner', githubOwner);
+      localStorage.setItem('tvdisplay-github-repo', githubRepo);
+      localStorage.setItem('tvdisplay-github-path', githubPath);
+      localStorage.setItem('tvdisplay-github-token', githubToken);
+      if (!autoSave) {
+        alert('Uložené na GitHub: ' + (res.content && res.content.path ? res.content.path : 'OK'));
+      } else {
+        console.log('Auto-saved to GitHub:', res.content?.path || 'OK');
+      }
+    } catch (e) {
+      console.error(e);
+      if (!autoSave) {
+        alert('Chyba pri ukladaní na GitHub: ' + e.message);
+      }
+    }
+    setGithubLoading(false);
+  };
+
+  return (
+    <div className="container mx-auto p-4 grid grid-cols-1 lg:grid-cols-2 gap-4 max-w-7xl">
+      <div className="space-y-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-1 gap-4">
+          <Card title="Aktuálny stav">
+            <div className="text-sm mb-2">Aktuálna pieseň: <span className="font-medium">{currentSong ? currentSong.title : '—'}</span></div>
+            <div className="text-sm mb-2">Stav: <span className="font-medium">{state.isHidden ? 'Skrytý' : 'Zobrazený'}</span></div>
+            <div className="text-sm mb-3">Pozadie: <span className="font-medium">{
+              state.background 
+                ? (images.find(img => img.imageUrl === state.background)?.title || 'Neznámy obrázok')
+                : '—'
+            }</span></div>
+            <div className="flex flex-wrap gap-2">
+              {state.currentSongId && (
+                <>
+                  <button onClick={clearSong} className="px-3 py-1.5 text-sm border rounded">Vymazať obsah</button>
+                  <button onClick={toggleHide} className={`px-3 py-1.5 text-sm ${state.isHidden ? 'bg-blue-500 text-white' : 'border'} rounded`}>
+                    {state.isHidden ? 'Zobraziť obsah' : 'Skryť obsah'}
+                  </button>
+                </>
+              )}
+              {state.background && (
+                <button onClick={() => setBackground(null)} className="px-3 py-1.5 text-sm border rounded">Vypnúť pozadie</button>
+              )}
+            </div>
+            
+            {/* Navigácia strán piesne */}
+            {currentSong?.lyrics && (
+              <div className="mt-4 pt-4 border-t">
+                <div className="text-sm font-medium mb-2">Strana piesne:</div>
+                <div className="flex items-center gap-3">
+                  <button 
+                    onClick={goPrevPage}
+                    disabled={(state.currentPage || 0) === 0}
+                    className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 disabled:bg-gray-300 disabled:cursor-not-allowed"
+                  >
+                    ← Predošlá
+                  </button>
+                  <div className="text-sm font-medium">
+                    Strana {(state.currentPage || 0) + 1} / {currentPageCount}
+                  </div>
+                  <button 
+                    onClick={goNextAction}
+                    disabled={!nextSongId && (state.currentPage || 0) >= currentPageCount - 1}
+                    className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 disabled:bg-gray-300 disabled:cursor-not-allowed"
+                  >
+                    Ďalšia →
+                  </button>
+                  <button 
+                    onClick={goFirstPage}
+                    className="px-3 py-2 text-sm border rounded hover:bg-gray-50"
+                  >
+                    Prvá strana
+                  </button>
+                </div>
+              </div>
+            )}
+          </Card>
+
+          <Card title="Kategórie">
+            {!githubToken && !proxyServerAvailable && (
+              <div className="mb-3 p-2 bg-yellow-50 border border-yellow-200 rounded text-sm text-yellow-800">
+                ⚠️ Upozornenie: Nové kategórie sa neuložia na GitHub. Vyplň GitHub token v sekcii "GitHub Sync".
+              </div>
+            )}
+            {proxyServerAvailable && (
+              <div className="mb-3 p-2 bg-green-50 border border-green-200 rounded text-sm text-green-800">
+                ✅ Proxy server aktívny - zmeny sa automaticky synchronizujú s GitHub
+              </div>
+            )}
+            <div className="space-y-4">
+              <div className="flex flex-wrap gap-2">
+                {categories.map(c => (
+                  <button key={c.id} onClick={() => setSelectedCategory(c.id)} 
+                    className={`px-3 py-1.5 text-sm rounded transition-colors ${selectedCategory===c.id?'bg-blue-500 text-white':'bg-white border hover:bg-gray-50'}`}>
+                    {c.name}
+                  </button>
+                ))}
+              </div>
+              <form onSubmit={handleAddCategory} className="flex gap-2">
+                <input
+                  type="text"
+                  value={newCategoryName}
+                  onChange={(e) => setNewCategoryName(e.target.value)}
+                  placeholder="Nová kategória..."
+                  className="flex-1 px-3 py-1.5 text-sm border rounded"
+                  disabled={addingCategory}
+                />
+                <button
+                  type="submit"
+                  disabled={addingCategory || !newCategoryName}
+                  className="px-3 py-1.5 text-sm bg-green-500 text-white rounded hover:bg-green-600 disabled:bg-gray-300"
+                >
+                  {addingCategory ? 'Pridávam...' : 'Pridať'}
+                </button>
+              </form>
+            </div>
+          </Card>
+        </div>
+
+        <Card title={searchQuery.trim() ? 'Vyhľadávanie vo všetkých piesňach' : `Piesne v ${selectedCategory || '...'}`}>
+          {/* Vyhľadávacie pole */}
+          <div className="mb-3 pb-3 border-b">
+            <input
+              type="text"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              placeholder="Hľadaj podľa názvu alebo čísla piesne..."
+              className="w-full px-3 py-2 text-sm border rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
+            />
+            {searchQuery && (
+              <div className="mt-2 text-xs text-gray-600">
+                Nájdených: {filteredSongs.length} {filteredSongs.length === 1 ? 'pieseň' : filteredSongs.length < 5 ? 'piesne' : 'piesní'}
+              </div>
+            )}
+          </div>
+          
+          <div className="h-[calc(100vh-32rem)] min-h-[12rem] overflow-auto">
+            {filteredSongs.map(s => (
+              <div key={s.id} className="flex justify-between items-center p-2 border-b hover:bg-gray-50">
+                <div className="flex-1">
+                  <div className="text-sm font-medium">
+                    {s.number && <span className="text-gray-500 mr-2">#{s.number}</span>}
+                    {s.title}
+                  </div>
+                  {searchQuery.trim() && s.category && (
+                    <div className="text-xs text-gray-500 mt-1">
+                      {categories.find(c => c.id === s.category)?.name || s.category}
+                    </div>
+                  )}
+                </div>
+                <div className="flex gap-2">
+                  <button onClick={() => addSelectedSong(s)} className="px-2 py-1 text-xs border rounded hover:bg-gray-50">Pridať</button>
+                  <button onClick={() => stageOrShowSong(s)} className="px-2 py-1 text-xs bg-blue-500 text-white rounded hover:bg-blue-600">
+                    Zobraziť
+                  </button>
+                </div>
+              </div>
+            ))}
+            {!filteredSongs.length && (searchQuery || selectedCategory) && (
+              <div className="text-sm text-gray-500 p-3">
+                {searchQuery ? 'Nenašli sa žiadne piesne' : 'Žiadne piesne v tejto kategórii'}
+              </div>
+            )}
+            {!selectedCategory && !searchQuery && <div className="text-sm text-gray-500 p-3">Vyber kategóriu alebo začni vyhľadávať</div>}
+          </div>
+        </Card>
+      </div>
+
+      <div className="space-y-4">
+        <div className="grid grid-cols-2 gap-2 sm:gap-4">
+          <Card title="Ďalšia">
+            {nextSongId ? (
+              <>
+                <div className="text-xs font-medium mb-2">{nextSongResolved?.title || 'Načítavam…'}</div>
+                <div className="text-xs text-gray-600 mb-2">Pripravené na zobrazenie</div>
+                <div
+                  role="button"
+                  tabIndex={0}
+                  onClick={() => {
+                    if (!nextSongResolved) return;
+                    showNextSong();
+                  }}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter' || e.key === ' ') {
+                      e.preventDefault();
+                      if (!nextSongResolved) return;
+                      showNextSong();
+                    }
+                  }}
+                  className={nextSongResolved ? 'cursor-pointer' : 'opacity-60 cursor-not-allowed'}
+                  title="Klikni pre zobrazenie"
+                >
+                  {nextSongResolved ? (
+                    <Preview state={state} song={nextSongResolved} currentPageOverride={0} hideTitle={true} />
+                  ) : (
+                    <div className="text-sm text-gray-500">Načítavam…</div>
+                  )}
+                </div>
+              </>
+            ) : currentSong?.lyrics && currentPageCount > 1 && (state.currentPage || 0) < currentPageCount - 1 ? (
+              <>
+                <div className="text-xs font-medium mb-2">{currentSong?.title}</div>
+                <div className="text-xs text-gray-600 mb-2">
+                  Nasleduje strana: {(state.currentPage || 0) + 2} / {currentPageCount}
+                </div>
+                <div
+                  role="button"
+                  tabIndex={0}
+                  onClick={goNextPage}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter' || e.key === ' ') {
+                      e.preventDefault();
+                      goNextPage();
+                    }
+                  }}
+                  className="cursor-pointer"
+                  title="Klikni pre prechod na ďalšiu stranu"
+                >
+                  <Preview state={state} song={currentSong} currentPageOverride={(state.currentPage || 0) + 1} hideTitle={true} />
+                </div>
+              </>
+            ) : (
+              <div className="text-sm text-gray-500">Žiadne ďalšie</div>
+            )}
+          </Card>
+
+          <Card title="Preview">
+            {currentSong?.title && (
+              <div className="text-xs font-medium mb-2">{currentSong.title}</div>
+            )}
+            <Preview state={state} song={currentSong} hideTitle={true} />
+
+            {/* Navigácia strán piesne (aj pod preview) */}
+            {currentSong?.lyrics && currentPageCount > 0 && (
+              <div className="mt-4 pt-4 border-t">
+                <div className="flex items-center justify-between gap-3 flex-wrap">
+                  <button
+                    onClick={goPrevPage}
+                    disabled={(state.currentPage || 0) === 0}
+                    className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 disabled:bg-gray-300 disabled:cursor-not-allowed"
+                  >
+                    ← Predošlá
+                  </button>
+                  <div className="text-sm font-medium">
+                    Strana {(state.currentPage || 0) + 1} / {currentPageCount}
+                  </div>
+                  <button
+                    onClick={goNextAction}
+                    disabled={!nextSongId && (state.currentPage || 0) >= currentPageCount - 1}
+                    className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 disabled:bg-gray-300 disabled:cursor-not-allowed"
+                  >
+                    Ďalšia →
+                  </button>
+                  <button
+                    onClick={goFirstPage}
+                    className="px-3 py-2 text-sm border rounded hover:bg-gray-50"
+                  >
+                    Prvá strana
+                  </button>
+                </div>
+              </div>
+            )}
+          </Card>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-1 gap-4">
+          <Card title="Rýchle nastavenia">
+            <div className="flex flex-wrap gap-2">
+              <button onClick={loadPsalm} className="px-3 py-1.5 text-sm bg-green-500 text-white rounded hover:bg-green-600">Načítať žalm</button>
+              <button onClick={() => setBackground('#F8FAFF')} className="px-3 py-1.5 text-sm border rounded hover:bg-gray-50">Svetlé pozadie</button>
+              <button onClick={() => setBackground(null)} className="px-3 py-1.5 text-sm border rounded hover:bg-gray-50">Čierna obrazovka</button>
+            </div>
+          </Card>
+
+          <Card title="Vybraté piesne">
+            <div className="flex items-center justify-between mb-2">
+              <div className="text-sm text-gray-600">Vybraté: {selectedSongIds.length}</div>
+              <button
+                onClick={clearSelectedSongs}
+                disabled={!selectedSongIds.length}
+                className="px-3 py-1.5 text-sm border rounded hover:bg-gray-50 disabled:opacity-50"
+              >
+                Vymazať
+              </button>
+            </div>
+            <div className="max-h-48 overflow-auto">
+              {selectedSongsResolved.map((s) => (
+                <div key={s.id} className="flex justify-between p-2 border-b">
+                  <div className="text-sm">{s.title}</div>
+                  <div className="flex gap-2">
+                    <button onClick={() => stageOrShowSong(s)} className="px-2 py-1 text-xs bg-blue-500 text-white rounded hover:bg-blue-600">Zobraziť</button>
+                    <button onClick={() => removeSelectedSong(s.id)} className="px-2 py-1 text-xs border rounded hover:bg-gray-50">Odobrať</button>
+                  </div>
+                </div>
+              ))}
+              {!selectedSongIds.length && <div className="text-sm text-gray-500 p-3">Žiadne vybraté piesne</div>}
+            </div>
+          </Card>
+        </div>
+
+        <Card title="Pridať vlastný text do kategórie">
+          {!githubToken && (
+            <div className="mb-3 p-2 bg-yellow-50 border border-yellow-200 rounded text-sm text-yellow-800">
+              ⚠️ Upozornenie: Pridané texty sa neuložia na GitHub. Vyplň GitHub token v sekcii "GitHub Sync" pre automatické ukladanie.
+            </div>
+          )}
+          <form className="space-y-2" onSubmit={handleAddText}>
+            <div className="flex gap-2">
+              <select
+                className="border rounded px-2 py-1"
+                value={textCategory}
+                onChange={e => setTextCategory(e.target.value)}
+                required
+              >
+                <option value="">Vyber kategóriu</option>
+                {categories.map(c => (
+                  <option key={c.id} value={c.id}>{c.name}</option>
+                ))}
+              </select>
+              <input
+                className="border rounded px-2 py-1 flex-1"
+                type="text"
+                placeholder="Názov"
+                value={textTitle}
+                onChange={e => setTextTitle(e.target.value)}
+                required
+              />
+            </div>
+            <textarea
+              className="border rounded px-2 py-1 w-full"
+              placeholder="Text piesne"
+              value={textLyrics}
+              onChange={e => setTextLyrics(e.target.value)}
+              rows={2}
+              required
+            />
+            <button
+              type="submit"
+              className="bg-blue-500 text-white px-3 py-1 rounded disabled:opacity-50"
+              disabled={addingText || !textTitle || !textCategory || !textLyrics}
+            >Pridať text</button>
+          </form>
+        </Card>
+        <Card title="Pridať obrázok (bez kategórie)">
+          {!githubToken && (
+            <div className="mb-3 p-2 bg-yellow-50 border border-yellow-200 rounded text-sm text-yellow-800">
+              ⚠️ Upozornenie: Obrázky sa neuložia na GitHub. Vyplň GitHub token v sekcii "GitHub Sync".
+            </div>
+          )}
+          <form className="space-y-2" onSubmit={handleAddImage}>
+            <input
+              className="border rounded px-2 py-1 w-full"
+              type="text"
+              placeholder="Názov obrázka"
+              value={imageTitle}
+              onChange={e => setImageTitle(e.target.value)}
+              required
+            />
+            <input
+              className="border rounded px-2 py-1 w-full"
+              type="file"
+              accept="image/*"
+              onChange={handleImageFile}
+              required
+            />
+            {imageUrl && (
+              <div className="flex items-center gap-2 mt-1">
+                <img src={imageUrl} alt="Náhľad" className="h-12 rounded border" />
+                <button type="button" className="text-xs text-red-500 underline" onClick={()=>{setImageFile(null);setImageUrl("")}}>Odstrániť obrázok</button>
+              </div>
+            )}
+            <button
+              type="submit"
+              className="bg-blue-500 text-white px-3 py-1 rounded disabled:opacity-50"
+              disabled={addingImage || !imageTitle || !imageUrl}
+            >Pridať obrázok</button>
+          </form>
+        </Card>
+
+        <Card title="Obrázky (bez kategórie)">
+          <div className="flex flex-wrap gap-4">
+            {images.length === 0 && <div className="text-gray-500">Žiadne obrázky</div>}
+            {images.map(img => (
+              <div key={img.id} className="flex flex-col items-center w-32">
+                <img src={img.imageUrl} alt={img.title || 'Obrázok'} className="w-32 h-20 object-cover rounded shadow mb-1" />
+                <div className="text-xs text-center text-gray-700">{img.title}</div>
+                <div className="flex gap-1 mt-1">
+                  <button onClick={() => showSong(img)} className="px-2 py-1 text-xs bg-blue-500 text-white rounded">Zobraziť</button>
+                  <button onClick={() => setBackground(img.imageUrl)} className="px-2 py-1 text-xs bg-gray-300 rounded">Pozadie</button>
+                </div>
+                <button 
+                  onClick={() => handleDeleteImage(img.id)} 
+                  className="mt-1 px-2 py-1 text-xs bg-red-500 text-white rounded hover:bg-red-600"
+                >
+                  Vymazať
+                </button>
+              </div>
+            ))}
+          </div>
+        </Card>
+
+        <Card title="Pridať PDF prezentáciu">
+          <form className="space-y-2" onSubmit={handleAddPdf}>
+            <input
+              className="border rounded px-2 py-1 w-full"
+              type="text"
+              placeholder="Názov prezentácie"
+              value={pdfTitle}
+              onChange={e => setPdfTitle(e.target.value)}
+              required
+            />
+            <input
+              className="border rounded px-2 py-1 w-full"
+              type="file"
+              accept="application/pdf"
+              onChange={handlePdfFile}
+              required
+            />
+            {pdfUrl && (
+              <div className="flex items-center gap-2 mt-1">
+                <div className="px-3 py-2 bg-gray-100 rounded border text-sm">
+                  📄 PDF načítané
+                </div>
+                <input
+                  type="number"
+                  min="1"
+                  value={pdfPageCount}
+                  onChange={e => setPdfPageCount(parseInt(e.target.value) || 1)}
+                  placeholder="Počet strán"
+                  className="border rounded px-2 py-1 w-24"
+                />
+                <button type="button" className="text-xs text-red-500 underline" onClick={()=>{setPdfFile(null);setPdfUrl("")}}>Odstrániť</button>
+              </div>
+            )}
+            <button
+              type="submit"
+              className="bg-blue-500 text-white px-3 py-1 rounded disabled:opacity-50"
+              disabled={addingPdf || !pdfTitle || !pdfUrl}
+            >Pridať PDF</button>
+          </form>
+        </Card>
+
+        <Card title="PDF Prezentácie">
+          <div className="space-y-2">
+            {presentations.length === 0 && <div className="text-gray-500">Žiadne prezentácie</div>}
+            {presentations.map(pdf => (
+              <div key={pdf.id} className="flex justify-between items-center p-2 border rounded">
+                <div className="flex items-center gap-2">
+                  <span className="text-2xl">📄</span>
+                  <div>
+                    <div className="text-sm font-medium">{pdf.title}</div>
+                    <div className="text-xs text-gray-500">{pdf.pageCount} strán</div>
+                  </div>
+                </div>
+                <button onClick={() => showSong(pdf)} className="px-3 py-1 text-sm bg-blue-500 text-white rounded hover:bg-blue-600">Zobraziť</button>
+              </div>
+            ))}
+          </div>
+        </Card>
+        
+        <Card title="GitHub Sync (songs.json)">
+          <div className="space-y-2">
+            <div className="text-sm text-gray-600">Načítanie z raw URL (read-only):</div>
+            <div className="flex gap-2">
+              <input className="flex-1 border rounded px-2 py-1" placeholder="https://raw.githubusercontent.com/.../songs.json" value={githubRawUrl} onChange={e=>setGithubRawUrl(e.target.value)} />
+              <button onClick={handleLoadFromRawUrl} className="px-3 py-1 bg-green-500 text-white rounded" disabled={githubLoading}>{githubLoading ? 'Načítavam...' : 'Načítať'}</button>
+            </div>
+
+            <hr />
+
+            <div className="text-sm text-gray-600">Uloženie (commit) do GitHub repo (potrebný PAT):</div>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
+              <input className="border rounded px-2 py-1" placeholder="owner (username)" value={githubOwner} onChange={e=>setGithubOwner(e.target.value)} />
+              <input className="border rounded px-2 py-1" placeholder="repo" value={githubRepo} onChange={e=>setGithubRepo(e.target.value)} />
+              <input className="border rounded px-2 py-1" placeholder="path (e.g. data/songs.json)" value={githubPath} onChange={e=>setGithubPath(e.target.value)} />
+              <input className="border rounded px-2 py-1" placeholder="Personal Access Token" value={githubToken} onChange={e=>setGithubToken(e.target.value)} />
+            </div>
+            <div className="flex gap-2">
+              <button onClick={handleSaveToGitHub} className="px-3 py-1 bg-blue-500 text-white rounded" disabled={githubLoading}>{githubLoading ? 'Ukladám...' : 'Uložiť na GitHub'}</button>
+              <div className="text-xs text-gray-500">Uloženie vykoná commit/replace súboru pomocou GitHub API.</div>
+            </div>
+          </div>
+        </Card>
+      </div>
+    </div>
+  );
+}

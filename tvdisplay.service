@@ -1,0 +1,19 @@
+[Unit]
+Description=TVDisplay Aplikacia - Zobrazovanie piesni
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=kari
+WorkingDirectory=/home/kari/Desktop/tvdisplay
+ExecStart=/home/kari/.nvm/versions/node/v24.11.0/bin/npm run start:all
+Restart=always
+RestartSec=10
+StandardOutput=journal
+StandardError=journal
+Environment="NODE_ENV=production"
+Environment="PATH=/home/kari/.nvm/versions/node/v24.11.0/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin"
+
+[Install]
+WantedBy=multi-user.target

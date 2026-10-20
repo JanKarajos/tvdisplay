@@ -1,0 +1,6 @@
+node_modules
+/dist
+.env
+*.tar.gz
+state.json
+.DS_Store
