@@ -60,7 +60,7 @@ async function buildPsalmSong(dateStr) {
   const refrain = normalizePsalmRefrain(psalmMaps.get(year)?.get(isoDate));
   return {
     id: `psalm-${isoDate}`,
-    title: `Responzóriový žalm (${isoDate})`,
+    title: `Responzóriový žalm – ${formatDate(isoDate)}`,
     category: 'Žalmy',
     lyrics: refrain || `Žalm pre dátum ${isoDate} sa nenašiel.`,
     hideTitle: true,
@@ -307,6 +307,35 @@ export const library = {
 
   loadPsalm: (date) => buildPsalmSong(date),
 };
+
+function formatDate(iso) {
+  const [y, m, d] = iso.split('-').map(Number);
+  return `${d}. ${m}. ${y}`;
+}
+
+// Synchrónny popis položky poradia (pre zoznam na omšu) – bez sťahovania
+export function describeItem(id) {
+  if (typeof id === 'string' && id.startsWith('psalm-')) {
+    const iso = id.slice('psalm-'.length);
+    return {
+      id,
+      kind: 'psalm',
+      title: `Responzóriový žalm – ${formatDate(iso)}`,
+      subtitle: normalizePsalmRefrain(psalmMaps.get(iso.slice(0, 4))?.get(iso)) || '',
+    };
+  }
+  const song = songs.find((s) => s.id === id);
+  if (song) return { id, kind: song.type === 'pdf' ? 'pdf' : 'song', title: song.title, number: song.number, category: song.category };
+  const image = images.find((i) => i.id === id);
+  if (image) return { id, kind: 'image', title: image.title, imageUrl: image.imageUrl };
+  return { id, kind: 'missing', title: 'Neznáma položka' };
+}
+
+export function psalmId(date) {
+  return `psalm-${date || toLocalISODate()}`;
+}
+
+export { toLocalISODate };
 
 // Kompatibilita so starým ovládaním (ControlPageLegacy)
 export const api = {

@@ -33,12 +33,25 @@ Mobil / PC (ovládanie) ──PATCH /api/state──►  server (port 3002)  ─
 - **Žalmy** sú v `Texty/Žalmy RRRR.json`. Nový rok stiahneš cez `node scripts/fetch_psalms_2027.js`.
 - **PIN**: ak je v `.env` nastavený `CONTROL_PIN`, ovládanie si ho vypýta. Displej PIN nepotrebuje.
 
+## Priebeh omše
+
+1. V záložke **Omša** klikaj na piesne v zozname, každá sa pridá na koniec **poradia**.
+   Žalm pridáš tlačidlom **+ Žalm** (predvolene najbližšia nedeľa). Poradie meníš ťahaním za úchyt ⠿.
+2. Počas omše stačí stláčať **Ďalej** v spodnej lište (alebo → / PageDown / kliker):
+   prechádzajú sa strofy a na poslednej strofe sa automaticky zobrazí ďalšia položka poradia.
+3. **▶** zobrazí pieseň hneď, aj mimo poradia. Potom „Ďalej“ pokračuje v poradí tam, kde sa skončilo.
+4. **Skryť** (kláves H) skryje text a ukáže pozadie.
+
+Záložka **Obrazovka**: farebná téma TV (automaticky podľa liturgického obdobia), pozadie a voľba
+„Text cez obrázok pozadia“. Záložka **Obsah**: nové texty, obrázky, PDF a stav synchronizácie.
+Ikona ◐ v hlavičke prepína svetlý/tmavý režim ovládania.
+
 ## Ovládanie klávesnicou
 
 | Kláves | Akcia |
 | --- | --- |
-| → / PageDown | ďalšia strofa, na poslednej strofe pripravená ďalšia pieseň |
-| ← / PageUp | predchádzajúca strofa |
+| → / PageDown | ďalšia strofa, na poslednej strofe ďalšia položka poradia |
+| ← / PageUp | predchádzajúca strofa, na prvej strofe predchádzajúca položka |
 | H | skryť / zobraziť text na TV |
 
 Fungujú aj bežné klikery na prezentácie (posielajú PageUp/PageDown).

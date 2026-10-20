@@ -39,8 +39,10 @@ const DEFAULT_STATE = {
   background: null,
   isHidden: false,
   currentPage: 0,
-  selectedSongIds: [],
-  nextSongId: null,
+  selectedSongIds: [], // poradie na omšu (piesne, žalmy psalm-RRRR-MM-DD, obrázky, PDF)
+  nextSongId: null, // iba pre staré ovládanie
+  lastPlaylistId: null, // posledná položka poradia, ktorá bola na TV – odtiaľ pokračuje "Ďalej"
+  settings: { theme: 'auto', textOverBackground: false },
 };
 
 // --- Stav ---------------------------------------------------------------
@@ -73,6 +75,11 @@ function applyPatch(patch) {
   const clean = {};
   for (const [key, value] of Object.entries(patch || {})) {
     if (ALLOWED_KEYS.has(key)) clean[key] = value;
+  }
+  if ('settings' in clean) {
+    const ok = clean.settings && typeof clean.settings === 'object' && !Array.isArray(clean.settings);
+    if (ok) clean.settings = { ...state.settings, ...clean.settings };
+    else delete clean.settings;
   }
   state = { ...state, ...clean, lastUpdate: Date.now() };
   version += 1;

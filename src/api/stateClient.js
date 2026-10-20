@@ -14,6 +14,8 @@ export const DEFAULT_STATE = {
   currentPage: 0,
   selectedSongIds: [],
   nextSongId: null,
+  lastPlaylistId: null,
+  settings: { theme: 'auto', textOverBackground: false },
 };
 
 function readCache() {
@@ -49,7 +51,7 @@ function notify() {
 }
 
 function setState(next) {
-  state = { ...DEFAULT_STATE, ...next };
+  state = { ...DEFAULT_STATE, ...next, settings: { ...DEFAULT_STATE.settings, ...(next?.settings || {}) } };
   writeCache(state);
   notify();
 }
@@ -155,7 +157,8 @@ export const stateClient = {
   // Pošle iba zmenené polia; server ich zlúči, takže súčasné zmeny z dvoch zariadení sa neprepíšu
   async patch(partial) {
     const previous = state;
-    setState({ ...state, ...partial }); // optimisticky, aby UI reagovalo hneď
+    // optimisticky, aby UI reagovalo hneď
+    setState({ ...state, ...partial, ...(partial.settings ? { settings: { ...state.settings, ...partial.settings } } : {}) });
     if (status !== 'online') return state;
     try {
       const res = await fetch(`${SERVER_URL}/api/state`, {

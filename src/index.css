@@ -2,24 +2,90 @@
 @tailwind components;
 @tailwind utilities;
 
+:root {
+  --bg: 241 242 245;
+  --surface: 255 255 255;
+  --sunken: 246 247 249;
+  --line: 226 228 233;
+  --fg: 23 25 31;
+  --muted: 105 110 122;
+  --accent: 37 88 214;
+  --on-accent: 255 255 255;
+  --danger: 205 38 38;
+  --ok: 21 128 61;
+  --warn: 180 100 6;
+  color-scheme: light;
+}
+
+.dark {
+  --bg: 12 13 16;
+  --surface: 24 25 30;
+  --sunken: 33 35 41;
+  --line: 48 51 59;
+  --fg: 236 237 240;
+  --muted: 150 154 165;
+  --accent: 120 160 255;
+  --on-accent: 10 12 20;
+  --danger: 248 113 113;
+  --ok: 74 222 128;
+  --warn: 251 191 36;
+  color-scheme: dark;
+}
+
+body {
+  @apply bg-bg text-fg font-sans antialiased;
+}
+
 @keyframes fade-in {
   from { opacity: 0; }
   to { opacity: 1; }
 }
 
+@keyframes toast-in {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
 @layer utilities {
-  .animate-fade-in {
-    animation: fade-in 350ms ease-out;
+  .animate-fade-in { animation: fade-in 400ms ease-out; }
+  .animate-toast-in { animation: toast-in 200ms ease-out; }
+  .pb-safe { padding-bottom: max(0.75rem, env(safe-area-inset-bottom)); }
+}
+
+@layer components {
+  .btn {
+    @apply inline-flex items-center justify-center gap-2 min-h-[44px] px-4 rounded-xl text-sm font-semibold
+      border border-line bg-surface text-fg transition active:scale-[0.98]
+      hover:bg-sunken disabled:opacity-40 disabled:pointer-events-none;
+  }
+  .btn-primary {
+    @apply btn bg-accent text-on-accent border-accent hover:bg-accent/90;
+  }
+  .btn-icon {
+    @apply inline-flex shrink-0 items-center justify-center w-10 h-11 sm:w-11 rounded-xl text-muted transition
+      hover:bg-sunken hover:text-fg disabled:opacity-30 disabled:pointer-events-none;
+  }
+  .field {
+    @apply w-full min-h-[44px] rounded-xl border border-line bg-sunken px-3 text-sm text-fg placeholder:text-muted
+      focus:outline-none focus:ring-2 focus:ring-accent/50;
+  }
+  .chip {
+    @apply inline-flex items-center min-h-[36px] px-3 rounded-full text-sm border border-line bg-surface text-fg
+      hover:bg-sunken transition;
+  }
+  .chip-active {
+    @apply chip bg-accent text-on-accent border-accent hover:bg-accent;
   }
 }
 
-/* Text na TV: dobre čitateľné písmo s diakritikou a jemný tieň pre čitateľnosť na obrázkoch */
+/* Text na TV */
 .song-text,
 .song-title {
-  font-family: 'Segoe UI', 'Noto Sans', 'DejaVu Sans', system-ui, sans-serif;
-  text-shadow: 0 2px 8px rgba(0, 0, 0, 0.5);
+  font-family: 'Source Sans 3', 'Noto Sans', 'DejaVu Sans', system-ui, sans-serif;
+  text-shadow: 0 2px 10px rgba(0, 0, 0, 0.55);
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .animate-fade-in { animation: none; }
+  .animate-fade-in,
+  .animate-toast-in { animation: none; }
 }

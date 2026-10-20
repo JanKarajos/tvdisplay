@@ -2,9 +2,9 @@ import React, { useCallback, useLayoutEffect, useMemo, useRef, useState } from '
 import { splitIntoPages } from '../lib/lyrics';
 
 // Písmo sa nastaví podľa najdlhšej strofy (rovnaké na všetkých stranách) a skutočne sa zmeria,
-// takže text sa vždy zmestí – na TV aj v malom náhľade. Veľkosti sú pomerné k výške plochy,
-// preto náhľad vyzerá ako zmenšená TV.
-const LINE_HEIGHT = 1.4;
+// takže text sa vždy zmestí. Všetky rozmery sú pomerné k výške plochy, preto náhľad
+// v ovládaní vyzerá presne ako zmenšená TV.
+const LINE_HEIGHT = 1.35;
 
 function fitFontSize(measure, pages, height, maxSize) {
   let best = Infinity;
@@ -24,26 +24,24 @@ function fitFontSize(measure, pages, height, maxSize) {
   return Math.floor(best);
 }
 
-export default function SongRenderer({ lyrics, title, number, imageUrl, currentPage = 0, isPreview = false, hideTitle = false }) {
+export default function SongRenderer({ lyrics, title, number, imageUrl, currentPage = 0, hideTitle = false, accent = '#e4e4e7' }) {
   const boxRef = useRef(null);
   const measureRef = useRef(null);
   const [fontSize, setFontSize] = useState(null);
   const [boxHeight, setBoxHeight] = useState(0);
 
   const pages = useMemo(() => splitIntoPages(lyrics), [lyrics]);
-  const showTitle = Boolean(title) && !hideTitle;
 
   const fit = useCallback(() => {
     const box = boxRef.current;
     const measure = measureRef.current;
     if (!box || !measure || !pages.length) return;
-    const { clientWidth, clientHeight } = box;
-    if (!clientWidth || !clientHeight) return;
+    const { clientHeight } = box;
+    if (!clientHeight) return;
     setBoxHeight(clientHeight);
-    // Najväčšie písmo ~ 1/9 výšky plochy; nadpis zaberá cca 12 %
-    const available = clientHeight * (showTitle ? 0.82 : 0.94);
-    setFontSize(fitFontSize(measure, pages, available, clientHeight / 9));
-  }, [pages, showTitle]);
+    // Hore je nadpis v rohu, dole bodky – text má zvyšných ~84 % výšky
+    setFontSize(fitFontSize(measure, pages, clientHeight * 0.84, clientHeight / 8.5));
+  }, [pages]);
 
   useLayoutEffect(() => {
     fit();
@@ -56,60 +54,56 @@ export default function SongRenderer({ lyrics, title, number, imageUrl, currentP
 
   if (imageUrl && !lyrics) {
     return (
-      <div className="flex flex-col items-center justify-center w-full h-full">
+      <div className="flex items-center justify-center w-full h-full">
         <img src={imageUrl} alt={title || 'Obrázok'} className="max-h-full max-w-full object-contain" />
       </div>
     );
   }
 
   if (!pages.length) {
-    return <div className="text-white/60 text-center" style={{ fontSize: isPreview ? 12 : 32 }}>Žiadny text k dispozícii</div>;
+    return <div className="w-full h-full flex items-center justify-center text-white/50">Žiadny text</div>;
   }
 
   const pageIndex = Math.max(0, Math.min(currentPage, pages.length - 1));
-  const lines = pages[pageIndex];
-  const textStyle = {
-    lineHeight: LINE_HEIGHT,
-    whiteSpace: 'pre-wrap',
-    overflowWrap: 'anywhere',
-    textAlign: 'center',
-  };
+  const textStyle = { lineHeight: LINE_HEIGHT, whiteSpace: 'pre-wrap', textAlign: 'center', fontWeight: 600 };
+  const unit = boxHeight / 100; // 1 % výšky
 
   return (
-    <div ref={boxRef} className="song-stage relative w-full h-full flex flex-col items-center justify-center overflow-hidden text-white">
+    <div ref={boxRef} className="relative w-full h-full flex items-center justify-center overflow-hidden text-white">
       {/* Neviditeľný prvok na meranie textu */}
-      <div
-        ref={measureRef}
-        aria-hidden="true"
-        className="song-text absolute invisible pointer-events-none"
-        style={{ ...textStyle, width: '92%', left: 0, top: 0, overflowWrap: 'normal' }}
-      />
+      <div ref={measureRef} aria-hidden="true" className="song-text absolute invisible pointer-events-none left-0 top-0" style={{ ...textStyle, width: '90%' }} />
 
-      {showTitle && (
-        <div className="song-title text-center font-semibold opacity-80 mb-[2%] px-[4%]" style={{ fontSize: Math.max(10, boxHeight * 0.05) }}>
-          {number ? `${number}. ` : ''}{title}
+      {!hideTitle && title && (
+        <div
+          className="song-title absolute left-0 top-0 font-semibold truncate max-w-[70%]"
+          style={{ color: accent, opacity: 0.8, fontSize: Math.max(8, unit * 3.4), padding: `${unit * 2.5}px ${unit * 4}px` }}
+        >
+          {number ? `${number} · ` : ''}{title}
         </div>
       )}
 
       <div
         key={`${pageIndex}-${lyrics.length}`}
-        className="song-text animate-fade-in w-[92%]"
-        style={{ ...textStyle, fontSize: fontSize ?? 0, visibility: fontSize ? 'visible' : 'hidden' }}
+        className="song-text animate-fade-in w-[90%]"
+        style={{ ...textStyle, overflowWrap: 'anywhere', fontSize: fontSize ?? 0, visibility: fontSize ? 'visible' : 'hidden' }}
       >
-        {lines.join('\n')}
+        {pages[pageIndex].join('\n')}
       </div>
 
       {pages.length > 1 && (
-        <div
-          className="absolute font-semibold tabular-nums text-white/70 bg-black/40 rounded-full"
-          style={{
-            right: '2%',
-            bottom: '3%',
-            fontSize: Math.max(9, boxHeight * 0.03),
-            padding: `${boxHeight * 0.006}px ${boxHeight * 0.016}px`,
-          }}
-        >
-          {pageIndex + 1} / {pages.length}
+        <div className="absolute left-0 right-0 flex justify-center" style={{ bottom: unit * 3.5, gap: unit * 1.2 }} aria-label={`Strofa ${pageIndex + 1} z ${pages.length}`}>
+          {pages.map((_, i) => (
+            <span
+              key={i}
+              className="rounded-full transition-all duration-300"
+              style={{
+                width: i === pageIndex ? unit * 3.2 : unit * 1.1,
+                height: unit * 1.1,
+                background: accent,
+                opacity: i === pageIndex ? 0.9 : 0.3,
+              }}
+            />
+          ))}
         </div>
       )}
     </div>

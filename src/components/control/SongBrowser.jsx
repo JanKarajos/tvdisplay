@@ -17,7 +17,7 @@ export default function SongBrowser({ lib, playlistIds }) {
   const results = useMemo(() => {
     const q = normalizeText(query);
     if (q) {
-      return lib.songs.filter((s) => s.category && (normalizeText(s.title).includes(q) || String(s.number || '').includes(q)));
+      return lib.songs.filter((s) => s.category && (normalizeText(s.title).includes(q) || String(s.number || '') === q || String(s.number || '').startsWith(q)));
     }
     return category ? lib.songs.filter((s) => s.category === category) : [];
   }, [lib.songs, category, query]);
@@ -25,27 +25,27 @@ export default function SongBrowser({ lib, playlistIds }) {
   const categoryName = (id) => lib.categories.find((c) => c.id === id)?.name || id;
 
   return (
-    <Card title={query ? 'Vyhľadávanie' : category ? categoryName(category) : 'Piesne'}>
-      <input
-        type="search"
-        value={query}
-        onChange={(e) => setQuery(e.target.value)}
-        placeholder="Hľadaj názov alebo číslo…"
-        className="w-full px-3 py-2 text-sm border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-      />
+    <Card title="Piesne" subtitle="Klik na pieseň ju pridá do poradia">
+      <div className="relative">
+        <input
+          type="search"
+          value={query}
+          onChange={(e) => setQuery(e.target.value)}
+          placeholder="Hľadaj názov alebo číslo…"
+          className="field pl-10 text-base"
+          enterKeyHint="search"
+        />
+        <span className="absolute left-3.5 top-1/2 -translate-y-1/2 text-muted pointer-events-none">⌕</span>
+      </div>
 
-      <div className="flex flex-wrap gap-1.5 mt-3">
+      <div className="flex gap-1.5 mt-3 overflow-x-auto pb-1 -mx-1 px-1">
         {lib.categories.map((c) => (
-          <button
-            key={c.id}
-            onClick={() => { setCategory(c.id); setQuery(''); }}
-            className={`px-2.5 py-1 text-xs rounded-full border transition-colors ${category === c.id && !query ? 'bg-blue-600 text-white border-blue-600' : 'bg-white hover:bg-gray-50'}`}
-          >
+          <button key={c.id} onClick={() => { setCategory(c.id); setQuery(''); }} className={`${category === c.id && !query ? 'chip-active' : 'chip'} shrink-0`}>
             {c.name}
           </button>
         ))}
         <form
-          className="inline-flex"
+          className="shrink-0"
           onSubmit={(e) => {
             e.preventDefault();
             if (!newCategory.trim()) return;
@@ -56,39 +56,45 @@ export default function SongBrowser({ lib, playlistIds }) {
           <input
             value={newCategory}
             onChange={(e) => setNewCategory(e.target.value)}
-            placeholder="+ nová kategória"
-            className="px-2.5 py-1 text-xs rounded-full border border-dashed w-32 focus:outline-none focus:ring-1 focus:ring-blue-500"
+            placeholder="+ kategória"
+            className="min-h-[36px] w-28 px-3 rounded-full text-sm border border-dashed border-line bg-transparent placeholder:text-muted focus:outline-none focus:ring-2 focus:ring-accent/50"
           />
         </form>
       </div>
 
-      {query && <div className="mt-2 text-xs text-gray-500">Nájdených: {results.length} {pluralSongs(results.length)}</div>}
+      {query && <div className="mt-2 text-xs text-muted">Nájdených: {results.length} {pluralSongs(results.length)}</div>}
 
-      <div className="mt-3 h-[calc(100vh-24rem)] min-h-[16rem] overflow-auto -mx-2">
-        {!lib.loaded && <div className="text-sm text-gray-500 p-3">Načítavam piesne…</div>}
-        {lib.loaded && !query && !category && <div className="text-sm text-gray-500 p-3">Vyber kategóriu alebo začni vyhľadávať.</div>}
-        {lib.loaded && (query || category) && !results.length && <div className="text-sm text-gray-500 p-3">Nič sa nenašlo.</div>}
+      <div className="mt-2 h-[calc(100vh-23rem)] min-h-[18rem] overflow-auto -mx-2 px-1">
+        {!lib.loaded && <div className="text-sm text-muted p-3">Načítavam piesne…</div>}
+        {lib.loaded && !query && !category && <div className="text-sm text-muted p-3">Vyber kategóriu alebo začni písať názov či číslo piesne.</div>}
+        {lib.loaded && (query || category) && !results.length && <div className="text-sm text-muted p-3">Nič sa nenašlo.</div>}
         {results.map((s) => {
-          const inPlaylist = playlistIds.includes(s.id);
+          const position = playlistIds.indexOf(s.id);
+          const inPlaylist = position >= 0;
           return (
-            <div key={s.id} className="group flex items-center gap-2 px-2 py-1.5 rounded hover:bg-gray-50">
-              <div className="flex-1 min-w-0">
-                <div className="text-sm truncate">
-                  {s.number && <span className="text-gray-400 tabular-nums mr-2">{s.number}</span>}
-                  {s.title}
-                </div>
-                {query && <div className="text-[11px] text-gray-400">{categoryName(s.category)}</div>}
-              </div>
+            <div key={s.id} className={`flex items-center gap-1 rounded-xl transition-colors ${inPlaylist ? 'bg-accent/10' : 'hover:bg-sunken'}`}>
               <button
                 onClick={() => actions.addToPlaylist(s.id)}
-                disabled={inPlaylist}
-                className="px-2 py-1 text-xs border rounded hover:bg-white disabled:opacity-40"
-                title="Pridať do zoznamu na omšu"
+                className="flex-1 min-w-0 min-h-[48px] flex items-center gap-3 px-2 text-left"
+                title={inPlaylist ? 'Už je v poradí' : 'Pridať do poradia'}
               >
-                {inPlaylist ? '✓ V zozname' : '+ Zoznam'}
+                <span className={`w-9 shrink-0 text-right tabular-nums text-sm ${inPlaylist ? 'text-accent font-bold' : 'text-muted'}`}>
+                  {s.number || ''}
+                </span>
+                <span className="min-w-0">
+                  <span className="block text-[15px] truncate">{s.title}</span>
+                  {query && <span className="block text-xs text-muted">{categoryName(s.category)}</span>}
+                </span>
+                <span className="ml-auto shrink-0">
+                  {inPlaylist ? (
+                    <span className="px-2 py-1 rounded-lg bg-accent text-on-accent text-xs font-bold">✓ {position + 1}.</span>
+                  ) : (
+                    <span className="w-8 h-8 rounded-lg grid place-items-center text-accent text-lg">+</span>
+                  )}
+                </span>
               </button>
-              <button onClick={() => actions.stageOrShow(s)} className="px-2 py-1 text-xs bg-blue-600 text-white rounded hover:bg-blue-700">
-                Zobraziť
+              <button onClick={() => actions.show(s)} className="btn-icon shrink-0" title="Zobraziť hneď (mimo poradia)" aria-label={`Zobraziť hneď: ${s.title}`}>
+                ▶
               </button>
             </div>
           );
