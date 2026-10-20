@@ -111,6 +111,17 @@ export const actions = {
     return patch({ selectedSongIds: ids });
   },
 
+  // Po zmazaní z knižnice: odstrániť z poradia a z TV
+  forget(id) {
+    const s = current();
+    const partial = {};
+    if ((s.selectedSongIds || []).includes(id)) partial.selectedSongIds = s.selectedSongIds.filter((x) => x !== id);
+    if (s.currentSongId === id) Object.assign(partial, { currentSongId: null, currentPage: 0 });
+    if (s.lastPlaylistId === id) partial.lastPlaylistId = null;
+    if (s.nextSongId === id) partial.nextSongId = null;
+    return Object.keys(partial).length ? patch(partial) : undefined;
+  },
+
   clearPlaylist() {
     return patch({ selectedSongIds: [], lastPlaylistId: null, nextSongId: null });
   },

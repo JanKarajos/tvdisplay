@@ -4,6 +4,8 @@ import { actions } from '../../lib/actions';
 import { library, loadLibrary } from '../../api/api';
 import { reportSave } from '../../lib/notify';
 import { toast } from '../../lib/toast';
+import { normalizeText } from '../../lib/lyrics';
+import { stateClient } from '../../api/stateClient';
 
 const input = 'field';
 const primary = 'btn-primary';
@@ -64,7 +66,10 @@ function Images({ images }) {
 
   const remove = async (img) => {
     if (!window.confirm(`Naozaj vymazať obrázok „${img.title}“?`)) return;
+    actions.forget(img.id);
+    if (stateClient.getState().background === img.imageUrl) actions.setBackground(null);
     reportSave(await library.deleteImage(img.id), 'Vymazanie sa neuložilo');
+    toast(`Vymazané: ${img.title}`);
   };
 
   return (
@@ -84,13 +89,15 @@ function Images({ images }) {
       <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
         {!images.length && <div className="text-sm text-muted">Žiadne obrázky</div>}
         {images.map((img) => (
-          <div key={img.id} className="group relative rounded-xl overflow-hidden border border-line bg-sunken">
+          <div key={img.id} className="rounded-xl overflow-hidden border border-line bg-sunken">
             <img src={img.imageUrl} alt={img.title} className="w-full aspect-video object-cover" />
-            <div className="px-2 py-1 text-xs truncate">{img.title}</div>
-            <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 focus-within:opacity-100 flex flex-col items-center justify-center gap-1 transition-opacity">
-              <button onClick={() => actions.addToPlaylist(img.id)} className="px-3 py-1.5 text-xs font-semibold bg-white text-black rounded-lg">+ Do poradia</button>
-              <button onClick={() => actions.setBackground(img.imageUrl)} className="px-3 py-1.5 text-xs font-semibold bg-white text-black rounded-lg">Nastaviť pozadie</button>
-              <button onClick={() => remove(img)} className="px-3 py-1.5 text-xs font-semibold bg-red-600 text-white rounded-lg">Vymazať</button>
+            <div className="flex items-center gap-1 pl-2">
+              <span className="flex-1 min-w-0 text-xs truncate" title={img.title}>{img.title}</span>
+              <button onClick={() => remove(img)} className="btn-icon hover:!text-danger" title="Vymazať" aria-label={`Vymazať: ${img.title}`}>🗑</button>
+            </div>
+            <div className="grid grid-cols-2 gap-1 p-1 pt-0">
+              <button onClick={() => actions.addToPlaylist(img.id)} className="btn !min-h-[36px] !px-2 text-xs">+ Poradie</button>
+              <button onClick={() => actions.setBackground(img.imageUrl)} className="btn !min-h-[36px] !px-2 text-xs">Pozadie</button>
             </div>
           </div>
         ))}
@@ -165,6 +172,44 @@ function Presentations({ presentations, canConvert }) {
             <span className="text-xs text-muted">{p.pageCount} {pluralPages(p.pageCount)}</span>
             <button onClick={() => actions.addToPlaylist(p.id)} className="btn !min-h-[36px] !px-3 text-xs">+ Do poradia</button>
             <button onClick={() => actions.show(p)} className="btn-icon" title="Zobraziť hneď" aria-label={`Zobraziť hneď: ${p.title}`}>▶</button>
+            <button onClick={() => removeSong(p, 'prezentáciu')} className="btn-icon hover:!text-danger" title="Vymazať" aria-label={`Vymazať: ${p.title}`}>🗑</button>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+async function removeSong(song, what) {
+  if (!window.confirm(`Naozaj vymazať ${what} „${song.title}“?\n\nZmaže sa zo zoznamu na všetkých zariadeniach.`)) return;
+  actions.forget(song.id);
+  reportSave(await library.deleteSong(song.id), 'Vymazanie sa neuložilo');
+  toast(`Vymazané: ${song.title}`);
+}
+
+// Správa piesní: vyhľadanie a vymazanie
+function ManageSongs({ songs, categories }) {
+  const [query, setQuery] = useState('');
+  const q = normalizeText(query);
+  const results = q
+    ? songs.filter((s) => s.category && (normalizeText(s.title).includes(q) || String(s.number || '').startsWith(q))).slice(0, 100)
+    : [];
+  const categoryName = (id) => categories.find((c) => c.id === id)?.name || id;
+
+  return (
+    <div className="space-y-3">
+      <input type="search" className={`${input} text-base`} placeholder="Nájdi pieseň na vymazanie (názov alebo číslo)…" value={query} onChange={(e) => setQuery(e.target.value)} />
+      {!q && <p className="text-sm text-muted">Začni písať názov alebo číslo piesne.</p>}
+      {q && !results.length && <p className="text-sm text-muted">Nič sa nenašlo.</p>}
+      <div className="space-y-1">
+        {results.map((s) => (
+          <div key={s.id} className="flex items-center gap-2 pl-3 rounded-xl hover:bg-sunken">
+            <span className="w-9 shrink-0 text-right text-sm text-muted tabular-nums">{s.number || ''}</span>
+            <span className="flex-1 min-w-0">
+              <span className="block text-sm truncate">{s.title}</span>
+              <span className="block text-xs text-muted">{categoryName(s.category)}</span>
+            </span>
+            <button onClick={() => removeSong(s, 'pieseň')} className="btn !min-h-[36px] !px-3 text-xs hover:!text-danger hover:!border-danger">Vymazať</button>
           </div>
         ))}
       </div>
@@ -201,6 +246,7 @@ function Sync({ lib, health }) {
 
 const TABS = [
   ['text', 'Nový text'],
+  ['songs', 'Piesne'],
   ['images', 'Obrázky'],
   ['pdf', 'Prezentácie'],
   ['sync', 'Synchronizácia'],
@@ -222,6 +268,7 @@ export default function ContentManager({ lib, health }) {
         ))}
       </div>
       {tab === 'text' && <AddText categories={lib.categories} />}
+      {tab === 'songs' && <ManageSongs songs={lib.songs} categories={lib.categories} />}
       {tab === 'images' && <Images images={lib.images} />}
       {tab === 'pdf' && <Presentations presentations={lib.presentations} canConvert={Boolean(health?.converter?.powerpoint)} />}
       {tab === 'sync' && <Sync lib={lib} health={health} />}

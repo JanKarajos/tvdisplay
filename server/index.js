@@ -203,6 +203,15 @@ app.post('/api/uploads', requirePin, express.raw({ type: () => true, limit: '100
   }
 });
 
+// Zmazanie nahratej prezentácie (iba súbory priamo v uploads/)
+app.delete('/api/uploads/:name', requirePin, (req, res) => {
+  const name = path.basename(req.params.name);
+  if (name !== req.params.name || !name.endsWith('.pdf')) return res.status(400).json({ error: 'Neplatný názov súboru' });
+  const full = path.join(UPLOADS_DIR, name);
+  if (fs.existsSync(full)) fs.unlinkSync(full);
+  res.json({ ok: true });
+});
+
 async function githubRequest(url, options = {}) {
   return fetch(url, {
     ...options,

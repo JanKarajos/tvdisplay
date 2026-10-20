@@ -253,6 +253,25 @@ export const library = {
     return saveFile('images.json', images, `Vymazaný obrázok: ${img?.title || id}`);
   },
 
+  // Zmaže pieseň alebo prezentáciu zo songs.json; pri prezentácii aj súbor na serveri
+  async deleteSong(id) {
+    const song = songs.find((s) => s.id === id);
+    if (!song) return { ok: false, error: 'Položka sa nenašla' };
+    songs = songs.filter((s) => s.id !== id);
+    notify();
+    if (typeof song.pdfUrl === 'string' && song.pdfUrl.startsWith('/uploads/')) {
+      try {
+        await fetch(`${SERVER_URL}/api/uploads/${encodeURIComponent(song.pdfUrl.slice('/uploads/'.length))}`, {
+          method: 'DELETE',
+          headers: writeHeaders(),
+        });
+      } catch {
+        // súbor ostane na serveri, v zozname už nie je
+      }
+    }
+    return saveFile('songs.json', songs, `Vymazané: ${song.title}`);
+  },
+
   // Prezentácia (PDF, PPT, PPTX, ODP) sa nahrá na server; PowerPoint server prevedie na PDF
   // a zistí počet strán. V songs.json je iba odkaz, nie celý súbor.
   async addPresentation({ title, file }) {
