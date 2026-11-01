@@ -16,6 +16,19 @@ npm run prod           # zostaví aplikáciu a spustí server
 
 Vývoj s automatickým obnovovaním: `npm run dev` (server + Vite).
 
+## Orange Pi PC
+
+Inštalátor je jeden súbor s hotovou aplikáciou (na zariadení sa nič nekompiluje):
+
+```bash
+./scripts/build_orangepi_installer.sh                 # na počítači, vytvorí dist-orangepi/
+sudo bash tvdisplay-orangepi-install.sh               # na Orange Pi (Armbian, Debian, Ubuntu)
+```
+
+Aplikácia sa nainštaluje do `/opt/tvdisplay` a spúšťa sa sama po zapnutí. Nastavenia sú v `/opt/tvdisplay/.env`.
+Opätovné spustenie inštalátora aplikáciu aktualizuje a nezmení nastavenia, piesne ani prezentácie.
+Voľby: `--yes`, `--no-kiosk` (bez obrazovky na TV), `--no-powerpoint` (bez LibreOffice).
+
 ## Ako to funguje
 
 ```

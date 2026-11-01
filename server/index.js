@@ -13,7 +13,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { WebSocketServer } from 'ws';
-import { ACCEPTED_EXTENSIONS, PRESENTATION_EXTENSIONS, convertToPdf, countPdfPages, findSoffice } from './presentations.js';
+import { ACCEPTED_EXTENSIONS, PRESENTATION_EXTENSIONS, convertToPdf, countPdfPages, findSoffice, hasSoffice } from './presentations.js';
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const STATE_FILE = path.join(ROOT, 'state.json');
@@ -132,12 +132,13 @@ function requirePin(req, res, next) {
   return res.status(401).json({ error: 'Nesprávny alebo chýbajúci PIN' });
 }
 
-app.get('/health', async (req, res) => {
+app.get('/health', (req, res) => {
+  findSoffice(); // na pozadí, /health nesmie čakať
   res.json({
     status: 'ok',
     clients: sockets.size,
     auth: { pinRequired: Boolean(CONTROL_PIN) },
-    converter: { powerpoint: Boolean(await findSoffice()) },
+    converter: { powerpoint: hasSoffice() },
     github: {
       owner: GITHUB.owner,
       repo: GITHUB.repo,
