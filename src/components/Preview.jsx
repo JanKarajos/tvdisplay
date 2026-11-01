@@ -20,7 +20,15 @@ export default function Preview({ state, song }) {
                 </div>
               </div>
             )}
-            <SongRenderer {...song} currentPage={state.currentPage || 0} isPreview={true} />
+            {song.pdfUrl ? (
+              <div className="h-full flex flex-col items-center justify-center text-white text-center">
+                <div className="text-4xl mb-2">📄</div>
+                <div className="font-bold">{song.title}</div>
+                <div className="text-sm opacity-70 mt-1">Strana {(state.currentPage || 0) + 1} / {song.pageCount || '?'}</div>
+              </div>
+            ) : (
+              <SongRenderer {...song} currentPage={state.currentPage || 0} isPreview={true} />
+            )}
           </div>
         ) : (
           <div className="text-sm text-white opacity-40">

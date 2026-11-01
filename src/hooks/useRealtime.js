@@ -1,7 +1,27 @@
 import { useEffect } from 'react';
+import { serverAvailable } from '../api/server';
 export function createMockRealtime() {
   const listeners = new Set();
-  
+  // Posledný známy stav zo servera (null = server nie je alebo ešte neprišiel)
+  let serverState = null;
+
+  // Ak beží server (Orange Pi), počúvaj zmeny stavu cez Server-Sent Events
+  serverAvailable.then(ok => {
+    if (!ok) return;
+    const events = new EventSource('/api/events');
+    events.onmessage = (event) => {
+      try {
+        const msg = JSON.parse(event.data);
+        // 'full' = celý stav (pri pripojení), 'patch' = len zmenené položky
+        serverState = msg.type === 'full' ? msg.state : { ...serverState, ...msg.state };
+        const payload = { type: 'state', state: serverState };
+        listeners.forEach(cb => cb(payload));
+      } catch (e) {
+        console.error('Failed to parse server state:', e);
+      }
+    };
+  });
+
   // Listen for storage events to sync across tabs/windows
   window.addEventListener('storage', (event) => {
     if (event.key === 'tvdisplay-api-state') {
@@ -16,22 +36,24 @@ export function createMockRealtime() {
     }
   });
 
-  // Initial state load
-  try {
-    const savedState = localStorage.getItem('tvdisplay-api-state');
-    if (savedState) {
-      const stateData = JSON.parse(savedState);
-      const payload = { type: 'state', state: stateData };
-      setTimeout(() => {
+  // Initial state load (len bez servera - so serverom príde stav cez /api/events)
+  serverAvailable.then(ok => {
+    if (ok) return;
+    try {
+      const savedState = localStorage.getItem('tvdisplay-api-state');
+      if (savedState) {
+        const stateData = JSON.parse(savedState);
+        const payload = { type: 'state', state: stateData };
         listeners.forEach(cb => cb(payload));
-      }, 0);
+      }
+    } catch (e) {
+      console.error('Failed to load initial state:', e);
     }
-  } catch (e) {
-    console.error('Failed to load initial state:', e);
-  }
+  });
 
   return {
-    on: (cb) => { 
+    getServerState: () => serverState,
+    on: (cb) => {
       listeners.add(cb); 
       return () => listeners.delete(cb); 
     },

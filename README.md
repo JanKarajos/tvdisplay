@@ -1,39 +1,66 @@
-# SongDisplay — Vite + React + Tailwind (Preview)
+# SongDisplay — Vite + React + Tailwind
 
-This is a frontend preview project for the SongDisplay app (Control + Display pages).
-It uses **mocked data** and a **mock realtime emitter** so you can run and test the UI.
+Aplikácia na zobrazovanie textov piesní, obrázkov a PDF prezentácií na TV.
+Má dve stránky: **Ovládanie** (`#control`) a **Obrazovka** (`#display`).
+Piesne (`songs.json`), obrázky (`images.json`) a vlastné kategórie (`categories.json`) sa načítavajú z tohto GitHub repozitára.
 
-## Quick start
+## Spustenie na Orange Pi PC
 
-1. Install dependencies:
+Orange Pi pripojené k TV cez HDMI zobrazuje displej. Ovláda sa z mobilu alebo notebooku v tej istej sieti.
+
+Potrebný je Armbian (alebo iný Debian) s grafickým prostredím. Na Orange Pi spusti:
+
 ```bash
-npm install
+git clone https://github.com/JanKarajos/tvdisplay.git
+cd tvdisplay
+./orangepi/install.sh
 ```
 
-2. Start dev server:
+Skript:
+- nainštaluje Chromium a Node.js 22,
+- zbuilduje aplikáciu,
+- vytvorí službu `tvdisplay`, ktorá po zapnutí spustí server na porte 8080,
+- nastaví, aby sa po prihlásení displej otvoril na celej obrazovke.
+
+Potom:
+- **Displej:** otvorí sa sám po prihlásení. Aby sa to stalo hneď po zapnutí, zapni automatické prihlásenie (Armbian: `sudo armbian-config` → System → Desktop / Autologin).
+- **Ovládanie:** v mobile otvor `http://<IP-adresa-Orange-Pi>:8080/#control`. IP adresu zistíš príkazom `hostname -I`; skript ju vypíše na konci.
+
+Aktualizácia na novú verziu:
+
 ```bash
+cd tvdisplay && git pull && ./orangepi/install.sh
+```
+
+Užitočné príkazy:
+- `sudo systemctl status tvdisplay` — stav servera
+- `journalctl -u tvdisplay -f` — logy servera
+- `./orangepi/kiosk.sh` — ručné otvorenie displeja na celej obrazovke
+
+## Spustenie na počítači
+
+Produkčný režim (rovnaký ako na Orange Pi; displej a ovládanie môžu byť na rôznych zariadeniach):
+
+```bash
+npm install
+npm run build
+npm start          # server na http://localhost:8080 (port sa dá zmeniť cez PORT=...)
+```
+
+Vývojový režim:
+
+```bash
+npm install
 npm run dev
 ```
 
-3. Open:
-- Controller: http://localhost:5173/#control
-- Display: http://localhost:5173/#display
+- Ovládanie: http://localhost:5173/#control
+- Displej: http://localhost:5173/#display
 
-## Notes
+Vo vývojovom režime nebeží server, a stav sa synchronizuje cez `localStorage`. Ovládanie a displej preto musia byť otvorené v **tom istom prehliadači** na tom istom počítači.
 
-- The project uses mock data in `src/api/mockApi.js`. Replace those calls with your backend endpoints.
-- The app is prepared for realtime updates: the mock realtime emitter is in `src/hooks/useRealtime.js`. Replace it with a real WebSocket or Server-Sent Events client that listens to your backend.
-- The backend should implement endpoints such as:
-  - `GET /api/categories`
-  - `GET /api/songs?category=...`
-  - `GET /api/songs/:id`
-  - `POST /api/psalm/load`
-  - `GET/POST /api/state`
-  - and a WebSocket/SSE stream to broadcast state changes.
+## Ukladanie na GitHub
 
-## Deploying backend on Synology NAS
-
-We recommend packaging the backend as a Docker container. If you want, I can prepare:
-- `backend/` Express + ws + scraper
-- `Dockerfile` for backend
-- Compose file to run backend + (optional) Caddy or nginx reverse proxy
+Nové texty, obrázky, kategórie a PDF sa ukladajú do tohto repozitára cez GitHub API. V ovládaní treba v sekcii „GitHub Sync“ vyplniť Personal Access Token s právom zapisovať do repozitára (*Contents: write*).
+- PDF prezentácie sa nahrávajú ako samostatné súbory do priečinka `pdfs/`.
+- Vlastné kategórie sa ukladajú do `categories.json`.
