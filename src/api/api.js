@@ -6,7 +6,7 @@ import { log } from '../lib/log';
 // --- Žalmy --------------------------------------------------------------
 
 // Všetky Texty/Žalmy YYYY.json, ktoré existujú v čase buildu (chýbajúci rok build nezhodí)
-const bundledPsalms = import.meta.glob('../../Texty/*.json', { eager: true, import: 'default' });
+const bundledPsalms = import.meta.glob('../../Texty/Žalmy *.json', { eager: true, import: 'default' });
 
 function buildPsalmMap(dataset) {
   const map = new Map();
