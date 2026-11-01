@@ -11,6 +11,7 @@ Orange Pi pripojené k TV cez HDMI zobrazuje displej. Ovláda sa z mobilu alebo 
 Potrebný je Armbian (alebo iný Debian) s grafickým prostredím. Na Orange Pi spusti:
 
 ```bash
+sudo apt-get update && sudo apt-get install -y git
 git clone https://github.com/JanKarajos/tvdisplay.git
 cd tvdisplay
 ./orangepi/install.sh

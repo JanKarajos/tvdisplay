@@ -33,7 +33,7 @@ fi
 # --- 1. Systémové balíčky -------------------------------------------------
 info "Inštalujem systémové balíčky (Chromium, unclutter, ...)"
 sudo apt-get update
-sudo apt-get install -y curl ca-certificates xz-utils x11-xserver-utils unclutter
+sudo apt-get install -y git curl ca-certificates xz-utils x11-xserver-utils unclutter
 if ! command -v chromium >/dev/null 2>&1 && ! command -v chromium-browser >/dev/null 2>&1; then
   sudo apt-get install -y chromium || sudo apt-get install -y chromium-browser
 fi
