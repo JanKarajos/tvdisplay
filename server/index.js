@@ -13,6 +13,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { WebSocketServer } from 'ws';
+import { createPsalmStore, isValidDate } from './psalms.js';
 import { ACCEPTED_EXTENSIONS, PRESENTATION_EXTENSIONS, convertToPdf, countPdfPages, findSoffice, hasSoffice } from './presentations.js';
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
@@ -20,6 +21,7 @@ const STATE_FILE = path.join(ROOT, 'state.json');
 const TEXTY_DIR = path.join(ROOT, 'Texty');
 const DIST_DIR = path.join(ROOT, 'dist');
 const UPLOADS_DIR = path.join(ROOT, 'uploads');
+const PSALMS_DIR = path.join(ROOT, 'psalms');
 
 const STATE_PORT = Number(process.env.STATE_PORT) || 3002;
 const APP_PORT = Number(process.env.APP_PORT) || 5173;
@@ -139,6 +141,7 @@ app.get('/health', (req, res) => {
     clients: sockets.size,
     auth: { pinRequired: Boolean(CONTROL_PIN) },
     converter: { powerpoint: hasSoffice() },
+    psalms: psalms.status(),
     github: {
       owner: GITHUB.owner,
       repo: GITHUB.repo,
@@ -159,12 +162,25 @@ app.delete('/api/state', requirePin, (req, res) => {
   res.json(applyPatch({}));
 });
 
+const psalms = createPsalmStore({
+  textyDir: TEXTY_DIR,
+  psalmsDir: PSALMS_DIR,
+  onUpdate: () => broadcast({ type: 'psalms' }),
+});
+
 app.get('/api/psalms/:year', (req, res) => {
   const { year } = req.params;
   if (!/^\d{4}$/.test(year)) return res.status(400).json({ error: 'Neplatný rok' });
-  const file = path.join(TEXTY_DIR, `Žalmy ${year}.json`);
-  if (!fs.existsSync(file)) return res.status(404).json({ error: `Žalmy ${year} nie sú k dispozícii` });
-  res.sendFile(file);
+  res.json(psalms.getYear(year));
+});
+
+// Refrén na deň; ak chýba, server ho skúsi stiahnuť hneď
+app.get('/api/psalm/:date', async (req, res) => {
+  const { date } = req.params;
+  if (!isValidDate(date)) return res.status(400).json({ error: 'Neplatný dátum' });
+  const refrain = await psalms.getRefrain(date);
+  if (!refrain) return res.status(404).json({ error: 'Žalm sa nenašiel' });
+  res.json({ date, refrain });
 });
 
 // Lokálna kópia songs.json / images.json – záloha, keď GitHub nie je dostupný
@@ -275,6 +291,8 @@ app.put('/api/github/:file', requirePin, async (req, res) => {
 });
 
 // --- Štart --------------------------------------------------------------
+
+psalms.start();
 
 const apiServer = http.createServer(app);
 attachWebSocket(apiServer);

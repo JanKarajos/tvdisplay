@@ -87,6 +87,7 @@ function connect() {
       const msg = JSON.parse(event.data);
       if (msg.type === 'state') setState(msg.state);
       else if (msg.type === 'library') window.dispatchEvent(new CustomEvent('tvdisplay:library', { detail: msg.file }));
+      else if (msg.type === 'psalms') window.dispatchEvent(new CustomEvent('tvdisplay:psalms'));
     } catch (e) {
       console.error('[state] Neplatná správa zo servera', e);
     }

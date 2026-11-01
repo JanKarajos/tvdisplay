@@ -45,7 +45,9 @@ Mobil / PC (ovládanie) ──PATCH /api/state──►  server (port 3002)  ─
 - **Prezentácie** (PDF, PPT, PPTX, ODP) sa nahrávajú na server do `uploads/`, v `songs.json` je iba odkaz.
   Počet strán sa zistí automaticky. PowerPoint server prevedie na PDF cez LibreOffice:
   na Raspberry Pi `sudo apt install libreoffice-impress` (bez neho funguje iba PDF).
-- **Žalmy** sú v `Texty/Žalmy RRRR.json`. Nový rok stiahneš cez `node scripts/fetch_psalms_2027.js`.
+- **Žalmy** sú pribalené v `Texty/Žalmy RRRR.json`. Server si chýbajúce dni aktuálneho a nasledujúceho roka
+  sám sťahuje z `lc.kbs.sk` do `psalms/RRRR.json` (bez internetu to skúša znova každých 5 minút) a chýbajúci
+  deň stiahne aj hneď, keď si ho niekto vyžiada. Nový rok teda netreba riešiť ručne.
 - **PIN**: ak je v `.env` nastavený `CONTROL_PIN`, ovládanie si ho vypýta. Displej PIN nepotrebuje.
 
 ## Priebeh omše
