@@ -1,26 +1,30 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { api } from '../api/mockApi';
+import { serverAvailable } from '../api/server';
 import { useRealtime } from '../hooks/useRealtime';
 import SongRenderer from '../components/SongRenderer';
-import { Document, Page, pdfjs } from 'react-pdf';
+import { Document, Page } from 'react-pdf';
+import '../lib/pdf'; // nastaví PDF.js worker
 import 'react-pdf/dist/Page/AnnotationLayer.css';
 import 'react-pdf/dist/Page/TextLayer.css';
 
-// Configure PDF.js worker
-pdfjs.GlobalWorkerOptions.workerSrc = `//unpkg.com/pdfjs-dist@${pdfjs.version}/build/pdf.worker.min.mjs`;
-
 const defaultGithubRawUrl = 'https://raw.githubusercontent.com/JanKarajos/tvdisplay/main/songs.json';
+const defaultImagesUrl = 'https://raw.githubusercontent.com/JanKarajos/tvdisplay/main/images.json';
 
 export default function DisplayPage() {
   const [state, setState] = useState({ currentSongId: null, background: null, isHidden: false, currentPage: 0 });
   const [song, setSong] = useState(null);
-  const [pdfCurrentPage, setPdfCurrentPage] = useState(1);
   const [numPages, setNumPages] = useState(null);
+  // Promise, ktorý sa splní po prvom načítaní piesní a obrázkov
+  const dataLoaded = useRef(null);
+  // Položky, pre ktoré sme už skúsili znova stiahnuť dáta (aby sme to nerobili každú sekundu)
+  const refreshedIds = useRef(new Set());
   
-  // Auto-load songs from GitHub on mount
-  useEffect(() => {
-    const autoLoad = async () => {
+  // Auto-load songs and images from GitHub on mount
+  if (!dataLoaded.current) {
+    dataLoaded.current = (async () => {
       const savedUrl = localStorage.getItem('tvdisplay-github-raw') || defaultGithubRawUrl;
+      const savedImagesUrl = localStorage.getItem('tvdisplay-github-images-raw') || defaultImagesUrl;
       try {
         console.log('[DisplayPage] Auto-loading songs from URL:', savedUrl);
         await api.loadRemoteSongs(savedUrl);
@@ -29,8 +33,32 @@ export default function DisplayPage() {
       } catch (e) {
         console.error('[DisplayPage] Failed to auto-load songs:', e);
       }
-    };
-    autoLoad();
+      try {
+        // Obrázky sú potrebné, aby sa dal obrázok zobraziť ako obsah
+        await api.loadRemoteImages(savedImagesUrl);
+      } catch (e) {
+        console.error('[DisplayPage] Failed to auto-load images:', e);
+      }
+    })();
+  }
+
+  // Nájde pieseň/obrázok/PDF. Ak chýba (napr. bola práve pridaná na inom zariadení),
+  // stiahne aktuálne dáta z GitHubu a skúsi to znova.
+  const findItem = useCallback(async (id) => {
+    await dataLoaded.current;
+    let item = await api.getSong(id);
+    if (!item && !refreshedIds.current.has(id)) {
+      refreshedIds.current.add(id);
+      console.log('[DisplayPage] Item not found, reloading data:', id);
+      const savedUrl = localStorage.getItem('tvdisplay-github-raw') || defaultGithubRawUrl;
+      const savedImagesUrl = localStorage.getItem('tvdisplay-github-images-raw') || defaultImagesUrl;
+      await Promise.allSettled([
+        api.loadRemoteSongs(savedUrl, { fresh: true }),
+        api.loadRemoteImages(savedImagesUrl, { fresh: true }),
+      ]);
+      item = await api.getSong(id);
+    }
+    return item;
   }, []);
   
   // Load initial state
@@ -41,7 +69,7 @@ export default function DisplayPage() {
         console.log('[DisplayPage] Loaded state:', currentState);
         setState(currentState);
         if (currentState.currentSongId) {
-          const songData = await api.getSong(currentState.currentSongId);
+          const songData = await findItem(currentState.currentSongId);
           console.log('[DisplayPage] Loaded song:', songData);
           setSong(songData);
         } else {
@@ -53,10 +81,18 @@ export default function DisplayPage() {
     };
     loadState();
 
-    // Check for state every second as backup
-    const interval = setInterval(loadState, 1000);
-    return () => clearInterval(interval);
-  }, []);
+    // Bez servera kontroluj stav každú sekundu ako zálohu
+    // (so serverom chodia zmeny spoľahlivo cez /api/events)
+    let interval = null;
+    let cancelled = false;
+    serverAvailable.then(ok => {
+      if (!ok && !cancelled) interval = setInterval(loadState, 1000);
+    });
+    return () => {
+      cancelled = true;
+      clearInterval(interval);
+    };
+  }, [findItem]);
 
   // Listen for realtime updates
   const handleRealtimeUpdate = useCallback((msg) => {
@@ -65,39 +101,47 @@ export default function DisplayPage() {
       console.log('[DisplayPage] Updating state:', msg.state);
       setState(msg.state);
       if (msg.state.currentSongId) {
-        api.getSong(msg.state.currentSongId).then(song => {
+        findItem(msg.state.currentSongId).then(song => {
           console.log('[DisplayPage] Loading song:', song);
           setSong(song);
-          setPdfCurrentPage(1); // Reset to first page on new content
         });
       } else {
         setSong(null);
-        setPdfCurrentPage(1);
       }
     }
-  }, []);
+  }, [findItem]);
 
   useRealtime(handleRealtimeUpdate);
 
-  // Keyboard navigation for PDF
+  // Nový dokument - počet strán zistíme znova
+  useEffect(() => {
+    setNumPages(null);
+  }, [song?.pdfUrl]);
+
+  // Strana PDF sa riadi z ovládania (state.currentPage je číslovaná od 0)
+  const pdfPageCount = numPages || song?.pageCount || 1;
+  const pdfCurrentPage = Math.min((state.currentPage || 0) + 1, pdfPageCount);
+
+  // Klávesnica na displeji (napr. prezentačný klikač) - mení spoločný stav, takže sa to prejaví aj v ovládaní
   useEffect(() => {
     if (!song?.pdfUrl) return;
 
     const handleKeyPress = (e) => {
+      const page = state.currentPage || 0;
       if (e.key === 'ArrowRight' || e.key === 'PageDown') {
-        setPdfCurrentPage(prev => Math.min(prev + 1, song.pageCount || numPages || 1));
+        api.setState({ currentPage: Math.min(page + 1, pdfPageCount - 1) });
       } else if (e.key === 'ArrowLeft' || e.key === 'PageUp') {
-        setPdfCurrentPage(prev => Math.max(prev - 1, 1));
+        api.setState({ currentPage: Math.max(page - 1, 0) });
       } else if (e.key === 'Home') {
-        setPdfCurrentPage(1);
+        api.setState({ currentPage: 0 });
       } else if (e.key === 'End') {
-        setPdfCurrentPage(song.pageCount || numPages || 1);
+        api.setState({ currentPage: pdfPageCount - 1 });
       }
     };
 
     window.addEventListener('keydown', handleKeyPress);
     return () => window.removeEventListener('keydown', handleKeyPress);
-  }, [song, numPages]);
+  }, [song, state.currentPage, pdfPageCount]);
 
   console.log('Rendering DisplayPage with state:', state, 'and song:', song);
   
@@ -161,7 +205,6 @@ export default function DisplayPage() {
 
   const onDocumentLoadSuccess = ({ numPages }) => {
     setNumPages(numPages);
-    setPdfCurrentPage(1);
   };
 
   return (
@@ -175,6 +218,7 @@ export default function DisplayPage() {
             {song.pdfUrl ? (
               <div className="flex-1 flex flex-col items-center justify-center">
                 <Document
+                  key={song.pdfUrl}
                   file={song.pdfUrl}
                   onLoadSuccess={onDocumentLoadSuccess}
                   loading={
@@ -188,35 +232,12 @@ export default function DisplayPage() {
                     pageNumber={pdfCurrentPage}
                     renderTextLayer={true}
                     renderAnnotationLayer={true}
-                    width={Math.min(window.innerWidth * 0.95, 1400)}
+                    height={window.innerHeight * 0.95}
                     loading={
                       <div className="text-white">Načítavam stránku...</div>
                     }
                   />
                 </Document>
-                
-                {/* PDF Controls */}
-                <div className="mt-4 flex items-center gap-4 bg-black bg-opacity-70 px-6 py-3 rounded-lg">
-                  <button
-                    onClick={() => setPdfCurrentPage(prev => Math.max(prev - 1, 1))}
-                    disabled={pdfCurrentPage <= 1}
-                    className="px-4 py-2 bg-white text-black rounded disabled:opacity-30 hover:bg-gray-200"
-                  >
-                    ← Predchádzajúca
-                  </button>
-                  
-                  <div className="text-white text-lg">
-                    Strana {pdfCurrentPage} z {numPages || song.pageCount || '?'}
-                  </div>
-                  
-                  <button
-                    onClick={() => setPdfCurrentPage(prev => Math.min(prev + 1, numPages || song.pageCount || 1))}
-                    disabled={pdfCurrentPage >= (numPages || song.pageCount || 1)}
-                    className="px-4 py-2 bg-white text-black rounded disabled:opacity-30 hover:bg-gray-200"
-                  >
-                    Ďalšia →
-                  </button>
-                </div>
               </div>
             ) : (
               <div className="flex-1 w-full h-full flex items-center justify-center">

@@ -3,6 +3,7 @@ import { api } from '../api/mockApi';
 import { useRealtime } from '../hooks/useRealtime';
 import Card from '../components/Card';
 import Preview from '../components/Preview';
+import { countPdfPages } from '../lib/pdf';
 
 export default function ControlPage() {
   const [categories, setCategories] = useState([]);
@@ -31,6 +32,7 @@ export default function ControlPage() {
   const [pdfFile, setPdfFile] = useState(null);
   const [pdfUrl, setPdfUrl] = useState("");
   const [pdfPageCount, setPdfPageCount] = useState(1);
+  const [pdfCountingPages, setPdfCountingPages] = useState(false);
   const [addingPdf, setAddingPdf] = useState(false);
   const [presentations, setPresentations] = useState([]);
   // Stav pre GitHub sync
@@ -43,6 +45,8 @@ export default function ControlPage() {
   const [githubLoading, setGithubLoading] = useState(false);
 
   const defaultImagesUrl = 'https://raw.githubusercontent.com/JanKarajos/tvdisplay/main/images.json';
+  // categories.json leží vedľa songs.json
+  const categoriesUrlFor = (songsUrl) => songsUrl.replace(/[^/]*$/, 'categories.json');
 
   useEffect(() => { 
     // Auto-load from GitHub - vždy použiť URL (buď uloženú alebo predvolenú)
@@ -67,6 +71,11 @@ export default function ControlPage() {
       } catch (e) {
         console.error('Failed to auto-load images:', e);
         // Neblokovať aplikáciu ak obrázky nie sú dostupné
+      }
+      try {
+        await api.loadRemoteCategories(categoriesUrlFor(savedUrl));
+      } catch (e) {
+        console.error('Failed to auto-load categories:', e);
       }
       // Načítaj kategórie po načítaní piesní
       const cats = await api.getCategories();
@@ -206,13 +215,14 @@ export default function ControlPage() {
     return pageCount;
   };
   
-  const currentPageCount = currentSong ? getPageCount(currentSong) : 0;
+  const currentPageCount = currentSong?.pdfUrl
+    ? (currentSong.pageCount || 1)
+    : (currentSong ? getPageCount(currentSong) : 0);
   const setBackground = async (v) => {
     try {
-      console.log('Setting background, current state:', state);
-      const newState = { ...state, background: v };
-      console.log('New state before update:', newState);
-      await api.setState(newState);
+      console.log('Setting background:', v ? v.slice(0, 40) : v);
+      // Posielame len zmenu, aby sme neprepísali novší stav (napr. aktuálnu pieseň)
+      await api.setState({ background: v });
       console.log('Background set successfully');
     } catch (error) {
       console.error('Error setting background:', error);
@@ -226,30 +236,22 @@ export default function ControlPage() {
     setAddingCategory(true);
     try {
       await api.addCategory({ name: newCategoryName });
-      api.getCategories().then(setCategories);
+      api.getCategories().then(cats => setCategories([...cats]));
       setNewCategoryName("");
       
-      // Automaticky ulož na GitHub (songs.json aj images.json)
-      console.log('[Auto-save] Checking credentials:', { 
-        hasOwner: !!githubOwner, 
-        hasRepo: !!githubRepo, 
-        hasPath: !!githubPath, 
-        hasToken: !!githubToken 
-      });
+      // Automaticky ulož categories.json na GitHub (aj prázdna kategória tak prežije obnovenie stránky)
       if (githubOwner && githubRepo && githubPath && githubToken) {
-        console.log('[Auto-save] Credentials OK, saving to GitHub after adding category...');
-        await handleSaveToGitHub(true); // true = autoSave mode
-        // Ulož aj images.json
         try {
-          await api.saveImagesToGitHub({ 
-            owner: githubOwner, 
-            repo: githubRepo, 
-            path: 'images.json', 
-            token: githubToken 
+          await api.saveCategoriesToGitHub({
+            owner: githubOwner,
+            repo: githubRepo,
+            path: githubPath.replace(/[^/]*$/, 'categories.json'),
+            token: githubToken
           });
-          console.log('[Auto-save] Images saved to GitHub');
+          console.log('[Auto-save] Categories saved to GitHub');
         } catch (e) {
-          console.error('[Auto-save] Failed to save images:', e);
+          console.error('[Auto-save] Failed to save categories:', e);
+          alert('Kategóriu sa nepodarilo uložiť na GitHub: ' + e.message);
         }
       } else {
         console.warn('[Auto-save] Missing GitHub credentials - skipping auto-save');
@@ -368,7 +370,7 @@ export default function ControlPage() {
     }
   };
 
-  const handlePdfFile = (e) => {
+  const handlePdfFile = async (e) => {
     const file = e.target.files && e.target.files[0];
     if (!file || file.type !== 'application/pdf') {
       alert('Prosím vyberte PDF súbor');
@@ -380,17 +382,49 @@ export default function ControlPage() {
       setPdfUrl(ev.target.result);
     };
     reader.readAsDataURL(file);
+    // Počet strán zistíme priamo z PDF
+    setPdfCountingPages(true);
+    try {
+      setPdfPageCount(await countPdfPages(file));
+    } catch (err) {
+      console.error('Could not count PDF pages:', err);
+    }
+    setPdfCountingPages(false);
   };
 
   const handleAddPdf = async (e) => {
     e.preventDefault();
     if (!pdfTitle || !pdfUrl) return;
     setAddingPdf(true);
+    let finalPdfUrl = pdfUrl;
+    const canSave = githubOwner && githubRepo && githubPath && githubToken;
+    if (canSave) {
+      // PDF nahráme ako samostatný súbor (pdfs/...) a do songs.json uložíme len odkaz naň
+      try {
+        const safeName = (pdfFile?.name || 'prezentacia.pdf').replace(/[^\w.-]+/g, '_');
+        finalPdfUrl = await api.uploadPdfToGitHub({
+          owner: githubOwner,
+          repo: githubRepo,
+          path: `pdfs/${Date.now()}-${safeName}`,
+          token: githubToken,
+          dataUrl: pdfUrl,
+          message: `Add PDF: ${pdfTitle}`
+        });
+      } catch (err) {
+        console.error('Failed to upload PDF:', err);
+        alert('PDF sa nepodarilo nahrať na GitHub: ' + err.message);
+        setAddingPdf(false);
+        return;
+      }
+    }
     await api.addCustomSong({
       title: pdfTitle,
-      pdfUrl: pdfUrl,
+      pdfUrl: finalPdfUrl,
       pageCount: pdfPageCount,
     });
+    if (canSave) {
+      await handleSaveToGitHub(true); // true = autoSave mode
+    }
     setPdfTitle("");
     setPdfFile(null);
     setPdfUrl("");
@@ -404,8 +438,13 @@ export default function ControlPage() {
     setGithubLoading(true);
     try {
       await api.loadRemoteSongs(githubRawUrl);
+      try {
+        await api.loadRemoteCategories(categoriesUrlFor(githubRawUrl));
+      } catch (e) {
+        console.error('Failed to load categories:', e);
+      }
       // Refresh local views
-      api.getCategories().then(setCategories);
+      api.getCategories().then(cats => setCategories([...cats]));
       api.getPresentations().then(setPresentations);
       api.getImages().then(setImages);
       setSongs([]);
@@ -468,13 +507,13 @@ export default function ControlPage() {
               )}
             </div>
             
-            {/* Navigácia strán piesne */}
-            {currentSong?.lyrics && (
+            {/* Navigácia strán piesne / PDF prezentácie */}
+            {(currentSong?.lyrics || currentSong?.pdfUrl) && (
               <div className="mt-4 pt-4 border-t">
-                <div className="text-sm font-medium mb-2">Strana piesne:</div>
+                <div className="text-sm font-medium mb-2">{currentSong.pdfUrl ? 'Strana prezentácie:' : 'Strana piesne:'}</div>
                 <div className="flex items-center gap-3">
                   <button 
-                    onClick={() => api.setState({ ...state, currentPage: Math.max((state.currentPage || 0) - 1, 0) })}
+                    onClick={() => api.setState({ currentPage: Math.max((state.currentPage || 0) - 1, 0) })}
                     disabled={(state.currentPage || 0) === 0}
                     className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 disabled:bg-gray-300 disabled:cursor-not-allowed"
                   >
@@ -484,14 +523,14 @@ export default function ControlPage() {
                     Strana {(state.currentPage || 0) + 1} / {currentPageCount}
                   </div>
                   <button 
-                    onClick={() => api.setState({ ...state, currentPage: Math.min((state.currentPage || 0) + 1, currentPageCount - 1) })}
+                    onClick={() => api.setState({ currentPage: Math.min((state.currentPage || 0) + 1, currentPageCount - 1) })}
                     disabled={(state.currentPage || 0) >= currentPageCount - 1}
                     className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 disabled:bg-gray-300 disabled:cursor-not-allowed"
                   >
                     Ďalšia →
                   </button>
                   <button 
-                    onClick={() => api.setState({ ...state, currentPage: 0 })}
+                    onClick={() => api.setState({ currentPage: 0 })}
                     className="px-3 py-2 text-sm border rounded hover:bg-gray-50"
                   >
                     Prvá strana
@@ -710,6 +749,11 @@ export default function ControlPage() {
         </Card>
 
         <Card title="Pridať PDF prezentáciu">
+          {!githubToken && (
+            <div className="mb-3 p-2 bg-yellow-50 border border-yellow-200 rounded text-sm text-yellow-800">
+              ⚠️ Upozornenie: Bez GitHub tokenu sa PDF zobrazí len v tomto prehliadači a po obnovení stránky zmizne. Vyplň GitHub token v sekcii "GitHub Sync".
+            </div>
+          )}
           <form className="space-y-2" onSubmit={handleAddPdf}>
             <input
               className="border rounded px-2 py-1 w-full"
@@ -731,6 +775,7 @@ export default function ControlPage() {
                 <div className="px-3 py-2 bg-gray-100 rounded border text-sm">
                   📄 PDF načítané
                 </div>
+                <label className="text-sm text-gray-600">{pdfCountingPages ? 'Zisťujem strany...' : 'Počet strán:'}</label>
                 <input
                   type="number"
                   min="1"
@@ -745,8 +790,8 @@ export default function ControlPage() {
             <button
               type="submit"
               className="bg-blue-500 text-white px-3 py-1 rounded disabled:opacity-50"
-              disabled={addingPdf || !pdfTitle || !pdfUrl}
-            >Pridať PDF</button>
+              disabled={addingPdf || pdfCountingPages || !pdfTitle || !pdfUrl}
+            >{addingPdf ? 'Nahrávam...' : 'Pridať PDF'}</button>
           </form>
         </Card>
 
