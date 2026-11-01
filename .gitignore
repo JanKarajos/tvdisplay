@@ -1,4 +1,7 @@
 node_modules
 /dist
 .env
-/tvdisplay-state.json
+*.tar.gz
+state.json
+.DS_Store
+uploads/

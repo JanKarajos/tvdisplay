@@ -1,141 +1,109 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useCallback, useLayoutEffect, useMemo, useRef, useState } from 'react';
+import { splitIntoPages } from '../lib/lyrics';
 
-export default function SongRenderer({ lyrics, title, number, imageUrl, currentPage = 0, isPreview = false }) {
-  const containerRef = useRef(null);
-  const [fontSize, setFontSize] = useState(48);
-  const [pages, setPages] = useState([]);
+// Písmo sa nastaví podľa najdlhšej strofy (rovnaké na všetkých stranách) a skutočne sa zmeria,
+// takže text sa vždy zmestí. Všetky rozmery sú pomerné k výške plochy, preto náhľad
+// v ovládaní vyzerá presne ako zmenšená TV.
+const LINE_HEIGHT = 1.35;
 
-  console.log('SongRenderer props:', { lyrics, title, number, imageUrl, lyricsLength: lyrics?.length, currentPage, isPreview });
+function fitFontSize(measure, pages, height, maxSize) {
+  let best = Infinity;
+  for (const lines of pages) {
+    measure.textContent = lines.join('\n');
+    let lo = 4;
+    let hi = maxSize;
+    for (let i = 0; i < 10; i++) {
+      const mid = (lo + hi) / 2;
+      measure.style.fontSize = `${mid}px`;
+      // scrollWidth > clientWidth znamená, že sa nejaké slovo nezmestí ani po zalomení
+      if (measure.scrollHeight <= height + 1 && measure.scrollWidth <= measure.clientWidth + 1) lo = mid;
+      else hi = mid;
+    }
+    best = Math.min(best, lo);
+  }
+  return Math.floor(best);
+}
 
-  // Rozdeliť text na strany a nastaviť veľkosť písma
-  useEffect(() => {
-    if (!lyrics) {
-      console.log('SongRenderer: No lyrics');
-      setPages([]);
-      return;
-    }
+export default function SongRenderer({ lyrics, title, number, imageUrl, currentPage = 0, hideTitle = false, accent = '#e4e4e7' }) {
+  const boxRef = useRef(null);
+  const measureRef = useRef(null);
+  const [fontSize, setFontSize] = useState(null);
+  const [boxHeight, setBoxHeight] = useState(0);
 
-    const allLines = lyrics.split('\n');
-    const viewportHeight = window.innerHeight;
-    const viewportWidth = window.innerWidth;
-    
-    // Rozdeliť na strany podľa strof (oddelené prázdnymi riadkami)
-    const newPages = [];
-    let currentStanza = [];
-    
-    for (let i = 0; i < allLines.length; i++) {
-      const line = allLines[i];
-      
-      // Ak je riadok prázdny a máme nejaký obsah, ukonči strofu
-      if (!line.trim() && currentStanza.length > 0) {
-        // Pridaj strofu ako samostatnú stranu
-        newPages.push([...currentStanza]);
-        currentStanza = [];
-        continue;
-      }
-      
-      // Pridaj neprázdny riadok do aktuálnej strofy
-      if (line.trim()) {
-        currentStanza.push(line);
-      }
-    }
-    
-    // Pridaj poslednú strofu ak existuje
-    if (currentStanza.length > 0) {
-      newPages.push(currentStanza);
-    }
-    
-    // Vypočítaj veľkosť písma pre najdlhšiu strofu
-    const maxLinesInPage = Math.max(...newPages.map(p => p.length), 1);
-    
-    // Vypočítaj aj najdlhší riadok v znakoch
-    const maxLineLength = Math.max(
-      ...newPages.flatMap(page => page.map(line => line.length)),
-      1
-    );
-    
-    let calculatedFontSize;
-    
-    if (isPreview) {
-      // Pre preview - počítame s lineHeight 1.5 a rezervou pre nadpis/okraje
-      const availableHeight = viewportHeight - 80; // rezerva pre nadpis a okraje
-      calculatedFontSize = availableHeight / (maxLinesInPage * 1.5);
-      calculatedFontSize = Math.max(8, Math.min(20, calculatedFontSize));
-    } else {
-      // Pre fullscreen displej
-      // lineHeight je 1.5, takže skutočná výška je lines * fontSize * 1.5
-      // Ak má riadok viac ako 80 znakov, pravdepodobne sa zalomí na 2-3 riadky
-      // Zvýšený koeficient pre istotu že sa text zmestí
-      const estimatedLinesPerRow = maxLineLength > 120 ? 3.5 : 
-                                    maxLineLength > 100 ? 3 : 
-                                    maxLineLength > 80 ? 2.5 : 
-                                    maxLineLength > 60 ? 2 : 1.5;
-      
-      const estimatedTotalLines = maxLinesInPage * estimatedLinesPerRow;
-      
-      const reservedSpace = 180; // priestor pre nadpis, padding a okraje (zvýšené)
-      const availableHeight = viewportHeight - reservedSpace;
-      calculatedFontSize = availableHeight / (estimatedTotalLines * 1.5);
-      calculatedFontSize = Math.max(18, Math.min(48, calculatedFontSize));
-    }
-    
-    setFontSize(calculatedFontSize);
-    
-    console.log('Split into', newPages.length, 'stanzas/pages with font size', calculatedFontSize, 'max line length:', maxLineLength, 'isPreview:', isPreview);
-    setPages(newPages);
-  }, [lyrics, isPreview]);
+  const pages = useMemo(() => splitIntoPages(lyrics), [lyrics]);
+
+  const fit = useCallback(() => {
+    const box = boxRef.current;
+    const measure = measureRef.current;
+    if (!box || !measure || !pages.length) return;
+    const { clientHeight } = box;
+    if (!clientHeight) return;
+    setBoxHeight(clientHeight);
+    // Hore je nadpis v rohu, dole bodky – text má zvyšných ~84 % výšky
+    setFontSize(fitFontSize(measure, pages, clientHeight * 0.84, clientHeight / 8.5));
+  }, [pages]);
+
+  useLayoutEffect(() => {
+    fit();
+    const box = boxRef.current;
+    if (!box) return undefined;
+    const ro = new ResizeObserver(fit);
+    ro.observe(box);
+    return () => ro.disconnect();
+  }, [fit]);
 
   if (imageUrl && !lyrics) {
     return (
-      <div className="flex flex-col items-center justify-center w-full h-full">
-        <img src={imageUrl} alt={title || 'Obrázok'} className="max-h-[80vh] max-w-full object-contain rounded shadow" />
-        {title && <div className="mt-4 text-white text-3xl font-bold">{title}</div>}
+      <div className="flex items-center justify-center w-full h-full">
+        <img src={imageUrl} alt={title || 'Obrázok'} className="max-h-full max-w-full object-contain" />
       </div>
     );
   }
 
-  if (!lyrics || pages.length === 0) {
-    console.log('No lyrics to display');
-    return (
-      <div className="text-white text-2xl text-center">
-        Žiadny text k dispozícii
-      </div>
-    );
+  if (!pages.length) {
+    return <div className="w-full h-full flex items-center justify-center text-white/50">Žiadny text</div>;
   }
 
-  const currentPageLines = pages[currentPage] || [];
-  console.log('Displaying page', currentPage + 1, 'of', pages.length, 'with', currentPageLines.length, 'lines', 'fontSize:', fontSize);
-  
+  const pageIndex = Math.max(0, Math.min(currentPage, pages.length - 1));
+  const textStyle = { lineHeight: LINE_HEIGHT, whiteSpace: 'pre-wrap', textAlign: 'center', fontWeight: 600 };
+  const unit = boxHeight / 100; // 1 % výšky
+
   return (
-    <div ref={containerRef} className="text-white w-full h-full flex flex-col items-center justify-center px-4 py-4 relative overflow-hidden">
-      <div className="flex flex-col items-center justify-center w-full" style={{ maxHeight: '95vh' }}>
-        {title && (
-          <div 
-            className="mb-6 font-bold text-center flex-shrink-0"
-            style={{ fontSize: `${Math.min(fontSize * 1.2, 48)}px` }}
-          >
-            {number && `${number}. `}{title}
-          </div>
-        )}
-        <div 
-          className="text-center w-full max-w-5xl px-4 overflow-hidden"
-          style={{ 
-            fontSize: `${fontSize}px`,
-            lineHeight: '1.5'
-          }}
+    <div ref={boxRef} className="relative w-full h-full flex items-center justify-center overflow-hidden text-white">
+      {/* Neviditeľný prvok na meranie textu */}
+      <div ref={measureRef} aria-hidden="true" className="song-text absolute invisible pointer-events-none left-0 top-0" style={{ ...textStyle, width: '90%' }} />
+
+      {!hideTitle && title && (
+        <div
+          className="song-title absolute left-0 top-0 font-semibold truncate max-w-[70%]"
+          style={{ color: accent, opacity: 0.8, fontSize: Math.max(8, unit * 3.4), padding: `${unit * 2.5}px ${unit * 4}px` }}
         >
-          {currentPageLines.map((l, i) => (
-            <div key={i} className="break-words whitespace-pre-wrap">{l || '\u00A0'}</div>
-          ))}
+          {number ? `${number} · ` : ''}{title}
         </div>
+      )}
+
+      <div
+        key={`${pageIndex}-${lyrics.length}`}
+        className="song-text animate-fade-in w-[90%]"
+        style={{ ...textStyle, overflowWrap: 'anywhere', fontSize: fontSize ?? 0, visibility: fontSize ? 'visible' : 'hidden' }}
+      >
+        {pages[pageIndex].join('\n')}
       </div>
-      
-      {/* Indikátor strany */}
+
       {pages.length > 1 && (
-        <div className="absolute bottom-8 right-8">
-          <div className="text-white text-3xl font-bold bg-black/50 px-8 py-4 rounded-lg">
-            {currentPage + 1} / {pages.length}
-          </div>
+        <div className="absolute left-0 right-0 flex justify-center" style={{ bottom: unit * 3.5, gap: unit * 1.2 }} aria-label={`Strofa ${pageIndex + 1} z ${pages.length}`}>
+          {pages.map((_, i) => (
+            <span
+              key={i}
+              className="rounded-full transition-all duration-300"
+              style={{
+                width: i === pageIndex ? unit * 3.2 : unit * 1.1,
+                height: unit * 1.1,
+                background: accent,
+                opacity: i === pageIndex ? 0.9 : 0.3,
+              }}
+            />
+          ))}
         </div>
       )}
     </div>

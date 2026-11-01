@@ -1,22 +1,22 @@
-import React, { useState, useEffect } from 'react';
-import Header from './components/Header';
+import React, { useEffect, useState } from 'react';
 import DisplayPage from './pages/DisplayPage';
 import ControlPage from './pages/ControlPage';
+import ControlPageLegacy from './pages/ControlPageLegacy';
+
+function currentRoute() {
+  return window.location.hash.replace('#', '') || 'control';
+}
 
 export default function App() {
-  const [route, setRoute] = useState(() => window.location.hash.replace('#', '') || 'control');
+  const [route, setRoute] = useState(currentRoute);
+
   useEffect(() => {
-    const onHash = () => setRoute(window.location.hash.replace('#', '') || 'control');
+    const onHash = () => setRoute(currentRoute());
     window.addEventListener('hashchange', onHash);
     return () => window.removeEventListener('hashchange', onHash);
   }, []);
 
-  return (
-    <div className="min-h-screen bg-gray-50 text-gray-900">
-      <Header />
-      <div className="p-6">
-        {route === 'display' ? <DisplayPage /> : <ControlPage />}
-      </div>
-    </div>
-  );
+  if (route === 'display') return <DisplayPage />;
+  if (route === 'control-legacy') return <ControlPageLegacy />;
+  return <ControlPage />;
 }

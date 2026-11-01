@@ -1,0 +1,251 @@
+<!DOCTYPE html>
+<html lang="sk">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Real-time Synchronizácie</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-100 p-8">
+    <div class="max-w-4xl mx-auto">
+        <h1 class="text-3xl font-bold mb-6">🔄 Test Real-time Synchronizácie</h1>
+        
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <!-- State Server Status -->
+            <div class="bg-white p-6 rounded-lg shadow">
+                <h2 class="text-xl font-bold mb-4">State Server</h2>
+                <div id="serverStatus" class="space-y-2">
+                    <div class="text-gray-500">Kontrolujem...</div>
+                </div>
+            </div>
+            
+            <!-- Current State -->
+            <div class="bg-white p-6 rounded-lg shadow">
+                <h2 class="text-xl font-bold mb-4">Aktuálny Stav</h2>
+                <div id="currentState" class="space-y-2">
+                    <div class="text-gray-500">Načítavam...</div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Test Controls -->
+        <div class="mt-6 bg-white p-6 rounded-lg shadow">
+            <h2 class="text-xl font-bold mb-4">Test Ovládanie</h2>
+            <div class="space-y-4">
+                <div>
+                    <label class="block text-sm font-medium mb-2">Test Song ID:</label>
+                    <input type="text" id="testSongId" 
+                           value="test-song-123"
+                           class="border rounded px-3 py-2 w-full max-w-md">
+                </div>
+                <div class="flex gap-3">
+                    <button onclick="setTestSong()" 
+                            class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">
+                        Nastav Pieseň
+                    </button>
+                    <button onclick="clearState()" 
+                            class="bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded">
+                        Vyčisti Stav
+                    </button>
+                    <button onclick="toggleHidden()" 
+                            class="bg-yellow-500 hover:bg-yellow-700 text-white font-bold py-2 px-4 rounded">
+                        Toggle Hidden
+                    </button>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Update Log -->
+        <div class="mt-6 bg-white p-6 rounded-lg shadow">
+            <h2 class="text-xl font-bold mb-4">Log Zmien</h2>
+            <div id="updateLog" class="space-y-1 text-sm font-mono max-h-64 overflow-y-auto">
+                <!-- Log entries will appear here -->
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const STATE_SERVER_URL = window.location.hostname === 'localhost' 
+            ? 'http://localhost:3002' 
+            : `http://${window.location.hostname}:3002`;
+
+        let pollingInterval;
+        let lastState = null;
+
+        // Pridaj log entry
+        function addLog(message, type = 'info') {
+            const log = document.getElementById('updateLog');
+            const time = new Date().toLocaleTimeString();
+            const colors = {
+                info: 'text-blue-600',
+                success: 'text-green-600',
+                error: 'text-red-600',
+                update: 'text-purple-600'
+            };
+            const entry = document.createElement('div');
+            entry.className = colors[type] || colors.info;
+            entry.textContent = `[${time}] ${message}`;
+            log.insertBefore(entry, log.firstChild);
+            
+            // Limit log entries
+            while (log.children.length > 50) {
+                log.removeChild(log.lastChild);
+            }
+        }
+
+        // Načítaj a zobraz stav
+        async function fetchState() {
+            try {
+                const response = await fetch(`${STATE_SERVER_URL}/api/state`);
+                if (response.ok) {
+                    const state = await response.json();
+                    displayState(state);
+                    
+                    // Skontroluj zmeny
+                    if (lastState && JSON.stringify(state) !== JSON.stringify(lastState)) {
+                        addLog('Stav sa zmenil!', 'update');
+                        highlightChanges(lastState, state);
+                    }
+                    lastState = state;
+                    return state;
+                }
+            } catch (error) {
+                addLog('Chyba pri načítaní stavu: ' + error.message, 'error');
+            }
+        }
+
+        // Zobraz stav
+        function displayState(state) {
+            const div = document.getElementById('currentState');
+            div.innerHTML = `
+                <div class="space-y-2 text-sm">
+                    <div><strong>Current Song:</strong> ${state.currentSongId || 'none'}</div>
+                    <div><strong>Background:</strong> ${state.background || 'none'}</div>
+                    <div><strong>Hidden:</strong> ${state.isHidden ? 'Yes' : 'No'}</div>
+                    <div><strong>Current Page:</strong> ${state.currentPage || 0}</div>
+                    <div><strong>Last Update:</strong> ${new Date(state.lastUpdate).toLocaleTimeString()}</div>
+                </div>
+            `;
+        }
+
+        // Zvýrazni zmeny
+        function highlightChanges(oldState, newState) {
+            const changes = [];
+            for (const key in newState) {
+                if (oldState[key] !== newState[key] && key !== 'lastUpdate') {
+                    changes.push(`${key}: ${oldState[key]} → ${newState[key]}`);
+                }
+            }
+            if (changes.length > 0) {
+                addLog(`Zmeny: ${changes.join(', ')}`, 'update');
+            }
+        }
+
+        // Nastav test pieseň
+        async function setTestSong() {
+            const songId = document.getElementById('testSongId').value;
+            try {
+                const response = await fetch(`${STATE_SERVER_URL}/api/state`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ currentSongId: songId })
+                });
+                if (response.ok) {
+                    addLog(`Pieseň nastavená: ${songId}`, 'success');
+                    await fetchState();
+                }
+            } catch (error) {
+                addLog('Chyba pri nastavení piesne: ' + error.message, 'error');
+            }
+        }
+
+        // Vyčisti stav
+        async function clearState() {
+            try {
+                const response = await fetch(`${STATE_SERVER_URL}/api/state`, {
+                    method: 'DELETE'
+                });
+                if (response.ok) {
+                    addLog('Stav vyčistený', 'success');
+                    await fetchState();
+                }
+            } catch (error) {
+                addLog('Chyba pri čistení stavu: ' + error.message, 'error');
+            }
+        }
+
+        // Toggle hidden
+        async function toggleHidden() {
+            try {
+                const currentState = await fetchState();
+                const response = await fetch(`${STATE_SERVER_URL}/api/state`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ isHidden: !currentState.isHidden })
+                });
+                if (response.ok) {
+                    addLog(`Hidden: ${!currentState.isHidden}`, 'success');
+                    await fetchState();
+                }
+            } catch (error) {
+                addLog('Chyba pri toggle: ' + error.message, 'error');
+            }
+        }
+
+        // Kontrola server statusu
+        async function checkServer() {
+            try {
+                const response = await fetch(`${STATE_SERVER_URL}/health`);
+                if (response.ok) {
+                    const health = await response.json();
+                    document.getElementById('serverStatus').innerHTML = `
+                        <div class="space-y-2 text-sm">
+                            <div class="text-green-600 font-bold">✅ Server je dostupný</div>
+                            <div><strong>URL:</strong> ${STATE_SERVER_URL}</div>
+                            <div><strong>Status:</strong> ${health.status}</div>
+                            <div><strong>State Age:</strong> ${Math.round(health.stateAge / 1000)}s</div>
+                            <div><strong>Current Song:</strong> ${health.currentSong}</div>
+                        </div>
+                    `;
+                    return true;
+                }
+            } catch (error) {
+                document.getElementById('serverStatus').innerHTML = `
+                    <div class="text-red-600">
+                        <div class="font-bold">❌ Server nie je dostupný</div>
+                        <div class="text-sm mt-2">${error.message}</div>
+                    </div>
+                `;
+                return false;
+            }
+        }
+
+        // Inicializácia
+        async function init() {
+            addLog('Aplikácia spustená', 'info');
+            
+            const serverOk = await checkServer();
+            if (serverOk) {
+                await fetchState();
+                
+                // Spusti polling každé 2 sekundy
+                pollingInterval = setInterval(async () => {
+                    await fetchState();
+                }, 2000);
+                
+                addLog('Polling spustený (každé 2s)', 'success');
+            }
+        }
+
+        // Cleanup
+        window.addEventListener('beforeunload', () => {
+            if (pollingInterval) {
+                clearInterval(pollingInterval);
+            }
+        });
+
+        // Štart
+        init();
+    </script>
+</body>
+</html>

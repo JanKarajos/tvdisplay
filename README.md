@@ -1,67 +1,87 @@
-# SongDisplay — Vite + React + Tailwind
+# SongDisplay (tvdisplay)
 
-Aplikácia na zobrazovanie textov piesní, obrázkov a PDF prezentácií na TV.
-Má dve stránky: **Ovládanie** (`#control`) a **Obrazovka** (`#display`).
-Piesne (`songs.json`), obrázky (`images.json`) a vlastné kategórie (`categories.json`) sa načítavajú z tohto GitHub repozitára.
+Zobrazovanie textov piesní, žalmov, obrázkov a PDF prezentácií na TV v kostole.
+Ovládanie beží v prehliadači na mobile/PC, displej na zariadení pri TV (napr. Raspberry Pi v kiosk režime).
 
-## Spustenie na Orange Pi PC
-
-Orange Pi pripojené k TV cez HDMI zobrazuje displej. Ovláda sa z mobilu alebo notebooku v tej istej sieti.
-
-Potrebný je Armbian (alebo iný Debian) s grafickým prostredím. Na Orange Pi spusti:
-
-```bash
-sudo apt-get update && sudo apt-get install -y git
-git clone https://github.com/JanKarajos/tvdisplay.git
-cd tvdisplay
-./orangepi/install.sh
-```
-
-Skript:
-- nainštaluje Chromium a Node.js 22,
-- zbuilduje aplikáciu,
-- vytvorí službu `tvdisplay`, ktorá po zapnutí spustí server na porte 8080,
-- nastaví, aby sa po prihlásení displej otvoril na celej obrazovke.
-
-Potom:
-- **Displej:** otvorí sa sám po prihlásení. Aby sa to stalo hneď po zapnutí, zapni automatické prihlásenie (Armbian: `sudo armbian-config` → System → Desktop / Autologin).
-- **Ovládanie:** v mobile otvor `http://<IP-adresa-Orange-Pi>:8080/#control`. IP adresu zistíš príkazom `hostname -I`; skript ju vypíše na konci.
-
-Aktualizácia na novú verziu:
-
-```bash
-cd tvdisplay && git pull && ./orangepi/install.sh
-```
-
-Užitočné príkazy:
-- `sudo systemctl status tvdisplay` — stav servera
-- `journalctl -u tvdisplay -f` — logy servera
-- `./orangepi/kiosk.sh` — ručné otvorenie displeja na celej obrazovke
-
-## Spustenie na počítači
-
-Produkčný režim (rovnaký ako na Orange Pi; displej a ovládanie môžu byť na rôznych zariadeniach):
+## Spustenie
 
 ```bash
 npm install
-npm run build
-npm start          # server na http://localhost:8080 (port sa dá zmeniť cez PORT=...)
+cp .env.example .env   # doplň GITHUB_TOKEN a prípadne CONTROL_PIN
+npm run prod           # zostaví aplikáciu a spustí server
 ```
 
-Vývojový režim:
+- Ovládanie: `http://<IP>:5173/#control`
+- Displej: `http://<IP>:5173/#display` (kláves **F** = celá obrazovka)
+
+Vývoj s automatickým obnovovaním: `npm run dev` (server + Vite).
+
+## Orange Pi PC
+
+Inštalátor je jeden súbor s hotovou aplikáciou (na zariadení sa nič nekompiluje):
 
 ```bash
-npm install
-npm run dev
+./scripts/build_orangepi_installer.sh                 # na počítači, vytvorí dist-orangepi/
+sudo bash tvdisplay-orangepi-install.sh               # na Orange Pi (Armbian, Debian, Ubuntu)
 ```
 
-- Ovládanie: http://localhost:5173/#control
-- Displej: http://localhost:5173/#display
+Aplikácia sa nainštaluje do `/opt/tvdisplay` a spúšťa sa sama po zapnutí. Nastavenia sú v `/opt/tvdisplay/.env`.
+Opätovné spustenie inštalátora aplikáciu aktualizuje a nezmení nastavenia, piesne ani prezentácie.
+Voľby: `--yes`, `--no-kiosk` (bez obrazovky na TV), `--no-powerpoint` (bez LibreOffice).
 
-Vo vývojovom režime nebeží server, a stav sa synchronizuje cez `localStorage`. Ovládanie a displej preto musia byť otvorené v **tom istom prehliadači** na tom istom počítači.
+## Ako to funguje
 
-## Ukladanie na GitHub
+```
+Mobil / PC (ovládanie) ──PATCH /api/state──►  server (port 3002)  ──WebSocket──►  všetky zariadenia
+                                              │  state.json, uploads/, Texty/
+                                              └─ GitHub (songs.json, images.json) – token je iba na serveri
+```
 
-Nové texty, obrázky, kategórie a PDF sa ukladajú do tohto repozitára cez GitHub API. V ovládaní treba v sekcii „GitHub Sync“ vyplniť Personal Access Token s právom zapisovať do repozitára (*Contents: write*).
-- PDF prezentácie sa nahrávajú ako samostatné súbory do priečinka `pdfs/`.
-- Vlastné kategórie sa ukladajú do `categories.json`.
+- **Synchronizácia** cez WebSocket, zmeny sa prejavia okamžite. Pri výpadku sa klient sám pripojí znova.
+  Bez servera funguje len v rámci jedného prehliadača (localStorage).
+- **Piesne a obrázky** sa načítavajú z GitHubu. Keď nie je dostupný, použije sa lokálna kópia na serveri
+  a potom posledná verzia uložená v prehliadači.
+- **Ukladanie** (nový text, obrázok, PDF) ide cez server, ktorý súbor uloží lokálne aj na GitHub.
+- **Prezentácie** (PDF, PPT, PPTX, ODP) sa nahrávajú na server do `uploads/`, v `songs.json` je iba odkaz.
+  Počet strán sa zistí automaticky. PowerPoint server prevedie na PDF cez LibreOffice:
+  na Raspberry Pi `sudo apt install libreoffice-impress` (bez neho funguje iba PDF).
+- **Žalmy** sú v `Texty/Žalmy RRRR.json`. Nový rok stiahneš cez `node scripts/fetch_psalms_2027.js`.
+- **PIN**: ak je v `.env` nastavený `CONTROL_PIN`, ovládanie si ho vypýta. Displej PIN nepotrebuje.
+
+## Priebeh omše
+
+1. V záložke **Omša** klikaj na piesne v zozname, každá sa pridá na koniec **poradia**.
+   Žalm pridáš tlačidlom **+ Žalm** (predvolene najbližšia nedeľa). Poradie meníš ťahaním za úchyt ⠿.
+2. Počas omše stačí stláčať **Ďalej** v spodnej lište (alebo → / PageDown / kliker):
+   prechádzajú sa strofy a na poslednej strofe sa automaticky zobrazí ďalšia položka poradia.
+3. **▶** zobrazí pieseň hneď, aj mimo poradia. Potom „Ďalej“ pokračuje v poradí tam, kde sa skončilo.
+4. **Skryť** (kláves H) skryje text a ukáže pozadie.
+
+Záložka **Obrazovka**: farebná téma TV (automaticky podľa liturgického obdobia), pozadie a voľba
+„Text cez obrázok pozadia“. Záložka **Obsah**: nové texty, obrázky, PDF a stav synchronizácie.
+Ikona ◐ v hlavičke prepína svetlý/tmavý režim ovládania.
+
+## Ovládanie klávesnicou
+
+| Kláves | Akcia |
+| --- | --- |
+| → / PageDown | ďalšia strofa, na poslednej strofe ďalšia položka poradia |
+| ← / PageUp | predchádzajúca strofa, na prvej strofe predchádzajúca položka |
+| H | skryť / zobraziť text na TV |
+
+Fungujú aj bežné klikery na prezentácie (posielajú PageUp/PageDown).
+
+## Ladenie
+
+Ladiace výpisy v konzole zapneš príkazom `localStorage.setItem('tvdisplay-debug', '1')` alebo pridaním `?debug` do URL.
+
+## Štruktúra
+
+- `server/index.js` – API, WebSocket, GitHub, nahrávanie PDF, servírovanie `dist/`
+- `src/api/stateClient.js` – zdieľaný stav a pripojenie
+- `src/api/api.js` – knižnica piesní, obrázkov, PDF a žalmov
+- `src/pages/ControlPage.jsx`, `src/components/control/*` – ovládanie
+- `src/pages/DisplayPage.jsx`, `src/components/Stage.jsx` – displej (rovnaký `Stage` sa používa aj v náhľade)
+- `archiv/` – staré jednorazové skripty a dokumentácia
+
+Automatické spúšťanie po zapnutí: pozri [AUTOSTART.md](AUTOSTART.md).
