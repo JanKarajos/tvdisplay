@@ -1,0 +1,16 @@
+# Administrácia TV Display - Synology NAS (Container Manager -> Projekt)
+services:
+  tvdisplay-admin:
+    build: .
+    container_name: tvdisplay-admin
+    restart: unless-stopped
+    ports:
+      - "8080:8080"
+    environment:
+      # Prvý administrátor - použije sa len pri prvom spustení (keď ešte nie sú žiadni používatelia).
+      # Po prihlásení si heslo zmeň v administrácii.
+      ADMIN_USERNAME: admin
+      ADMIN_PASSWORD: zmen-toto-heslo
+    volumes:
+      # Tu sú uložení používatelia, kostoly, piesne, obrázky a PDF - zálohuj tento priečinok
+      - ./admin-data:/data

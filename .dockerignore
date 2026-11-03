@@ -1,0 +1,10 @@
+.git
+node_modules
+dist
+admin-data
+data-cache
+tvdisplay-state.json
+images.json
+1. JKS.json
+Texty
+spevnik_text.txt

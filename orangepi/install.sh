@@ -9,8 +9,13 @@
 # Čo skript urobí:
 #   1. nainštaluje Chromium, Node.js 22 a pomocné balíčky
 #   2. zbuilduje aplikáciu (npm ci + npm run build)
-#   3. vytvorí systemd službu "tvdisplay", ktorá spustí server po štarte
-#   4. nastaví automatické otvorenie displeja na celej obrazovke po prihlásení
+#   3. opýta sa na adresu dát kostola z administrácie (NAS)
+#   4. vytvorí systemd službu "tvdisplay", ktorá spustí server po štarte
+#   5. nastaví automatické otvorenie displeja na celej obrazovke po prihlásení
+#
+# Adresu dát kostola nájdeš v administrácii v záložke Kostoly ("Adresa pre Orange Pi").
+# Dá sa zadať aj vopred: TVDISPLAY_DATA_URL=https://... ./orangepi/install.sh
+# Zmena adresy neskôr: TVDISPLAY_DATA_URL=https://... ./orangepi/install.sh
 #
 # Skript sa dá spustiť znova - napr. po "git pull" na aktualizáciu aplikácie.
 set -euo pipefail
@@ -20,6 +25,7 @@ NODE_MAJOR=22
 APP_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 APP_USER="$(id -un)"
 APP_HOME="$HOME"
+ENV_FILE=/etc/tvdisplay.env
 
 info() { printf '\n\033[1;32m==> %s\033[0m\n' "$*"; }
 warn() { printf '\033[1;33m!!  %s\033[0m\n' "$*"; }
@@ -76,7 +82,30 @@ npm ci --no-audit --no-fund
 npm run build
 unset NODE_OPTIONS
 
-# --- 4. Systemd služba pre server ----------------------------------------
+# --- 4. Odkiaľ brať piesne a obrázky ---------------------------------------
+# Prázdna adresa = dáta z GitHubu (pôvodný spôsob, úpravy cez ovládanie)
+if [ -n "${TVDISPLAY_DATA_URL+x}" ]; then
+  data_url="$TVDISPLAY_DATA_URL"
+elif [ -f "$ENV_FILE" ]; then
+  data_url="$(sed -n 's/^DATA_URL=//p' "$ENV_FILE")"
+  info "Ponechávam adresu dát: ${data_url:-(GitHub)}"
+else
+  info "Napojenie na administráciu"
+  echo "Zadaj adresu dát kostola z administrácie (záložka Kostoly -> Adresa pre Orange Pi),"
+  echo "napr. https://mojnas.synology.me/api/public/churches/kostol-sv-martina"
+  read -rp "Adresa (Enter = bez administrácie, dáta z GitHubu): " data_url
+fi
+data_url="${data_url%/}"
+if [ -n "$data_url" ]; then
+  if curl -fsS --max-time 10 "${data_url}/songs.json" >/dev/null; then
+    info "Administrácia je dostupná: ${data_url}"
+  else
+    warn "Adresu ${data_url} sa teraz nepodarilo načítať - skontroluj ju (displej použije posledné uložené dáta)."
+  fi
+fi
+printf 'DATA_URL=%s\n' "$data_url" | sudo tee "$ENV_FILE" >/dev/null
+
+# --- 5. Systemd služba pre server ----------------------------------------
 info "Vytváram službu tvdisplay (port ${PORT})"
 sudo tee /etc/systemd/system/tvdisplay.service >/dev/null <<EOF
 [Unit]
@@ -89,6 +118,8 @@ Type=simple
 User=${APP_USER}
 WorkingDirectory=${APP_DIR}
 Environment=PORT=${PORT}
+Environment=CACHE_DIR=${APP_DIR}/data-cache
+EnvironmentFile=-${ENV_FILE}
 ExecStart=${NODE_BIN} ${APP_DIR}/server/server.mjs
 Restart=always
 RestartSec=3
@@ -100,7 +131,7 @@ sudo systemctl daemon-reload
 sudo systemctl enable tvdisplay.service
 sudo systemctl restart tvdisplay.service
 
-# --- 5. Kiosk - displej po prihlásení na celej obrazovke ------------------
+# --- 6. Kiosk - displej po prihlásení na celej obrazovke ------------------
 info "Nastavujem automatické spustenie displeja po prihlásení"
 chmod +x "${APP_DIR}/orangepi/kiosk.sh"
 mkdir -p "${APP_HOME}/.config/autostart"
@@ -127,6 +158,8 @@ cat <<EOF
 
   Aby sa displej spustil sám po zapnutí, zapni automatické prihlásenie do
   grafického prostredia (Armbian: sudo armbian-config -> System -> Desktop / Autologin).
+
+  Dáta kostola:   ${data_url:-GitHub (bez administrácie)}
 
   Aktualizácia aplikácie:
     cd ${APP_DIR} && git pull && ./orangepi/install.sh

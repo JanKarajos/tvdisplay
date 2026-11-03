@@ -1,15 +1,12 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { api } from '../api/mockApi';
-import { serverAvailable } from '../api/server';
+import { serverAvailable, getDataUrls } from '../api/server';
 import { useRealtime } from '../hooks/useRealtime';
 import SongRenderer from '../components/SongRenderer';
 import { Document, Page } from 'react-pdf';
 import '../lib/pdf'; // nastaví PDF.js worker
 import 'react-pdf/dist/Page/AnnotationLayer.css';
 import 'react-pdf/dist/Page/TextLayer.css';
-
-const defaultGithubRawUrl = 'https://raw.githubusercontent.com/JanKarajos/tvdisplay/main/songs.json';
-const defaultImagesUrl = 'https://raw.githubusercontent.com/JanKarajos/tvdisplay/main/images.json';
 
 export default function DisplayPage() {
   const [state, setState] = useState({ currentSongId: null, background: null, isHidden: false, currentPage: 0 });
@@ -23,19 +20,17 @@ export default function DisplayPage() {
   // Auto-load songs and images from GitHub on mount
   if (!dataLoaded.current) {
     dataLoaded.current = (async () => {
-      const savedUrl = localStorage.getItem('tvdisplay-github-raw') || defaultGithubRawUrl;
-      const savedImagesUrl = localStorage.getItem('tvdisplay-github-images-raw') || defaultImagesUrl;
+      const urls = await getDataUrls();
       try {
-        console.log('[DisplayPage] Auto-loading songs from URL:', savedUrl);
-        await api.loadRemoteSongs(savedUrl);
+        console.log('[DisplayPage] Auto-loading songs from URL:', urls.songs);
+        await api.loadRemoteSongs(urls.songs);
         console.log('[DisplayPage] Songs loaded successfully');
-        localStorage.setItem('tvdisplay-github-raw', savedUrl);
       } catch (e) {
         console.error('[DisplayPage] Failed to auto-load songs:', e);
       }
       try {
         // Obrázky sú potrebné, aby sa dal obrázok zobraziť ako obsah
-        await api.loadRemoteImages(savedImagesUrl);
+        await api.loadRemoteImages(urls.images);
       } catch (e) {
         console.error('[DisplayPage] Failed to auto-load images:', e);
       }
@@ -50,11 +45,10 @@ export default function DisplayPage() {
     if (!item && !refreshedIds.current.has(id)) {
       refreshedIds.current.add(id);
       console.log('[DisplayPage] Item not found, reloading data:', id);
-      const savedUrl = localStorage.getItem('tvdisplay-github-raw') || defaultGithubRawUrl;
-      const savedImagesUrl = localStorage.getItem('tvdisplay-github-images-raw') || defaultImagesUrl;
+      const urls = await getDataUrls();
       await Promise.allSettled([
-        api.loadRemoteSongs(savedUrl, { fresh: true }),
-        api.loadRemoteImages(savedImagesUrl, { fresh: true }),
+        api.loadRemoteSongs(urls.songs, { fresh: true }),
+        api.loadRemoteImages(urls.images, { fresh: true }),
       ]);
       item = await api.getSong(id);
     }

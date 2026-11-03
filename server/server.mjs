@@ -1,18 +1,32 @@
-// Jednoduchý server pre produkčné nasadenie (napr. Orange Pi):
+// Jednoduchý server pre produkčné nasadenie (Orange Pi v kostole aj administrácia na NAS):
 // - servíruje zbuildovanú aplikáciu z dist/
 // - drží spoločný stav displeja (GET/POST /api/state)
 // - posiela zmeny stavu všetkým klientom cez Server-Sent Events (/api/events)
+// - DATA_DIR nastavený  -> beží aj administrácia s prihlasovaním (/api/admin, /api/public) - NAS
+// - DATA_URL nastavený  -> dáta kostola sa berú z administrácie a ukladajú sa do cache (/data/) - Orange Pi
 // Nepoužíva žiadne externé balíčky, stačí Node.js.
 import http from 'node:http';
 import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { MIME, sendJson } from './http-utils.mjs';
+import { createAdmin } from './admin.mjs';
+import { createDataProxy } from './data-proxy.mjs';
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const DIST = path.join(ROOT, 'dist');
 const PORT = Number(process.env.PORT) || 8080;
 const STATE_FILE = process.env.STATE_FILE || path.join(ROOT, 'tvdisplay-state.json');
 const MAX_BODY = 25 * 1024 * 1024; // pozadie môže byť obrázok ako data URL
+const DATA_DIR = process.env.DATA_DIR;
+const DATA_URL = process.env.DATA_URL;
+
+const handleAdmin = DATA_DIR
+  ? createAdmin({ dataDir: path.resolve(DATA_DIR), seedSongsFile: path.join(ROOT, 'songs.json') })
+  : null;
+const handleData = DATA_URL
+  ? createDataProxy({ dataUrl: DATA_URL, cacheDir: path.resolve(process.env.CACHE_DIR || path.join(ROOT, 'data-cache')) })
+  : null;
 
 const DEFAULT_STATE = { currentSongId: null, background: null, isHidden: false, currentPage: 0 };
 
@@ -39,25 +53,6 @@ function broadcast(message) {
   for (const res of clients) res.write(data);
 }
 
-const MIME = {
-  '.html': 'text/html; charset=utf-8',
-  '.js': 'text/javascript; charset=utf-8',
-  '.mjs': 'text/javascript; charset=utf-8',
-  '.css': 'text/css; charset=utf-8',
-  '.json': 'application/json; charset=utf-8',
-  '.svg': 'image/svg+xml',
-  '.png': 'image/png',
-  '.jpg': 'image/jpeg',
-  '.jpeg': 'image/jpeg',
-  '.ico': 'image/x-icon',
-  '.woff2': 'font/woff2',
-};
-
-function sendJson(res, status, body) {
-  res.writeHead(status, { 'Content-Type': 'application/json; charset=utf-8', 'Cache-Control': 'no-store' });
-  res.end(JSON.stringify(body));
-}
-
 function serveStatic(req, res) {
   const urlPath = decodeURIComponent(new URL(req.url, 'http://localhost').pathname);
   let file = path.join(DIST, path.normalize(urlPath));
@@ -82,8 +77,15 @@ function serveStatic(req, res) {
   });
 }
 
-const server = http.createServer((req, res) => {
+const server = http.createServer(async (req, res) => {
   const { pathname } = new URL(req.url, 'http://localhost');
+
+  // Ako sa má aplikácia správať: odkiaľ brať dáta a či beží administrácia
+  if (pathname === '/api/config' && req.method === 'GET') {
+    return sendJson(res, 200, { dataUrl: handleData ? '/data/' : null, admin: !!handleAdmin });
+  }
+  if (handleAdmin && handleAdmin(req, res, pathname)) return;
+  if (handleData && (await handleData(req, res, pathname))) return;
 
   if (pathname === '/api/state' && req.method === 'GET') {
     return sendJson(res, 200, state);
@@ -147,6 +149,8 @@ setInterval(() => {
 
 server.listen(PORT, () => {
   console.log(`TV Display server beží na porte ${PORT}`);
+  if (handleAdmin) console.log(`  Administrácia: http://localhost:${PORT}/#admin (dáta v ${path.resolve(DATA_DIR)})`);
+  if (handleData) console.log(`  Dáta kostola z: ${DATA_URL}`);
   console.log(`  Displej:   http://localhost:${PORT}/#display`);
   console.log(`  Ovládanie: http://<IP-adresa>:${PORT}/#control`);
 });

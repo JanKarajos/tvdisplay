@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { api } from '../api/mockApi';
+import { getDataUrls } from '../api/server';
 import { useRealtime } from '../hooks/useRealtime';
 import Card from '../components/Card';
 import Preview from '../components/Preview';
@@ -43,37 +44,35 @@ export default function ControlPage() {
   const [githubPath, setGithubPath] = useState(localStorage.getItem('tvdisplay-github-path') || 'songs.json');
   const [githubToken, setGithubToken] = useState(localStorage.getItem('tvdisplay-github-token') || '');
   const [githubLoading, setGithubLoading] = useState(false);
+  // true = dáta spravuje administrácia (Orange Pi napojené na NAS), GitHub sa z ovládania nepoužíva
+  const [managedData, setManagedData] = useState(false);
 
-  const defaultImagesUrl = 'https://raw.githubusercontent.com/JanKarajos/tvdisplay/main/images.json';
   // categories.json leží vedľa songs.json
   const categoriesUrlFor = (songsUrl) => songsUrl.replace(/[^/]*$/, 'categories.json');
 
   useEffect(() => { 
     // Auto-load from GitHub - vždy použiť URL (buď uloženú alebo predvolenú)
     const autoLoad = async () => {
-      const savedUrl = localStorage.getItem('tvdisplay-github-raw') || defaultGithubRawUrl;
-      const savedImagesUrl = localStorage.getItem('tvdisplay-github-images-raw') || defaultImagesUrl;
+      const urls = await getDataUrls();
+      setManagedData(urls.managed);
       try {
-        console.log('Auto-loading songs from URL:', savedUrl);
-        await api.loadRemoteSongs(savedUrl);
+        console.log('Auto-loading songs from URL:', urls.songs);
+        await api.loadRemoteSongs(urls.songs);
         console.log('Songs loaded successfully');
-        // Ulož URL pre budúce použitie
-        localStorage.setItem('tvdisplay-github-raw', savedUrl);
       } catch (e) {
         console.error('Failed to auto-load songs:', e);
-        alert('Nepodarilo sa načítať piesne z GitHub. Skontroluj konzolu.');
+        alert('Nepodarilo sa načítať piesne. Skontroluj konzolu.');
       }
       try {
-        console.log('Auto-loading images from URL:', savedImagesUrl);
-        await api.loadRemoteImages(savedImagesUrl);
+        console.log('Auto-loading images from URL:', urls.images);
+        await api.loadRemoteImages(urls.images);
         console.log('Images loaded successfully');
-        localStorage.setItem('tvdisplay-github-images-raw', savedImagesUrl);
       } catch (e) {
         console.error('Failed to auto-load images:', e);
         // Neblokovať aplikáciu ak obrázky nie sú dostupné
       }
       try {
-        await api.loadRemoteCategories(categoriesUrlFor(savedUrl));
+        await api.loadRemoteCategories(urls.categories);
       } catch (e) {
         console.error('Failed to auto-load categories:', e);
       }
@@ -541,7 +540,7 @@ export default function ControlPage() {
           </Card>
 
           <Card title="Kategórie">
-            {!githubToken && (
+            {!githubToken && !managedData && (
               <div className="mb-3 p-2 bg-yellow-50 border border-yellow-200 rounded text-sm text-yellow-800">
                 ⚠️ Upozornenie: Nové kategórie sa neuložia na GitHub. Vyplň GitHub token v sekcii "GitHub Sync".
               </div>
@@ -555,7 +554,7 @@ export default function ControlPage() {
                   </button>
                 ))}
               </div>
-              <form onSubmit={handleAddCategory} className="flex gap-2">
+              {!managedData && <form onSubmit={handleAddCategory} className="flex gap-2">
                 <input
                   type="text"
                   value={newCategoryName}
@@ -571,7 +570,7 @@ export default function ControlPage() {
                 >
                   {addingCategory ? 'Pridávam...' : 'Pridať'}
                 </button>
-              </form>
+              </form>}
             </div>
           </Card>
         </div>
@@ -653,6 +652,15 @@ export default function ControlPage() {
           </Card>
         </div>
 
+        {managedData ? (
+          <Card title="Úprava piesní a obrázkov">
+            <div className="text-sm text-gray-700">
+              Piesne, kategórie, obrázky a prezentácie tohto kostola sa pridávajú a upravujú v administrácii.
+              Po zmene v administrácii obnov túto stránku aj displej.
+            </div>
+          </Card>
+        ) : (
+          <>
         <Card title="Pridať vlastný text do kategórie">
           {!githubToken && (
             <div className="mb-3 p-2 bg-yellow-50 border border-yellow-200 rounded text-sm text-yellow-800">
@@ -732,6 +740,9 @@ export default function ControlPage() {
           </form>
         </Card>
 
+          </>
+        )}
+
         <Card title="Obrázky (bez kategórie)">
           <div className="flex flex-wrap gap-4">
             {images.length === 0 && <div className="text-gray-500">Žiadne obrázky</div>}
@@ -748,6 +759,7 @@ export default function ControlPage() {
           </div>
         </Card>
 
+        {!managedData && (
         <Card title="Pridať PDF prezentáciu">
           {!githubToken && (
             <div className="mb-3 p-2 bg-yellow-50 border border-yellow-200 rounded text-sm text-yellow-800">
@@ -794,6 +806,7 @@ export default function ControlPage() {
             >{addingPdf ? 'Nahrávam...' : 'Pridať PDF'}</button>
           </form>
         </Card>
+        )}
 
         <Card title="PDF Prezentácie">
           <div className="space-y-2">
@@ -813,6 +826,7 @@ export default function ControlPage() {
           </div>
         </Card>
         
+        {!managedData && (
         <Card title="GitHub Sync (songs.json)">
           <div className="space-y-2">
             <div className="text-sm text-gray-600">Načítanie z raw URL (read-only):</div>
@@ -836,6 +850,7 @@ export default function ControlPage() {
             </div>
           </div>
         </Card>
+        )}
       </div>
     </div>
   );

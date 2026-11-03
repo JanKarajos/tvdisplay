@@ -2,3 +2,5 @@ node_modules
 /dist
 .env
 /tvdisplay-state.json
+/admin-data
+/data-cache

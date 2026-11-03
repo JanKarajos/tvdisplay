@@ -26,6 +26,12 @@ function mergeCustomCategories() {
   });
 }
 
+// Relatívne adresy médií (napr. "media/x.jpg" z administrácie) prevedie na plné voči adrese JSON súboru
+function resolveMediaUrl(url, base) {
+  if (!url || /^(data:|blob:|https?:)/i.test(url)) return url;
+  return new URL(url, new URL(base, window.location.href)).href;
+}
+
 // Pridá do URL parameter, aby sme obišli cache raw.githubusercontent.com
 function freshUrl(url) {
   return url + (url.includes('?') ? '&' : '?') + 't=' + Date.now();
@@ -242,6 +248,10 @@ export const api = {
       const data = await res.json();
       console.log('Loaded data:', data);
       if (Array.isArray(data)) {
+        data.forEach(s => {
+          if (s.pdfUrl) s.pdfUrl = resolveMediaUrl(s.pdfUrl, target);
+          if (s.imageUrl) s.imageUrl = resolveMediaUrl(s.imageUrl, target);
+        });
         DEMO_SONGS = data;
         console.log('Updated DEMO_SONGS to:', DEMO_SONGS.length, 'songs');
         // Rebuild categories from loaded songs (unique non-empty categories)
@@ -278,6 +288,7 @@ export const api = {
       const data = await res.json();
       console.log('Loaded images:', data);
       if (Array.isArray(data)) {
+        data.forEach(img => { img.imageUrl = resolveMediaUrl(img.imageUrl, target); });
         DEMO_IMAGES = data;
         console.log('Updated DEMO_IMAGES to:', DEMO_IMAGES.length, 'images');
       }
