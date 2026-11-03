@@ -111,6 +111,9 @@ Mobil / PC (ovládanie) ──PATCH /api/state──►  server (port 3002)  ─
 - **Prezentácie** (PDF, PPT, PPTX, ODP) sa nahrávajú na server do `uploads/`, v `songs.json` je iba odkaz.
   Počet strán sa zistí automaticky. PowerPoint server prevedie na PDF cez LibreOffice:
   na Raspberry Pi `sudo apt install libreoffice-impress` (bez neho funguje iba PDF).
+- **Kategórie** piesní zodpovedajú oddielom spevníka JKS podľa čísla piesne (adventné 1–33, vianočné 34–113, …,
+  latinské 532–543), rozsahy sú v `server/jksCategories.js`. Po pridaní piesní s číslom JKS do `songs.json`
+  ich zaradí `node scripts/categorize_jks.js`.
 - **Žalmy** sú v `Texty/Žalmy RRRR.json`. Nový rok stiahneš cez `node scripts/fetch_psalms_2027.js`.
 - **PIN**: ak je v `.env` nastavený `CONTROL_PIN`, ovládanie si ho vypýta. Displej PIN nepotrebuje.
 - **Administrácia kostolov** (`ADMIN_DATA_DIR`) a **napojenie na ňu** (`CHURCH_DATA_URL`): pozri vyššie.

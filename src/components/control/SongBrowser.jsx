@@ -19,7 +19,9 @@ export default function SongBrowser({ lib, playlistIds }) {
     if (q) {
       return lib.songs.filter((s) => s.category && (normalizeText(s.title).includes(q) || String(s.number || '') === q || String(s.number || '').startsWith(q)));
     }
-    return category ? lib.songs.filter((s) => s.category === category) : [];
+    // V kategórii podľa čísla JKS, piesne bez čísla na konci podľa názvu
+    const byNumber = (a, b) => (parseInt(a.number, 10) || 1e9) - (parseInt(b.number, 10) || 1e9) || a.title.localeCompare(b.title, 'sk');
+    return category ? lib.songs.filter((s) => s.category === category).sort(byNumber) : [];
   }, [lib.songs, category, query]);
 
   const categoryName = (id) => lib.categories.find((c) => c.id === id)?.name || id;

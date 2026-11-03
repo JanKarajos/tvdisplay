@@ -2,6 +2,7 @@
 import { SERVER_URL, SONGS_URL, IMAGES_URL, resolveServerUrl } from '../config';
 import { stateClient, writeHeaders, markAuthRequired } from './stateClient';
 import { log } from '../lib/log';
+import { CATEGORY_NAMES, categoryOrder } from '../../server/jksCategories.js';
 
 // --- Žalmy --------------------------------------------------------------
 
@@ -77,12 +78,15 @@ let loadInfo = { loaded: false, source: null, error: null, managed: false, admin
 let snapshot = null;
 const listeners = new Set();
 
+// Názov kategórie: oddiely JKS majú pekné názvy, vlastné kategórie sa odvodia z id
 function categoryName(id) {
-  return id.replace(/[-_]/g, ' ').replace(/\b\w/g, (c) => c.toUpperCase());
+  return CATEGORY_NAMES[id] || id.replace(/[-_]/g, ' ').replace(/\b\w/g, (c) => c.toUpperCase());
 }
 
 function buildSnapshot() {
-  const ids = Array.from(new Set([...(managedCategories || []).map((c) => c.id), ...songs.map((s) => s.category).filter(Boolean), ...extraCategories]));
+  // Kategórie z administrácie v jej poradí, inak v poradí spevníka JKS (vlastné na konci)
+  const fromSongs = Array.from(new Set(songs.map((s) => s.category).filter(Boolean))).sort((a, b) => categoryOrder(a) - categoryOrder(b));
+  const ids = Array.from(new Set([...(managedCategories || []).map((c) => c.id), ...fromSongs, ...extraCategories]));
   const names = new Map((managedCategories || []).map((c) => [c.id, c.name]));
   snapshot = {
     songs,

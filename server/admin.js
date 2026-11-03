@@ -8,6 +8,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import crypto from 'node:crypto';
 import { ACCEPTED_EXTENSIONS, PRESENTATION_EXTENSIONS, convertToPdf, countPdfPages } from './presentations.js';
+import { CATEGORY_NAMES, categoryOrder } from './jksCategories.js';
 
 const SESSION_COOKIE = 'tvd_admin';
 const SESSION_TTL_MS = 14 * 24 * 60 * 60 * 1000; // 14 dní
@@ -16,15 +17,6 @@ const LOGIN_WINDOW_MS = 15 * 60 * 1000;
 const MAX_IMAGE_BYTES = 15 * 1024 * 1024;
 const LIST_FILES = new Set(['songs.json', 'images.json', 'categories.json']);
 const IMAGE_TYPES = { 'image/jpeg': '.jpg', 'image/png': '.png', 'image/webp': '.webp', 'image/gif': '.gif' };
-
-// Pekné názvy kategórií spevníka JKS
-const SEED_CATEGORY_NAMES = {
-  vseobecne: 'Všeobecné',
-  marianske: 'Mariánske',
-  vianocne: 'Vianočné',
-  velkonocne: 'Veľkonočné',
-  adoracia: 'Adorácia',
-};
 
 class HttpError extends Error {
   constructor(status, message) {
@@ -192,9 +184,11 @@ export function createAdmin({ dataDir, seedSongsFile }) {
     const categories = loadList(churchId, 'categories.json');
     const have = new Set(songs.map((s) => s.id));
     const missing = jks.filter((s) => !have.has(s.id));
-    for (const cid of new Set(missing.map((s) => s.category))) {
-      if (!categories.some((c) => c.id === cid)) categories.push({ id: cid, name: SEED_CATEGORY_NAMES[cid] || cid });
-    }
+    // Chýbajúce kategórie v poradí spevníka (adventné, vianočné, …)
+    const newIds = [...new Set(missing.map((s) => s.category))]
+      .filter((cid) => !categories.some((c) => c.id === cid))
+      .sort((a, b) => categoryOrder(a) - categoryOrder(b));
+    for (const cid of newIds) categories.push({ id: cid, name: CATEGORY_NAMES[cid] || cid });
     saveList(churchId, 'categories.json', categories);
     saveList(churchId, 'songs.json', [...songs, ...missing]);
     return missing.length;
