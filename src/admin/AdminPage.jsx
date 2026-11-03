@@ -160,7 +160,9 @@ export default function AdminPage() {
 
   const isAdmin = user.role === 'admin';
   const tabs = isAdmin ? [...CHURCH_TABS, ...ADMIN_TABS] : CHURCH_TABS;
-  const isChurchTab = CHURCH_TABS.some(([id]) => id === tab);
+  // Po prihlásení iného používateľa (napr. editora po administrátorovi) nemusí mať záložku, ktorá bola otvorená
+  const activeTab = tabs.some(([id]) => id === tab) ? tab : 'songs';
+  const isChurchTab = CHURCH_TABS.some(([id]) => id === activeTab);
   const church = churches.find((c) => c.id === churchId);
 
   return (
@@ -176,8 +178,8 @@ export default function AdminPage() {
               <button
                 key={id}
                 onClick={() => setTab(id)}
-                aria-current={tab === id ? 'page' : undefined}
-                className={`shrink-0 min-h-[40px] px-4 rounded-xl text-sm font-semibold transition ${tab === id ? 'bg-accent/15 text-accent' : 'text-muted hover:text-fg hover:bg-sunken'}`}
+                aria-current={activeTab === id ? 'page' : undefined}
+                className={`shrink-0 min-h-[40px] px-4 rounded-xl text-sm font-semibold transition ${activeTab === id ? 'bg-accent/15 text-accent' : 'text-muted hover:text-fg hover:bg-sunken'}`}
               >
                 {text}
               </button>
@@ -219,14 +221,14 @@ export default function AdminPage() {
         )}
         {isChurchTab && churchId && (
           <>
-            {tab === 'songs' && <SongsTab key={churchId} churchId={churchId} run={run} />}
-            {tab === 'categories' && <CategoriesTab key={churchId} churchId={churchId} run={run} />}
-            {tab === 'images' && <ImagesTab key={churchId} churchId={churchId} run={run} />}
-            {tab === 'pdfs' && <PdfsTab key={churchId} churchId={churchId} run={run} canConvert={canConvert} />}
+            {activeTab === 'songs' && <SongsTab key={churchId} churchId={churchId} run={run} />}
+            {activeTab === 'categories' && <CategoriesTab key={churchId} churchId={churchId} run={run} />}
+            {activeTab === 'images' && <ImagesTab key={churchId} churchId={churchId} run={run} />}
+            {activeTab === 'pdfs' && <PdfsTab key={churchId} churchId={churchId} run={run} canConvert={canConvert} />}
           </>
         )}
-        {tab === 'churches' && isAdmin && <ChurchesTab churches={churches} onChanged={loadMe} run={run} />}
-        {tab === 'users' && isAdmin && <UsersTab churches={churches} currentUser={user} run={run} />}
+        {activeTab === 'churches' && isAdmin && <ChurchesTab churches={churches} onChanged={loadMe} run={run} />}
+        {activeTab === 'users' && isAdmin && <UsersTab churches={churches} currentUser={user} run={run} />}
       </main>
       <Toaster />
     </div>
