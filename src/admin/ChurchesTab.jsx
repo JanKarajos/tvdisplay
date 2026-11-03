@@ -6,14 +6,23 @@ import { toast } from '../lib/toast';
 
 export default function ChurchesTab({ churches, onChanged, run }) {
   const [name, setName] = useState('');
-  const [seed, setSeed] = useState(true);
+  const [busy, setBusy] = useState(false);
 
   const add = async (e) => {
     e.preventDefault();
-    if (await run(() => adminApi.createChurch(name, seed), `Pridaný kostol: ${name}`)) {
+    if (await run(() => adminApi.createChurch(name), `Pridaný kostol: ${name}`)) {
       setName('');
       onChanged();
     }
+  };
+
+  // Doplní chýbajúce piesne JKS do všetkých kostolov; upravené piesne ostanú
+  const addJks = async () => {
+    setBusy(true);
+    let result;
+    await run(async () => { result = await adminApi.addJksToAll(); });
+    setBusy(false);
+    if (result) toast(result.total ? `Doplnených ${result.total} piesní JKS` : 'Všetky kostoly už majú všetky piesne JKS', { tone: 'ok', duration: 4000 });
   };
 
   const rename = async (church, newName) => {
@@ -44,14 +53,19 @@ export default function ChurchesTab({ churches, onChanged, run }) {
             <input className="field" placeholder="Názov, napr. Kostol sv. Martina" value={name} onChange={(e) => setName(e.target.value)} maxLength={100} />
             <button className="btn-primary" disabled={!name.trim()}>Pridať</button>
           </div>
-          <label className="flex items-center gap-2 text-sm">
-            <input type="checkbox" className="w-4 h-4" checked={seed} onChange={(e) => setSeed(e.target.checked)} />
-            Naplniť piesňami zo spevníka JKS (kostol dostane vlastnú kópiu, ktorú môže ľubovoľne upravovať)
-          </label>
+          <p className="text-xs text-muted">Kostol dostane vlastnú kópiu všetkých piesní zo spevníka JKS, ktorú môže ľubovoľne upravovať.</p>
         </form>
       </Card>
 
-      <Card title="Kostoly" subtitle="Adresu kostola zadáš pri inštalácii Orange Pi v tom kostole">
+      <Card
+        title="Kostoly"
+        subtitle="Adresu kostola zadáš pri inštalácii Orange Pi v tom kostole"
+        actions={
+          <button className="btn" onClick={addJks} disabled={busy || !churches.length} title="Pridá do každého kostola piesne JKS, ktoré mu chýbajú. Upravené piesne sa neprepíšu.">
+            {busy ? 'Dopĺňam…' : 'Doplniť piesne JKS'}
+          </button>
+        }
+      >
         {!churches.length && <div className="text-sm text-muted">Zatiaľ žiadne kostoly.</div>}
         <div className="divide-y divide-line">
           {churches.map((c) => (

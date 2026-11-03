@@ -184,21 +184,33 @@ export function createAdmin({ dataDir, seedSongsFile }) {
     return user.role === 'admin' ? churches : churches.filter((c) => c.id === user.churchId);
   }
 
-  function createChurch(name, seed) {
+  // Doplní kostolu piesne zo spevníka JKS, ktoré ešte nemá (podľa id).
+  // Piesne, ktoré kostol už má (aj upravené), sa neprepíšu. Vráti počet pridaných piesní.
+  function addJksSongs(churchId) {
+    const jks = readJsonFile(seedSongsFile, []).filter((s) => s.category && s.category !== 'test' && s.type !== 'pdf' && s.lyrics);
+    const songs = loadList(churchId, 'songs.json');
+    const categories = loadList(churchId, 'categories.json');
+    const have = new Set(songs.map((s) => s.id));
+    const missing = jks.filter((s) => !have.has(s.id));
+    for (const cid of new Set(missing.map((s) => s.category))) {
+      if (!categories.some((c) => c.id === cid)) categories.push({ id: cid, name: SEED_CATEGORY_NAMES[cid] || cid });
+    }
+    saveList(churchId, 'categories.json', categories);
+    saveList(churchId, 'songs.json', [...songs, ...missing]);
+    return missing.length;
+  }
+
+  // Každý nový kostol dostane vlastnú kópiu spevníka JKS
+  function createChurch(name) {
     const churches = loadChurches();
     const base = slugify(name) || 'kostol';
     let id = base;
     for (let i = 2; churches.some((c) => c.id === id); i++) id = `${base}-${i}`;
-    let songs = [];
-    let categories = [];
-    if (seed) {
-      songs = readJsonFile(seedSongsFile, []).filter((s) => s.category && s.category !== 'test' && s.type !== 'pdf' && s.lyrics);
-      categories = [...new Set(songs.map((s) => s.category))].map((cid) => ({ id: cid, name: SEED_CATEGORY_NAMES[cid] || cid }));
-    }
     fs.mkdirSync(path.join(churchDir(id), 'media'), { recursive: true });
-    saveList(id, 'songs.json', songs);
-    saveList(id, 'categories.json', categories);
+    saveList(id, 'songs.json', []);
+    saveList(id, 'categories.json', []);
     saveList(id, 'images.json', []);
+    addJksSongs(id);
     const church = { id, name };
     saveChurches([...churches, church]);
     return church;
@@ -362,8 +374,15 @@ export function createAdmin({ dataDir, seedSongsFile }) {
 
   api.post('/churches', (req, res) => {
     requireAdmin(req.user);
-    const church = createChurch(str(req.body?.name, 'názov', { required: true, max: 100 }), Boolean(req.body?.seed));
+    const church = createChurch(str(req.body?.name, 'názov', { required: true, max: 100 }));
     res.status(201).json(church);
+  });
+
+  // Doplnenie chýbajúcich piesní JKS do všetkých kostolov naraz
+  api.post('/churches/add-jks', (req, res) => {
+    requireAdmin(req.user);
+    const added = loadChurches().map((c) => ({ id: c.id, name: c.name, added: addJksSongs(c.id) }));
+    res.json({ churches: added, total: added.reduce((sum, c) => sum + c.added, 0) });
   });
 
   // Kontrola prístupu pre všetky adresy jedného kostola

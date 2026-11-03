@@ -36,7 +36,9 @@ Centrálna stránka s prihlásením, kde sa spravujú piesne, kategórie, obráz
 
 - **Administrátor** vytvára kostoly a používateľov a môže upravovať obsah všetkých kostolov.
 - **Editor** má priradený jeden kostol a vidí iba ten.
-- Každý kostol má **vlastné piesne**. Nový kostol sa dá naplniť kópiou spevníka JKS, ktorú potom môže ľubovoľne meniť.
+- Každý kostol má **vlastné piesne**. Nový kostol dostane kópiu celého spevníka JKS, ktorú potom môže ľubovoľne meniť.
+  Tlačidlo **Doplniť piesne JKS** (záložka Kostoly) pridá do všetkých kostolov piesne JKS, ktoré im chýbajú;
+  piesne, ktoré kostol už má (aj upravené), sa neprepíšu.
 - Orange Pi v kostole si dáta svojho kostola sťahuje z administrácie každú minútu.
   Má ich uložené aj u seba, takže funguje aj bez internetu.
   Zmena v administrácii sa na TV aj v ovládaní prejaví sama, bez obnovenia stránky.

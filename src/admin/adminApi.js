@@ -33,7 +33,8 @@ export const adminApi = {
   me: () => request('GET', '/me'),
   changePassword: (currentPassword, newPassword) => request('PUT', '/me/password', { currentPassword, newPassword }),
 
-  createChurch: (name, seed) => request('POST', '/churches', { name, seed }),
+  createChurch: (name) => request('POST', '/churches', { name }),
+  addJksToAll: () => request('POST', '/churches/add-jks', {}),
   renameChurch: (id, name) => request('PUT', church(id), { name }),
   deleteChurch: (id) => request('DELETE', church(id)),
 
