@@ -6,6 +6,8 @@
 # Voľby:       --yes            bez otázok (TV áno, PowerPoint áno, bez PIN a tokenu)
 #              --no-kiosk       nezobrazovať aplikáciu na TV pripojenej k tomuto zariadeniu
 #              --no-powerpoint  neinštalovať LibreOffice
+#              --church-url=URL piesne kostola z administrácie na NAS (adresa zo záložky Kostoly);
+#                               pri aktualizácii zmení adresu v nastaveniach, --church-url= ju zruší
 #
 # Opätovné spustenie aplikáciu aktualizuje. Nastavenia, piesne ani prezentácie nezmení.
 set -euo pipefail
@@ -21,11 +23,14 @@ STATE_PORT=3002
 ASSUME_YES=0
 WANT_KIOSK=ask
 WANT_POWERPOINT=ask
+CHURCH_URL_SET=0
+CHURCH_DATA_URL=""
 for arg in "$@"; do
   case "$arg" in
     --yes) ASSUME_YES=1 ;;
     --no-kiosk) WANT_KIOSK=no ;;
     --no-powerpoint) WANT_POWERPOINT=no ;;
+    --church-url=*) CHURCH_URL_SET=1; CHURCH_DATA_URL="${arg#--church-url=}" ;;
     *) echo "Neznáma voľba: $arg"; exit 2 ;;
   esac
 done
@@ -97,8 +102,23 @@ CONTROL_PIN=""
 GITHUB_TOKEN=""
 if [ "$ENV_EXISTS" -eq 0 ]; then
   CONTROL_PIN=$(ask_value "PIN na ovládanie (prázdne = bez PIN)")
-  echo "GitHub token je potrebný na trvalé ukladanie úprav piesní. Možno ho doplniť aj neskôr v $APP_DIR/.env"
-  GITHUB_TOKEN=$(ask_value "GitHub token (prázdne = preskočiť, nezobrazuje sa)" 1)
+  if [ "$CHURCH_URL_SET" -eq 0 ]; then
+    echo "Ak piesne kostola spravuje administrácia na NAS, zadaj adresu kostola (administrácia -> Kostoly),"
+    echo "napr. https://mojnas.synology.me/api/public/churches/kostol-sv-martina"
+    CHURCH_DATA_URL=$(ask_value "Adresa kostola (prázdne = piesne z GitHubu)")
+  fi
+  if [ -z "$CHURCH_DATA_URL" ]; then
+    echo "GitHub token je potrebný na trvalé ukladanie úprav piesní. Možno ho doplniť aj neskôr v $APP_DIR/.env"
+    GITHUB_TOKEN=$(ask_value "GitHub token (prázdne = preskočiť, nezobrazuje sa)" 1)
+  fi
+fi
+CHURCH_DATA_URL="${CHURCH_DATA_URL%/}"
+if [ -n "$CHURCH_DATA_URL" ] && command -v curl >/dev/null; then
+  if curl -fsS -o /dev/null --max-time 10 "$CHURCH_DATA_URL/songs.json"; then
+    echo "Administrácia kostola je dostupná."
+  else
+    warn "Adresu $CHURCH_DATA_URL sa teraz nepodarilo načítať. Skontroluj ju; Orange Pi to bude skúšať každú minútu."
+  fi
 fi
 
 if [ "$WANT_KIOSK" = ask ]; then
@@ -193,8 +213,13 @@ if [ "$ENV_EXISTS" -eq 0 ]; then
       echo "CONTROL_PIN=$CONTROL_PIN"
       echo "STATE_PORT=$STATE_PORT"
       echo "APP_PORT=$APP_PORT"
+      echo "CHURCH_DATA_URL=$CHURCH_DATA_URL"
     } >"$APP_DIR/.env"
   )
+elif [ "$CHURCH_URL_SET" -eq 1 ]; then
+  # Aktualizácia s --church-url: zmeň iba adresu kostola, ostatné nastavenia ostanú
+  sed -i '/^CHURCH_DATA_URL=/d' "$APP_DIR/.env"
+  echo "CHURCH_DATA_URL=$CHURCH_DATA_URL" >>"$APP_DIR/.env"
 fi
 chown -R "$APP_USER:$APP_USER" "$APP_DIR"
 chmod 600 "$APP_DIR/.env"
@@ -346,6 +371,8 @@ echo "  Ovládanie (mobil, PC): http://$IP_ADDRESS:$APP_PORT/#control"
 echo "  Obrazovka:             http://$IP_ADDRESS:$APP_PORT/#display"
 echo "  Stav a záznamy:        systemctl status tvdisplay  /  journalctl -u tvdisplay -f"
 echo "  Nastavenia:            $APP_DIR/.env (po zmene: sudo systemctl restart tvdisplay)"
+CURRENT_CHURCH_URL=$(sed -n 's/^CHURCH_DATA_URL=//p' "$APP_DIR/.env" | tail -n1)
+echo "  Piesne:                ${CURRENT_CHURCH_URL:-GitHub (bez administrácie)}"
 if [ "$REBOOT_NEEDED" -eq 1 ]; then
   echo "  Obrazovka na TV sa zapne po reštarte: sudo reboot"
 fi

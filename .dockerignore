@@ -1,0 +1,11 @@
+.git
+node_modules
+dist
+dist-orangepi
+archiv
+uploads
+admin-data
+church-data
+state.json
+.env
+*.tar.gz

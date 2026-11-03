@@ -6,11 +6,13 @@ import { splitIntoPages } from '../../lib/lyrics';
 import { reportSave } from '../../lib/notify';
 import { toast } from '../../lib/toast';
 
-// Úprava piesne so živým náhľadom, ako bude vyzerať na TV
-export default function SongEditor({ song, categories, onClose }) {
+// Úprava piesne so živým náhľadom, ako bude vyzerať na TV.
+// onSave(fields) -> { ok, error } (predvolene uloženie do knižnice na GitHub); song bez id = nová pieseň
+export default function SongEditor({ song, categories, onClose, onSave, onDelete }) {
+  const isNew = !song.id;
   const [title, setTitle] = useState(song.title || '');
   const [number, setNumber] = useState(song.number ? String(song.number) : '');
-  const [category, setCategory] = useState(song.category || '');
+  const [category, setCategory] = useState(song.category || categories[0]?.id || '');
   const [lyrics, setLyrics] = useState(song.lyrics || '');
   const [page, setPage] = useState(0);
   const [busy, setBusy] = useState(false);
@@ -33,21 +35,29 @@ export default function SongEditor({ song, categories, onClose }) {
   const save = async (e) => {
     e.preventDefault();
     setBusy(true);
-    const result = await library.updateSong(song.id, { title, number, category, lyrics });
+    const fields = { title, number, category, lyrics };
+    if (onSave) {
+      const result = await onSave(fields);
+      setBusy(false);
+      if (!result.ok) return window.alert(result.error || 'Pieseň sa nepodarilo uložiť');
+      toast(`Uložené: ${title}`, { tone: 'ok' });
+      return onClose();
+    }
+    const result = await library.updateSong(song.id, fields);
     setBusy(false);
     reportSave(result, 'Zmena sa neuložila na GitHub');
     if (result.ok) toast(`Uložené: ${title}`, { tone: 'ok' });
     onClose();
   };
 
-  const previewSong = { id: song.id, title, number, lyrics };
+  const previewSong = { id: song.id || 'new', title, number, lyrics };
   const previewState = { ...stateClient.getState(), isHidden: false };
 
   return (
-    <div className="fixed inset-0 z-50 bg-black/50 flex items-stretch sm:items-center justify-center sm:p-4" role="dialog" aria-modal="true" aria-label={`Upraviť pieseň ${song.title}`}>
+    <div className="fixed inset-0 z-50 bg-black/50 flex items-stretch sm:items-center justify-center sm:p-4" role="dialog" aria-modal="true" aria-label={isNew ? 'Nová pieseň' : `Upraviť pieseň ${song.title}`}>
       <form onSubmit={save} className="bg-surface text-fg w-full max-w-5xl sm:rounded-2xl shadow-2xl border border-line flex flex-col max-h-full sm:max-h-[92vh]">
         <div className="flex items-center justify-between gap-2 px-4 h-14 border-b border-line shrink-0">
-          <h2 className="font-bold truncate">Upraviť pieseň</h2>
+          <h2 className="font-bold truncate">{isNew ? 'Nová pieseň' : 'Upraviť pieseň'}</h2>
           <button type="button" onClick={close} className="btn-icon" aria-label="Zavrieť">✕</button>
         </div>
 
@@ -66,6 +76,7 @@ export default function SongEditor({ song, categories, onClose }) {
             <label className="block text-xs text-muted">
               Kategória
               <select className="field mt-1" value={category} onChange={(e) => setCategory(e.target.value)} required>
+                {!category && <option value="">Vyber kategóriu…</option>}
                 {categories.map((c) => <option key={c.id} value={c.id}>{c.name}</option>)}
               </select>
             </label>
@@ -103,8 +114,11 @@ export default function SongEditor({ song, categories, onClose }) {
         </div>
 
         <div className="flex items-center justify-end gap-2 px-4 py-3 border-t border-line shrink-0 pb-safe">
+          {onDelete && !isNew && (
+            <button type="button" onClick={onDelete} className="btn mr-auto hover:!text-danger">🗑 Zmazať pieseň</button>
+          )}
           <button type="button" onClick={close} className="btn">Zrušiť</button>
-          <button className="btn-primary min-w-[8rem]" disabled={busy || !dirty || !title.trim() || !lyrics.trim()}>
+          <button className="btn-primary min-w-[8rem]" disabled={busy || !dirty || !title.trim() || !lyrics.trim() || !category}>
             {busy ? 'Ukladám…' : 'Uložiť'}
           </button>
         </div>

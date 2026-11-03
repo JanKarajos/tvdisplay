@@ -50,7 +50,7 @@ function AddText({ categories }) {
   );
 }
 
-function Images({ images }) {
+function Images({ images, readOnly }) {
   const [title, setTitle] = useState('');
   const [dataUrl, setDataUrl] = useState('');
   const [busy, setBusy] = useState(false);
@@ -75,7 +75,7 @@ function Images({ images }) {
 
   return (
     <div className="space-y-4">
-      <form className="flex flex-wrap items-end gap-2" onSubmit={submit}>
+      {!readOnly && <form className="flex flex-wrap items-end gap-2" onSubmit={submit}>
         <input className={`${input} flex-1 min-w-[10rem]`} placeholder="Názov obrázka" value={title} onChange={(e) => setTitle(e.target.value)} required />
         <input
           type="file"
@@ -86,15 +86,15 @@ function Images({ images }) {
         />
         {dataUrl && <img src={dataUrl} alt="" className="h-11 rounded-lg border border-line" />}
         <button className={primary} disabled={busy || !title || !dataUrl}>{busy ? 'Ukladám…' : 'Pridať'}</button>
-      </form>
+      </form>}
       <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
         {!images.length && <div className="text-sm text-muted">Žiadne obrázky</div>}
         {images.map((img) => (
           <div key={img.id} className="rounded-xl overflow-hidden border border-line bg-sunken">
             <img src={img.imageUrl} alt={img.title} className="w-full aspect-video object-cover" />
-            <div className="flex items-center gap-1 pl-2">
+            <div className="flex items-center gap-1 pl-2 min-h-[44px]">
               <span className="flex-1 min-w-0 text-xs truncate" title={img.title}>{img.title}</span>
-              <button onClick={() => remove(img)} className="btn-icon hover:!text-danger" title="Vymazať" aria-label={`Vymazať: ${img.title}`}>🗑</button>
+              {!readOnly && <button onClick={() => remove(img)} className="btn-icon hover:!text-danger" title="Vymazať" aria-label={`Vymazať: ${img.title}`}>🗑</button>}
             </div>
             <div className="grid grid-cols-2 gap-1 p-1 pt-0">
               <button onClick={() => actions.addToPlaylist(img.id)} className="btn !min-h-[36px] !px-2 text-xs">+ Poradie</button>
@@ -113,7 +113,7 @@ function titleFromFile(name) {
   return name.replace(/\.[^.]+$/, '').replace(/[_-]+/g, ' ').trim();
 }
 
-function Presentations({ presentations, canConvert }) {
+function Presentations({ presentations, canConvert, readOnly }) {
   const [title, setTitle] = useState('');
   const [file, setFile] = useState(null);
   const [busy, setBusy] = useState(false);
@@ -138,7 +138,7 @@ function Presentations({ presentations, canConvert }) {
 
   return (
     <div className="space-y-4">
-      <form className="space-y-2" onSubmit={submit}>
+      {!readOnly && <form className="space-y-2" onSubmit={submit}>
         <div className="flex flex-wrap items-end gap-2">
           <input
             type="file"
@@ -163,7 +163,7 @@ function Presentations({ presentations, canConvert }) {
         {isPowerPoint && !canConvert && (
           <p className="text-xs text-warn">Na serveri zatiaľ nie je LibreOffice, PowerPoint sa nepodarí previesť. Na Raspberry Pi: <code>sudo apt install libreoffice-impress</code></p>
         )}
-      </form>
+      </form>}
       <div className="space-y-1">
         {!presentations.length && <div className="text-sm text-muted">Žiadne prezentácie</div>}
         {presentations.map((p) => (
@@ -173,7 +173,7 @@ function Presentations({ presentations, canConvert }) {
             <span className="text-xs text-muted">{p.pageCount} {pluralPages(p.pageCount)}</span>
             <button onClick={() => actions.addToPlaylist(p.id)} className="btn !min-h-[36px] !px-3 text-xs">+ Do poradia</button>
             <button onClick={() => actions.show(p)} className="btn-icon" title="Zobraziť hneď" aria-label={`Zobraziť hneď: ${p.title}`}>▶</button>
-            <button onClick={() => removeSong(p, 'prezentáciu')} className="btn-icon hover:!text-danger" title="Vymazať" aria-label={`Vymazať: ${p.title}`}>🗑</button>
+            {!readOnly && <button onClick={() => removeSong(p, 'prezentáciu')} className="btn-icon hover:!text-danger" title="Vymazať" aria-label={`Vymazať: ${p.title}`}>🗑</button>}
           </div>
         ))}
       </div>
@@ -228,15 +228,23 @@ function pluralPages(n) {
 
 function Sync({ lib, health }) {
   const [busy, setBusy] = useState(false);
-  const sourceLabel = { GitHub: 'GitHub', server: 'lokálna kópia na serveri', cache: 'uložená kópia v prehliadači' }[lib.source] || 'nič';
+  const sourceLabel = { GitHub: 'GitHub', server: 'lokálna kópia na serveri', administrácia: 'administrácia kostola', cache: 'uložená kópia v prehliadači' }[lib.source] || 'nič';
+  const library = health?.library;
   return (
     <div className="space-y-2 text-sm">
       <div>Piesne načítané z: <b>{sourceLabel}</b> ({lib.songs.length} piesní, {lib.images.length} obrázkov)</div>
-      {lib.source && lib.source !== 'GitHub' && <div className="text-warn">GitHub nie je dostupný – zobrazuje sa záložná kópia.</div>}
-      <div>
+      {!lib.managed && lib.source && lib.source !== 'GitHub' && <div className="text-warn">GitHub nie je dostupný – zobrazuje sa záložná kópia.</div>}
+      {lib.managed && (
+        <div>
+          Posledná kontrola zmien v administrácii:{' '}
+          {library?.lastSync ? <b className={library.lastError ? 'text-warn' : 'text-ok'}>{new Date(library.lastSync).toLocaleString('sk-SK')}</b> : <b className="text-warn">zatiaľ nie</b>}
+          {library?.lastError && <div className="text-warn">Administrácia teraz nie je dostupná ({library.lastError}) – používa sa uložená kópia.</div>}
+        </div>
+      )}
+      {!lib.managed && <div>
         Ukladanie na GitHub:{' '}
         {health == null ? <b className="text-danger">server nedostupný</b> : health.github?.tokenConfigured ? <b className="text-ok">aktívne (token je na serveri)</b> : <b className="text-warn">token na serveri chýba – ukladá sa iba lokálne</b>}
-      </div>
+      </div>}
       <button
         className="btn"
         disabled={busy}
@@ -255,27 +263,48 @@ const TABS = [
   ['pdf', 'Prezentácie'],
   ['sync', 'Synchronizácia'],
 ];
+// Obsah kostola spravuje administrácia – tu sa iba vyberá do poradia a na pozadie
+const MANAGED_TABS = [
+  ['images', 'Obrázky'],
+  ['pdf', 'Prezentácie'],
+  ['sync', 'Synchronizácia'],
+];
 
 export default function ContentManager({ lib, health }) {
   const [tab, setTab] = useState('text');
+  const tabs = lib.managed ? MANAGED_TABS : TABS;
+  const activeTab = tabs.some(([id]) => id === tab) ? tab : tabs[0][0];
   return (
-    <Card title="Správa obsahu" subtitle="Nové texty, obrázky a prezentácie sa uložia na server aj na GitHub" className="max-w-4xl mx-auto">
+    <Card
+      title="Správa obsahu"
+      subtitle={lib.managed ? 'Obsah tohto kostola sa upravuje v administrácii' : 'Nové texty, obrázky a prezentácie sa uložia na server aj na GitHub'}
+      className="max-w-4xl mx-auto"
+    >
+      {lib.managed && (
+        <div className="mb-4 p-3 rounded-xl bg-accent/10 border border-accent/30 text-sm">
+          Piesne, kategórie, obrázky a prezentácie pridávaš a upravuješ v administrácii kostola.
+          Zmeny sa sem dostanú samy do minúty.
+          {lib.adminUrl && (
+            <> <a className="font-semibold text-accent underline" href={lib.adminUrl} target="_blank" rel="noreferrer">Otvoriť administráciu</a></>
+          )}
+        </div>
+      )}
       <div className="flex gap-1 border-b border-line mb-4 -mt-1 overflow-x-auto">
-        {TABS.map(([id, label]) => (
+        {tabs.map(([id, label]) => (
           <button
             key={id}
             onClick={() => setTab(id)}
-            className={`min-h-[44px] px-4 text-sm font-semibold -mb-px border-b-2 whitespace-nowrap ${tab === id ? 'border-accent text-accent' : 'border-transparent text-muted hover:text-fg'}`}
+            className={`min-h-[44px] px-4 text-sm font-semibold -mb-px border-b-2 whitespace-nowrap ${activeTab === id ? 'border-accent text-accent' : 'border-transparent text-muted hover:text-fg'}`}
           >
             {label}
           </button>
         ))}
       </div>
-      {tab === 'text' && <AddText categories={lib.categories} />}
-      {tab === 'songs' && <ManageSongs songs={lib.songs} categories={lib.categories} />}
-      {tab === 'images' && <Images images={lib.images} />}
-      {tab === 'pdf' && <Presentations presentations={lib.presentations} canConvert={Boolean(health?.converter?.powerpoint)} />}
-      {tab === 'sync' && <Sync lib={lib} health={health} />}
+      {activeTab === 'text' && <AddText categories={lib.categories} />}
+      {activeTab === 'songs' && <ManageSongs songs={lib.songs} categories={lib.categories} />}
+      {activeTab === 'images' && <Images images={lib.images} readOnly={lib.managed} />}
+      {activeTab === 'pdf' && <Presentations presentations={lib.presentations} canConvert={Boolean(health?.converter?.powerpoint)} readOnly={lib.managed} />}
+      {activeTab === 'sync' && <Sync lib={lib} health={health} />}
     </Card>
   );
 }

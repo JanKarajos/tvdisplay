@@ -1,0 +1,16 @@
+# Administrácia kostolov – Synology NAS (Container Manager → Projekt)
+services:
+  tvdisplay-admin:
+    build: .
+    container_name: tvdisplay-admin
+    restart: unless-stopped
+    ports:
+      - "8080:8080"
+    environment:
+      # Prvý administrátor – použije sa iba pri prvom spustení (keď ešte nie sú žiadni používatelia).
+      # Po prihlásení si heslo zmeň v administrácii (ikona 🔑).
+      ADMIN_USERNAME: admin
+      ADMIN_PASSWORD: zmen-toto-heslo
+    volumes:
+      # Používatelia, kostoly, piesne, obrázky a prezentácie – tento priečinok zálohuj
+      - ./admin-data:/data

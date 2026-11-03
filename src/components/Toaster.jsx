@@ -8,7 +8,7 @@ export default function Toaster() {
       {toasts.map((t) => (
         <div
           key={t.id}
-          className={`animate-toast-in max-w-sm px-4 py-2 rounded-xl shadow-lg text-sm font-semibold ${t.tone === 'ok' ? 'bg-ok text-white dark:text-black' : 'bg-fg text-bg'}`}
+          className={`animate-toast-in max-w-sm px-4 py-2 rounded-xl shadow-lg text-sm font-semibold ${t.tone === 'ok' ? 'bg-ok text-white dark:text-black' : t.tone === 'danger' ? 'bg-danger text-white dark:text-black' : 'bg-fg text-bg'}`}
         >
           {t.tone === 'ok' && '✓ '}
           {t.message}

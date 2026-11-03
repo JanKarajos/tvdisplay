@@ -4,6 +4,8 @@
 // Spustenie:  node server/index.js            (iba API, pre vývoj s Vite)
 //             node server/index.js --serve    (API + hotová aplikácia z dist/)
 // Premenné v .env: STATE_PORT, APP_PORT, CONTROL_PIN, GITHUB_TOKEN, GITHUB_OWNER, GITHUB_REPO, GITHUB_BRANCH
+//   ADMIN_DATA_DIR   – zapne administráciu kostolov (NAS), napr. ./admin-data
+//   CHURCH_DATA_URL  – Orange Pi berie piesne svojho kostola z administrácie namiesto GitHubu
 
 import 'dotenv/config';
 import express from 'express';
@@ -14,6 +16,8 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { WebSocketServer } from 'ws';
 import { ACCEPTED_EXTENSIONS, PRESENTATION_EXTENSIONS, convertToPdf, countPdfPages, findSoffice, hasSoffice } from './presentations.js';
+import { createAdmin } from './admin.js';
+import { createChurchSync } from './churchSync.js';
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const STATE_FILE = path.join(ROOT, 'state.json');
@@ -34,6 +38,9 @@ const GITHUB = {
 };
 // Na GitHub smú ísť iba tieto súbory
 const GITHUB_FILES = new Set(['songs.json', 'images.json']);
+
+const ADMIN_DATA_DIR = (process.env.ADMIN_DATA_DIR || '').trim();
+const CHURCH_DATA_URL = (process.env.CHURCH_DATA_URL || '').trim();
 
 const DEFAULT_STATE = {
   currentSongId: null,
@@ -120,6 +127,18 @@ function attachWebSocket(server) {
   wss.on('close', () => clearInterval(interval));
 }
 
+// --- Kostol z administrácie (Orange Pi) ---------------------------------
+
+const church = CHURCH_DATA_URL
+  ? createChurchSync({
+    dataUrl: CHURCH_DATA_URL,
+    cacheDir: path.resolve(process.env.CHURCH_CACHE_DIR || path.join(ROOT, 'church-data')),
+    intervalMs: (Number(process.env.CHURCH_SYNC_SECONDS) || 60) * 1000,
+    // Zmena v administrácii: ovládanie aj TV si knižnicu načítajú znova
+    onChange: () => broadcast({ type: 'library', file: 'songs.json' }),
+  })
+  : null;
+
 // --- Express ------------------------------------------------------------
 
 const app = express();
@@ -132,6 +151,23 @@ function requirePin(req, res, next) {
   return res.status(401).json({ error: 'Nesprávny alebo chýbajúci PIN' });
 }
 
+if (ADMIN_DATA_DIR) {
+  const admin = createAdmin({ dataDir: path.resolve(ADMIN_DATA_DIR), seedSongsFile: path.join(ROOT, 'songs.json') });
+  app.use('/api/admin', admin.api);
+  app.use('/api/public', admin.pub);
+  // Administrácia je dostupná z internetu – zápisy ovládania (stav TV, GitHub, nahrávanie) tu nemajú čo robiť
+  app.use(['/api/state', '/api/github', '/api/uploads'], (req, res, next) => {
+    if (req.method === 'GET' || req.method === 'HEAD') return next();
+    res.status(403).json({ error: 'Na serveri administrácie je ovládanie vypnuté' });
+  });
+}
+
+// Obsah kostola spravuje administrácia – tu sa nemení
+function rejectWhenManaged(req, res, next) {
+  if (!church) return next();
+  res.status(409).json({ error: 'Piesne, obrázky a prezentácie tohto kostola sa upravujú v administrácii' });
+}
+
 app.get('/health', (req, res) => {
   findSoffice(); // na pozadí, /health nesmie čakať
   res.json({
@@ -139,6 +175,10 @@ app.get('/health', (req, res) => {
     clients: sockets.size,
     auth: { pinRequired: Boolean(CONTROL_PIN) },
     converter: { powerpoint: hasSoffice() },
+    admin: Boolean(ADMIN_DATA_DIR),
+    library: church
+      ? { managed: true, adminUrl: church.adminUrl, lastSync: church.status.lastSync, lastError: church.status.lastError }
+      : { managed: false },
     github: {
       owner: GITHUB.owner,
       repo: GITHUB.repo,
@@ -167,9 +207,21 @@ app.get('/api/psalms/:year', (req, res) => {
   res.sendFile(file);
 });
 
-// Lokálna kópia songs.json / images.json – záloha, keď GitHub nie je dostupný
-app.get('/api/data/:file', (req, res) => {
+// Lokálna kópia songs.json / images.json – záloha, keď GitHub nie je dostupný.
+// Pri napojení na administráciu jediný zdroj (aj categories.json).
+app.get('/api/data/:file', async (req, res) => {
   const { file } = req.params;
+  if (church) {
+    if (!['songs.json', 'images.json', 'categories.json'].includes(file)) return res.status(404).end();
+    let list = church.readList(file);
+    if (!list) {
+      await church.ready; // prvé spustenie: počkaj na prvé stiahnutie
+      list = church.readList(file);
+    }
+    if (!list) return res.status(503).json({ error: 'Dáta kostola zatiaľ nie sú stiahnuté z administrácie' });
+    res.set('Cache-Control', 'no-store');
+    return res.json(list);
+  }
   if (!GITHUB_FILES.has(file)) return res.status(404).end();
   const full = path.join(ROOT, file);
   if (!fs.existsSync(full)) return res.status(404).json({ error: 'Súbor neexistuje' });
@@ -179,7 +231,15 @@ app.get('/api/data/:file', (req, res) => {
 // Prezentácie (PDF, PowerPoint, Impress): ukladajú sa do uploads/ ako PDF,
 // v songs.json je iba relatívny odkaz /uploads/... a zistený počet strán
 app.use('/uploads', express.static(UPLOADS_DIR));
-app.post('/api/uploads', requirePin, express.raw({ type: () => true, limit: '100mb' }), async (req, res) => {
+
+// Obrázky a PDF kostola z administrácie (kópia na disku)
+app.get('/church-media/:name', async (req, res) => {
+  const file = church && (await church.mediaFile(req.params.name));
+  if (!file) return res.status(404).end();
+  res.sendFile(file, { maxAge: '365d', immutable: true });
+});
+
+app.post('/api/uploads', requirePin, rejectWhenManaged, express.raw({ type: () => true, limit: '100mb' }), async (req, res) => {
   if (!Buffer.isBuffer(req.body) || !req.body.length) return res.status(400).json({ error: 'Prázdny súbor' });
   const original = decodeURIComponent(req.get('x-filename') || 'prezentacia.pdf');
   const ext = path.extname(original).toLowerCase();
@@ -205,7 +265,7 @@ app.post('/api/uploads', requirePin, express.raw({ type: () => true, limit: '100
 });
 
 // Zmazanie nahratej prezentácie (iba súbory priamo v uploads/)
-app.delete('/api/uploads/:name', requirePin, (req, res) => {
+app.delete('/api/uploads/:name', requirePin, rejectWhenManaged, (req, res) => {
   const name = path.basename(req.params.name);
   if (name !== req.params.name || !name.endsWith('.pdf')) return res.status(400).json({ error: 'Neplatný názov súboru' });
   const full = path.join(UPLOADS_DIR, name);
@@ -226,7 +286,7 @@ async function githubRequest(url, options = {}) {
 }
 
 // Uloží songs.json alebo images.json na GitHub (token je iba na serveri) a zároveň lokálne
-app.put('/api/github/:file', requirePin, async (req, res) => {
+app.put('/api/github/:file', requirePin, rejectWhenManaged, async (req, res) => {
   const { file } = req.params;
   if (!GITHUB_FILES.has(file)) return res.status(400).json({ error: 'Nepovolený súbor' });
   const { content, message } = req.body || {};
@@ -280,6 +340,8 @@ const apiServer = http.createServer(app);
 attachWebSocket(apiServer);
 apiServer.listen(STATE_PORT, '0.0.0.0', () => {
   console.log(`📡 TVDisplay server beží na porte ${STATE_PORT} (PIN: ${CONTROL_PIN ? 'zapnutý' : 'vypnutý'}, GitHub token: ${GITHUB.token ? 'áno' : 'nie'})`);
+  if (ADMIN_DATA_DIR) console.log(`🔐 Administrácia kostolov zapnutá (dáta v ${path.resolve(ADMIN_DATA_DIR)}), adresa: /#admin`);
+  if (church) console.log(`⛪ Piesne kostola z administrácie: ${CHURCH_DATA_URL}`);
 });
 
 if (SERVE_APP) {
