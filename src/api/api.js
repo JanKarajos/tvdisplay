@@ -1,5 +1,5 @@
 // Knižnica piesní, obrázkov a PDF + žalmy. Ukladanie ide cez server (GitHub token je iba tam).
-import { SERVER_URL, SONGS_URL, IMAGES_URL } from '../config';
+import { SERVER_URL, SONGS_URL, IMAGES_URL, resolveServerUrl } from '../config';
 import { stateClient, writeHeaders, markAuthRequired } from './stateClient';
 import { log } from '../lib/log';
 
@@ -72,7 +72,8 @@ async function buildPsalmSong(dateStr) {
 let songs = [];
 let images = [];
 let extraCategories = [];
-let loadInfo = { loaded: false, source: null, error: null };
+let managedCategories = null; // názvy kategórií z administrácie (s diakritikou)
+let loadInfo = { loaded: false, source: null, error: null, managed: false, adminUrl: null };
 let snapshot = null;
 const listeners = new Set();
 
@@ -81,12 +82,13 @@ function categoryName(id) {
 }
 
 function buildSnapshot() {
-  const ids = Array.from(new Set([...songs.map((s) => s.category).filter(Boolean), ...extraCategories]));
+  const ids = Array.from(new Set([...(managedCategories || []).map((c) => c.id), ...songs.map((s) => s.category).filter(Boolean), ...extraCategories]));
+  const names = new Map((managedCategories || []).map((c) => [c.id, c.name]));
   snapshot = {
     songs,
     images,
     presentations: songs.filter((s) => s.type === 'pdf'),
-    categories: ids.map((id) => ({ id, name: categoryName(id) })),
+    categories: ids.map((id) => ({ id, name: names.get(id) || categoryName(id) })),
     ...loadInfo,
   };
 }
@@ -171,21 +173,79 @@ function songsUrl() {
   }
 }
 
+// Je tento server napojený na administráciu kostola? Keď server neodpovedá, platí posledná známa odpoveď,
+// aby sa pri výpadku nezačali zobrazovať piesne z GitHubu namiesto piesní kostola.
+const MODE_KEY = 'tvdisplay-library-mode';
+
+async function libraryMode() {
+  try {
+    const res = await fetch(`${SERVER_URL}/health`, { signal: AbortSignal.timeout(4000), cache: 'no-store' });
+    if (res.ok) {
+      const library = (await res.json()).library || {};
+      const mode = { managed: Boolean(library.managed), adminUrl: library.adminUrl || null };
+      try {
+        localStorage.setItem(MODE_KEY, JSON.stringify(mode));
+      } catch {
+        // ignoruj
+      }
+      return mode;
+    }
+  } catch {
+    // server nedostupný
+  }
+  try {
+    return { managed: false, adminUrl: null, ...JSON.parse(localStorage.getItem(MODE_KEY) || '{}') };
+  } catch {
+    return { managed: false, adminUrl: null };
+  }
+}
+
+// Dáta kostola z administrácie: iba zo servera (ten má kópiu), inak posledná verzia v prehliadači
+async function loadManagedList(file) {
+  try {
+    const data = await fetchJson(`${SERVER_URL}/api/data/${file}`, 20000);
+    if (Array.isArray(data)) {
+      writeCache(`church-${file}`, data);
+      return { data, source: 'administrácia' };
+    }
+  } catch (e) {
+    log(`[library] ${file} zo servera zlyhalo:`, e.message);
+  }
+  const cached = readCache(`church-${file}`);
+  if (Array.isArray(cached)) return { data: cached, source: 'cache' };
+  return { data: [], source: null };
+}
+
+// Relatívne odkazy (/church-media/..., /uploads/...) patria serveru
+const withServerUrls = (list) => list.map((item) => (typeof item.imageUrl === 'string' ? { ...item, imageUrl: resolveServerUrl(item.imageUrl) } : item));
+
 let loadingPromise = null;
 
 export function loadLibrary({ force = false, preferServer = false } = {}) {
   if (loadingPromise && !force) return loadingPromise;
   loadingPromise = (async () => {
-    const [songsResult, imagesResult] = await Promise.all([
-      loadList('songs.json', songsUrl(), preferServer),
-      loadList('images.json', IMAGES_URL, preferServer),
-    ]);
-    songs = songsResult.data;
-    images = imagesResult.data;
+    const mode = await libraryMode();
+    let songsResult;
+    let imagesResult;
+    if (mode.managed) {
+      let categoriesResult;
+      [songsResult, imagesResult, categoriesResult] = await Promise.all(['songs.json', 'images.json', 'categories.json'].map(loadManagedList));
+      managedCategories = categoriesResult.data;
+    } else {
+      [songsResult, imagesResult] = await Promise.all([
+        loadList('songs.json', songsUrl(), preferServer),
+        loadList('images.json', IMAGES_URL, preferServer),
+      ]);
+      managedCategories = null;
+    }
+    songs = withServerUrls(songsResult.data);
+    images = withServerUrls(imagesResult.data);
     loadInfo = {
       loaded: true,
       source: songsResult.source,
       error: songsResult.source ? null : 'Piesne sa nepodarilo načítať zo žiadneho zdroja',
+      managed: mode.managed,
+      adminUrl: mode.adminUrl,
     };
     notify();
     return snapshot;
@@ -334,7 +394,8 @@ export const library = {
     if (find()) return find();
     for (const [file, list] of [['songs.json', 'songs'], ['images.json', 'images']]) {
       try {
-        const item = (await fetchJson(`${SERVER_URL}/api/data/${file}`, 4000)).find((x) => x.id === id);
+        const found = (await fetchJson(`${SERVER_URL}/api/data/${file}`, 4000)).find((x) => x.id === id);
+        const item = found && withServerUrls([found])[0];
         if (item) {
           if (list === 'songs') songs = [...songs, item];
           else images = [...images, item];

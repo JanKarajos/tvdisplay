@@ -44,7 +44,7 @@ export default function SongBrowser({ lib, playlistIds }) {
             {c.name}
           </button>
         ))}
-        <form
+        {!lib.managed && <form
           className="shrink-0"
           onSubmit={(e) => {
             e.preventDefault();
@@ -59,7 +59,7 @@ export default function SongBrowser({ lib, playlistIds }) {
             placeholder="+ kategória"
             className="min-h-[36px] w-28 px-3 rounded-full text-sm border border-dashed border-line bg-transparent placeholder:text-muted focus:outline-none focus:ring-2 focus:ring-accent/50"
           />
-        </form>
+        </form>}
       </div>
 
       {query && <div className="mt-2 text-xs text-muted">Nájdených: {results.length} {pluralSongs(results.length)}</div>}
