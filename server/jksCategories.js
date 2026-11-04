@@ -33,6 +33,7 @@ export const OTHER_CATEGORIES = [
   { id: 'casti-omse', name: 'Časti omše' },
   { id: 'prosby', name: 'Prosby veriacich' },
   { id: 'adoracia', name: 'Adorácia' },
+  { id: 'vlastne', name: 'Vlastné' },
 ];
 
 // Názvy kategórií v poradí spevníka (poradie kľúčov = poradie zobrazenia)

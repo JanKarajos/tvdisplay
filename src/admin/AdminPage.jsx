@@ -111,12 +111,14 @@ export default function AdminPage() {
   const [tab, setTab] = useState('songs');
   const [changingPassword, setChangingPassword] = useState(false);
   const [canConvert, setCanConvert] = useState(false);
+  const [shareName, setShareName] = useState(null); // zdieľaný priečinok s Orange Pi (WebDAV)
 
   const loadMe = useCallback(async () => {
     try {
       const data = await adminApi.me();
       setUser(data.user);
       setChurches(data.churches);
+      setShareName(data.shareName || null);
       // Posledný vybraný kostol, ak k nemu má používateľ prístup, inak prvý dostupný
       setChurchId((current) => (data.churches.some((c) => c.id === current) ? current : data.churches[0]?.id || ''));
     } catch {
@@ -227,7 +229,7 @@ export default function AdminPage() {
             {activeTab === 'pdfs' && <PdfsTab key={churchId} churchId={churchId} run={run} canConvert={canConvert} />}
           </>
         )}
-        {activeTab === 'churches' && isAdmin && <ChurchesTab churches={churches} onChanged={loadMe} run={run} />}
+        {activeTab === 'churches' && isAdmin && <ChurchesTab churches={churches} shareName={shareName} onChanged={loadMe} run={run} />}
         {activeTab === 'users' && isAdmin && <UsersTab churches={churches} currentUser={user} run={run} />}
       </main>
       <Toaster />

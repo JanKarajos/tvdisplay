@@ -142,9 +142,15 @@ export function createNasStorage({ url, username, password, ignoreCert = false, 
     expectOk(await dav('PUT', rel, { body: data, headers: { 'Content-Type': 'application/octet-stream' } }), `Uloženie ${rel}`);
   }
 
+  // Administrácia na NAS zapisuje odkazy ako "media/x", Orange Pi ako "/nas-media/x" – oba sú ten istý súbor
+  const toLocalLink = (url) => (typeof url === 'string' && url.startsWith('media/') ? NAS_MEDIA_PREFIX + path.basename(url) : url);
+
   function readCache(file) {
     try {
-      return JSON.parse(fs.readFileSync(path.join(cacheDir, file), 'utf8'));
+      const list = JSON.parse(fs.readFileSync(path.join(cacheDir, file), 'utf8'));
+      return Array.isArray(list)
+        ? list.map((item) => ({ ...item, ...(item.imageUrl ? { imageUrl: toLocalLink(item.imageUrl) } : {}), ...(item.pdfUrl ? { pdfUrl: toLocalLink(item.pdfUrl) } : {}) }))
+        : list;
     } catch {
       return null;
     }
@@ -231,6 +237,16 @@ export function createNasStorage({ url, username, password, ignoreCert = false, 
         if (pending.files.includes(file)) continue;
         if (JSON.stringify(list) !== JSON.stringify(readCache(file))) {
           writeCache(file, list);
+          changed = true;
+        }
+      }
+
+      // Kategórie z administrácie (názvy s diakritikou); na Orange Pi sa iba čítajú
+      const categoriesRes = await dav('GET', 'categories.json');
+      if (categoriesRes.status === 200) {
+        const list = JSON.parse(categoriesRes.body.toString('utf8'));
+        if (Array.isArray(list) && JSON.stringify(list) !== JSON.stringify(readCache('categories.json'))) {
+          writeCache('categories.json', list);
           changed = true;
         }
       }
@@ -384,7 +400,8 @@ export function createNasStorage({ url, username, password, ignoreCert = false, 
       if (category) names.set(item.category, category);
       else if (item.category === OWN_CATEGORY.id) names.set(OWN_CATEGORY.id, OWN_CATEGORY.name);
     }
-    return [...names].map(([id, name]) => ({ id, name }));
+    const fromAdmin = readCache('categories.json') || [];
+    return [...fromAdmin, ...[...names].filter(([id]) => !fromAdmin.some((c) => c.id === id)).map(([id, name]) => ({ id, name }))];
   }
 
   async function download(name) {

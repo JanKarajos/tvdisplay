@@ -5,6 +5,8 @@ node_modules
 state.json
 .DS_Store
 uploads/
-admin-data/
 church-data/
 nas-cache/
+# Dáta administrácie – priečinok je v repozitári prázdny (Synology ho musí mať pri spustení kontajnera)
+admin-data/*
+!admin-data/.gitkeep

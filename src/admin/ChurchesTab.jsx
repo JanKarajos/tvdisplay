@@ -4,7 +4,7 @@ import { adminApi, churchDataUrl } from './adminApi';
 import InlineRename from './InlineRename';
 import { toast } from '../lib/toast';
 
-export default function ChurchesTab({ churches, onChanged, run }) {
+export default function ChurchesTab({ churches, shareName, onChanged, run }) {
   const [name, setName] = useState('');
   const [busy, setBusy] = useState(false);
 
@@ -59,7 +59,9 @@ export default function ChurchesTab({ churches, onChanged, run }) {
 
       <Card
         title="Kostoly"
-        subtitle="Adresu kostola zadáš pri inštalácii Orange Pi v tom kostole"
+        subtitle={shareName
+          ? `Každý kostol je priečinok v zdieľanom priečinku ${shareName} na NAS. Adresu zadáš pri inštalácii Orange Pi (--nas-url); cez Tailscale namiesto IP použi názov NAS.`
+          : 'Adresu kostola zadáš pri inštalácii Orange Pi v tom kostole'}
         actions={
           <button className="btn" onClick={addJks} disabled={busy || !churches.length} title="Pridá do každého kostola piesne JKS, ktoré mu chýbajú. Upravené piesne sa neprepíšu.">
             {busy ? 'Dopĺňam…' : 'Doplniť piesne JKS'}
@@ -73,8 +75,8 @@ export default function ChurchesTab({ churches, onChanged, run }) {
               <div className="flex-1 min-w-[14rem]">
                 <InlineRename value={c.name} onSave={(n) => rename(c, n)} className="font-semibold" />
                 <div className="flex items-center gap-1 text-xs text-muted">
-                  <code className="truncate">{churchDataUrl(c.id)}</code>
-                  <button type="button" className="btn-icon !w-8 !h-8" title="Kopírovať adresu" aria-label="Kopírovať adresu" onClick={() => copy(churchDataUrl(c.id))}>⧉</button>
+                  <code className="truncate">{churchDataUrl(c.id, shareName)}</code>
+                  <button type="button" className="btn-icon !w-8 !h-8" title="Kopírovať adresu" aria-label="Kopírovať adresu" onClick={() => copy(churchDataUrl(c.id, shareName))}>⧉</button>
                 </div>
               </div>
               <button onClick={() => remove(c)} className="btn-icon hover:!text-danger" title="Zmazať" aria-label={`Zmazať: ${c.name}`}>🗑</button>
