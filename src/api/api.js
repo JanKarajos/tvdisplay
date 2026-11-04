@@ -74,6 +74,7 @@ let songs = [];
 let images = [];
 let extraCategories = [];
 let managedCategories = null; // názvy kategórií z administrácie (s diakritikou)
+let fileCategories = []; // kategórie z podpriečinkov texty/ na NAS (iba názvy)
 let loadInfo = { loaded: false, source: null, error: null, managed: false, adminUrl: null, nas: false };
 let snapshot = null;
 const listeners = new Set();
@@ -87,7 +88,7 @@ function buildSnapshot() {
   // Kategórie z administrácie v jej poradí, inak v poradí spevníka JKS (vlastné na konci)
   const fromSongs = Array.from(new Set(songs.map((s) => s.category).filter(Boolean))).sort((a, b) => categoryOrder(a) - categoryOrder(b));
   const ids = Array.from(new Set([...(managedCategories || []).map((c) => c.id), ...fromSongs, ...extraCategories]));
-  const names = new Map((managedCategories || []).map((c) => [c.id, c.name]));
+  const names = new Map([...fileCategories, ...(managedCategories || [])].map((c) => [c.id, c.name]));
   snapshot = {
     songs,
     images,
@@ -257,8 +258,10 @@ export function loadLibrary({ force = false, preferServer = false } = {}) {
       [songsResult, imagesResult, categoriesResult] = await Promise.all(['songs.json', 'images.json', 'categories.json'].map((f) => loadManagedList(f)));
       managedCategories = categoriesResult.data;
     } else if (mode.nas) {
-      [songsResult, imagesResult] = await Promise.all(['songs.json', 'images.json'].map((f) => loadManagedList(f, 'NAS')));
+      let categoriesResult;
+      [songsResult, imagesResult, categoriesResult] = await Promise.all(['songs.json', 'images.json', 'categories.json'].map((f) => loadManagedList(f, 'NAS')));
       managedCategories = null;
+      fileCategories = categoriesResult.data;
     } else {
       [songsResult, imagesResult] = await Promise.all([
         loadList('songs.json', songsUrl(), preferServer),

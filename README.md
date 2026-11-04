@@ -32,9 +32,32 @@ Voľby: `--yes`, `--no-kiosk` (bez obrazovky na TV), `--no-powerpoint` (bez Libr
 
 ## Piesne, fotky a prezentácie na NAS (Synology)
 
-Aplikácia beží na Orange Pi, na NAS je iba priečinok s dátami: `songs.json`, `images.json` a `media/`
-(fotky a PDF prezentácie). Upravuje sa ako doteraz v ovládaní (záložka **Obsah**, chránená PIN-om),
-zmeny sa ukladajú na NAS namiesto GitHubu.
+Aplikácia beží na Orange Pi, na NAS je iba priečinok s dátami. Každý kostol má na NAS svoj priečinok
+a jeho Orange Pi dostane odkaz naň (adresu priečinka).
+
+Texty, fotky a prezentácie stačí vložiť do priečinka kostola, napr. cez **File Station** alebo **Synology Drive**:
+
+```
+tvdisplay/
+  kostol-sv-martina/                      ← odkaz pre Orange Pi v tomto kostole
+    texty/
+      Ohlášky.txt                         → kategória „Vlastné“
+      150 Ó, Ježišu môj zranený.txt       → pieseň č. 150 (číslo JKS určí kategóriu, tu Pôstne)
+      Pohreb/Odpočinutie večné.txt        → podpriečinok = kategória „Pohreb“
+    obrazky/
+      Vianoce.jpg                         → JPG, PNG, WEBP, GIF
+    prezentacie/
+      Ohlášky 1. nedeľa.pdf               → PDF (PowerPoint iba ak je na Orange Pi LibreOffice)
+    songs.json, images.json, media/       ← spravuje aplikácia, nemeň ručne
+```
+
+- **Texty** sú obyčajné `.txt` súbory (UTF-8, ako ich uloží Poznámkový blok). Strofy oddeľ prázdnym riadkom,
+  každá strofa je jedna strana na TV. Názov súboru je názov piesne. Číslo na začiatku („150 …“, „150. …“)
+  je číslo piesne.
+- Nový, zmenený alebo zmazaný súbor sa v ovládaní aj na TV prejaví do minúty, bez reštartu.
+- Položky zo súborov majú v ovládaní značku **NAS** a menia sa iba na NAS. Spevník JKS a texty, fotky
+  a prezentácie pridané v ovládaní (záložka **Obsah**, chránená PIN-om) sa ukladajú do `songs.json`,
+  `images.json` a `media/` v tom istom priečinku.
 
 - Orange Pi má kópiu dát u seba, takže TV aj ovládanie fungujú, aj keď NAS alebo internet nie je dostupný.
   Zmeny urobené bez spojenia sa na NAS nahrajú, keď sa spojenie obnoví.

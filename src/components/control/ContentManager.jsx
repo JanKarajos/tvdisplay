@@ -87,7 +87,8 @@ function Images({ images, readOnly }) {
             <img src={img.imageUrl} alt={img.title} className="w-full aspect-video object-cover" />
             <div className="flex items-center gap-1 pl-2 min-h-[44px]">
               <span className="flex-1 min-w-0 text-xs truncate" title={img.title}>{img.title}</span>
-              {!readOnly && <button onClick={() => remove(img)} className="btn-icon hover:!text-danger" title="Vymazať" aria-label={`Vymazať: ${img.title}`}>🗑</button>}
+              {img.fromFile && <span className="px-2 text-[10px] text-muted" title="Súbor v priečinku obrazky/ na NAS – mení sa tam">NAS</span>}
+              {!readOnly && !img.fromFile && <button onClick={() => remove(img)} className="btn-icon hover:!text-danger" title="Vymazať" aria-label={`Vymazať: ${img.title}`}>🗑</button>}
             </div>
             <div className="grid grid-cols-2 gap-1 p-1 pt-0">
               <button onClick={() => actions.addToPlaylist(img.id)} className="btn !min-h-[36px] !px-2 text-xs">+ Poradie</button>
@@ -166,7 +167,8 @@ function Presentations({ presentations, canConvert, readOnly }) {
             <span className="text-xs text-muted">{p.pageCount} {pluralPages(p.pageCount)}</span>
             <button onClick={() => actions.addToPlaylist(p.id)} className="btn !min-h-[36px] !px-3 text-xs">+ Do poradia</button>
             <button onClick={() => actions.show(p)} className="btn-icon" title="Zobraziť hneď" aria-label={`Zobraziť hneď: ${p.title}`}>▶</button>
-            {!readOnly && <button onClick={() => removeSong(p, 'prezentáciu')} className="btn-icon hover:!text-danger" title="Vymazať" aria-label={`Vymazať: ${p.title}`}>🗑</button>}
+            {p.fromFile && <span className="text-[10px] text-muted" title="Súbor v priečinku prezentacie/ na NAS – mení sa tam">NAS</span>}
+            {!readOnly && !p.fromFile && <button onClick={() => removeSong(p, 'prezentáciu')} className="btn-icon hover:!text-danger" title="Vymazať" aria-label={`Vymazať: ${p.title}`}>🗑</button>}
           </div>
         ))}
       </div>
@@ -204,8 +206,14 @@ function ManageSongs({ songs, categories }) {
               <span className="block text-sm truncate">{s.title}</span>
               <span className="block text-xs text-muted">{categoryName(s.category)}</span>
             </span>
-            <button onClick={() => setEditing(s)} className="btn !min-h-[36px] !px-3 text-xs">Upraviť</button>
-            <button onClick={() => removeSong(s, 'pieseň')} className="btn-icon hover:!text-danger" title="Vymazať" aria-label={`Vymazať: ${s.title}`}>🗑</button>
+            {s.fromFile ? (
+              <span className="px-3 text-xs text-muted" title="Súbor v priečinku texty/ na NAS – upravuje sa tam">súbor na NAS</span>
+            ) : (
+              <>
+                <button onClick={() => setEditing(s)} className="btn !min-h-[36px] !px-3 text-xs">Upraviť</button>
+                <button onClick={() => removeSong(s, 'pieseň')} className="btn-icon hover:!text-danger" title="Vymazať" aria-label={`Vymazať: ${s.title}`}>🗑</button>
+              </>
+            )}
           </div>
         ))}
       </div>
@@ -232,6 +240,9 @@ function Sync({ lib, health }) {
           Spojenie s NAS:{' '}
           {health == null ? <b className="text-danger">server nedostupný</b> : library?.lastError ? <b className="text-warn">nedostupný – používa sa kópia na tomto zariadení</b> : library?.lastSync ? <b className="text-ok">v poriadku (kontrola {new Date(library.lastSync).toLocaleTimeString('sk-SK')})</b> : <b className="text-warn">zatiaľ bez spojenia</b>}
           {library?.lastError && <div className="text-warn">{library.lastError}</div>}
+          {library?.fileErrors?.length > 0 && (
+            <div className="text-warn">Niektoré súbory na NAS sa nedajú zobraziť: {library.fileErrors.join('; ')}</div>
+          )}
           {library?.pending > 0 && <div className="text-warn">Čaká na nahratie na NAS: {library.pending} {library.pending === 1 ? 'zmena' : library.pending <= 4 ? 'zmeny' : 'zmien'} – nahrajú sa, keď bude NAS dostupný.</div>}
         </div>
       )}

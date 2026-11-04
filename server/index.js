@@ -167,6 +167,8 @@ const nas = NAS_URL && !church
       images: () => readLocalList('images.json'),
       upload: (name) => path.join(UPLOADS_DIR, name),
     },
+    // Prezentácie vložené na NAS: počet strán, PowerPoint -> PDF (ak je nainštalovaný LibreOffice)
+    presentations: { countPdfPages, convertToPdf, canConvert: async () => Boolean(await findSoffice()) },
     // Zmena na NAS (napr. z iného zariadenia): ovládanie aj TV si knižnicu načítajú znova
     onChange: () => broadcast({ type: 'library', file: 'songs.json' }),
   })
@@ -212,7 +214,7 @@ app.get('/health', (req, res) => {
     library: church
       ? { managed: true, adminUrl: church.adminUrl, lastSync: church.status.lastSync, lastError: church.status.lastError }
       : nas
-        ? { managed: false, storage: 'nas', lastSync: nas.status.lastSync, lastError: nas.status.lastError, pending: nas.status.pending }
+        ? { managed: false, storage: 'nas', lastSync: nas.status.lastSync, lastError: nas.status.lastError, pending: nas.status.pending, fileErrors: nas.status.fileErrors }
         : { managed: false, storage: 'github' },
     github: {
       owner: GITHUB.owner,
@@ -257,6 +259,7 @@ app.get('/api/data/:file', async (req, res) => {
     res.set('Cache-Control', 'no-store');
     return res.json(list);
   }
+  if (nas && file === 'categories.json') return res.json(nas.readList(file));
   if (!GITHUB_FILES.has(file)) return res.status(404).end();
   if (nas) {
     let list = nas.readList(file);

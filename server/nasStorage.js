@@ -1,7 +1,12 @@
 // Piesne, obrázky a prezentácie na NAS (Synology WebDAV Server) namiesto GitHubu.
 // Zapne sa premennou NAS_URL, napr. https://mojnas.synology.me:5006/tvdisplay/kostol-sv-martina
 //
-// V priečinku na NAS sú:  songs.json, images.json a media/ (obrázky a PDF prezentácie).
+// V priečinku na NAS sú:  songs.json, images.json a media/ (obrázky a PDF prezentácie) – tie spravuje aplikácia.
+// Okrem toho sa načítajú súbory, ktoré do priečinka vloží človek (napr. cez File Station):
+//   texty/*.txt alebo texty/<kategória>/*.txt  – piesne a texty ("143 Názov.txt" = pieseň č. 143)
+//   obrazky/*.jpg|png|webp|gif                 – obrázky
+//   prezentacie/*.pdf (aj PowerPoint, ak je na zariadení LibreOffice) – prezentácie
+// Tieto položky sú iba na čítanie (menia sa na NAS) a majú fromFile: true.
 // Server na Orange Pi si drží ich kópiu (nas-cache/), takže displej aj ovládanie fungujú, aj keď NAS
 // alebo internet nie je dostupný. Zmeny urobené bez spojenia sa na NAS nahrajú, keď sa spojenie obnoví.
 // Každú minútu kontroluje zmeny na NAS (napr. z iného Orange Pi v tom istom kostole).
@@ -10,10 +15,39 @@ import path from 'node:path';
 import http from 'node:http';
 import https from 'node:https';
 import crypto from 'node:crypto';
+import { jksCategory } from './jksCategories.js';
 
 export const NAS_MEDIA_PREFIX = '/nas-media/';
 const LIST_FILES = ['songs.json', 'images.json'];
 const IMAGE_TYPES = { 'image/jpeg': '.jpg', 'image/png': '.png', 'image/webp': '.webp', 'image/gif': '.gif' };
+const FOLDERS = { texts: 'texty/', images: 'obrazky/', presentations: 'prezentacie/' };
+const IMAGE_EXT = new Set(['.jpg', '.jpeg', '.png', '.webp', '.gif']);
+const PRESENTATION_EXT = new Set(['.pdf', '.ppt', '.pptx', '.pps', '.ppsx', '.odp']);
+const OWN_CATEGORY = { id: 'vlastne', name: 'Vlastné' };
+
+const shortHash = (text) => crypto.createHash('sha1').update(text).digest('hex').slice(0, 12);
+
+function slug(text) {
+  return String(text).normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase()
+    .replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '').slice(0, 50) || 'kategoria';
+}
+
+// Odpoveď WebDAV PROPFIND (XML) -> [{ href, isDir, version }]; bez XML knižnice, menné priestory sa ignorujú
+function parsePropfind(xml) {
+  const tag = (block, name) => block.match(new RegExp(`<(?:[\\w-]+:)?${name}[^>]*>([^<]*)</(?:[\\w-]+:)?${name}>`, 'i'))?.[1] ?? '';
+  return xml.split(/<(?:[\w-]+:)?response[\s>]/i).slice(1).map((block) => ({
+    href: tag(block, 'href').trim(),
+    isDir: /<(?:[\w-]+:)?collection\s*\/?>/i.test(block),
+    version: tag(block, 'getetag') || `${tag(block, 'getlastmodified')}|${tag(block, 'getcontentlength')}`,
+  }));
+}
+
+// "143 Kristus, príklad pokory.txt" (aj "143. …", "143 - …") -> { number: '143', title: 'Kristus, príklad pokory' }
+function parseTextName(fileName) {
+  const stem = fileName.replace(/\.[^.]+$/, '').trim();
+  const match = /^(\d{1,3})(?:\.\s*|\s+-\s+|\s+)(.+)$/.exec(stem);
+  return match ? { number: match[1], title: match[2].trim() } : { title: stem };
+}
 
 // Názov súboru v media/ z odkazu "/nas-media/x.jpg"; null pre iné odkazy
 export function nasMediaName(url) {
@@ -22,14 +56,22 @@ export function nasMediaName(url) {
   return name && name === path.basename(name) ? name : null;
 }
 
-export function createNasStorage({ url, username, password, ignoreCert = false, cacheDir, seed, intervalMs = 60000, onChange }) {
+export function createNasStorage({ url, username, password, ignoreCert = false, cacheDir, seed, presentations, intervalMs = 60000, onChange }) {
   const base = new URL(url.endsWith('/') ? url : `${url}/`);
   const auth = username ? `Basic ${Buffer.from(`${username}:${password || ''}`).toString('base64')}` : null;
   const mediaDir = path.join(cacheDir, 'media');
   const pendingFile = path.join(cacheDir, 'pending.json');
   fs.mkdirSync(mediaDir, { recursive: true });
 
-  const status = { lastSync: null, lastError: null, pending: 0 };
+  const status = { lastSync: null, lastError: null, pending: 0, fileErrors: [] };
+  // Súbory vložené na NAS: { "<cesta>": { version, item } } a z nich vytvorené kategórie
+  const filesIndexFile = path.join(cacheDir, 'files.json');
+  let filesIndex = {};
+  try {
+    filesIndex = JSON.parse(fs.readFileSync(filesIndexFile, 'utf8'));
+  } catch {
+    // ešte nič
+  }
   // Zmeny, ktoré ešte nie sú na NAS: { files: [...], media: [...], deletes: [...] }
   let pending = { files: [], media: [], deletes: [] };
   try {
@@ -193,10 +235,12 @@ export function createNasStorage({ url, username, password, ignoreCert = false, 
         }
       }
 
+      if (await scanFiles()) changed = true;
+
       // Kópie obrázkov a PDF pre prácu bez spojenia; nepoužívané sa z kópie zmažú
       const used = new Set();
       for (const file of LIST_FILES) {
-        for (const item of readCache(file) || []) {
+        for (const item of combinedList(file) || []) {
           for (const link of [item.imageUrl, item.pdfUrl]) {
             const name = nasMediaName(link);
             if (name) used.add(name);
@@ -204,7 +248,7 @@ export function createNasStorage({ url, username, password, ignoreCert = false, 
         }
       }
       for (const name of used) {
-        if (!fs.existsSync(path.join(mediaDir, name))) await download(name);
+        if (!fs.existsSync(path.join(mediaDir, name)) && !name.startsWith('f-')) await download(name);
       }
       // Čerstvo nahratý súbor ešte nemusí byť v zozname (zoznam sa ukladá hneď po ňom)
       const recent = Date.now() - 60 * 60 * 1000;
@@ -222,6 +266,125 @@ export function createNasStorage({ url, username, password, ignoreCert = false, 
     }
     if (changed) onChange?.();
     return changed;
+  }
+
+  // Obsah priečinka na NAS (jedna úroveň); neexistujúci priečinok = prázdny
+  async function listFolder(rel) {
+    const res = await dav('PROPFIND', rel, {
+      body: '<?xml version="1.0" encoding="utf-8"?><propfind xmlns="DAV:"><prop><resourcetype/><getetag/><getlastmodified/><getcontentlength/></prop></propfind>',
+      headers: { Depth: '1', 'Content-Type': 'application/xml; charset=utf-8' },
+    });
+    if (res.status === 404) return [];
+    expectOk(res, `Priečinok ${rel}`);
+    const folder = new URL(rel, base).pathname.replace(/\/+$/, '');
+    return parsePropfind(res.body.toString('utf8'))
+      .map((entry) => {
+        const full = decodeURIComponent(new URL(entry.href, base).pathname).replace(/\/+$/, '');
+        return { ...entry, path: full, name: path.posix.basename(full) };
+      })
+      .filter((entry) => entry.path !== decodeURIComponent(folder) && !entry.name.startsWith('.') && !entry.name.startsWith('@'));
+  }
+
+  async function getFile(rel) {
+    const res = await dav('GET', rel, { timeout: 120000 });
+    expectOk(res, rel);
+    return res.body;
+  }
+
+  // Načíta súbory, ktoré človek vložil do texty/, obrazky/ a prezentacie/. Stiahne iba nové a zmenené.
+  async function scanFiles() {
+    const found = [];
+    for (const entry of await listFolder(FOLDERS.texts)) {
+      if (entry.isDir) {
+        for (const inner of await listFolder(`${FOLDERS.texts}${encodeURIComponent(entry.name)}/`)) {
+          if (!inner.isDir) found.push({ kind: 'text', category: entry.name, rel: `${FOLDERS.texts}${encodeURIComponent(entry.name)}/${encodeURIComponent(inner.name)}`, ...inner });
+        }
+      } else {
+        found.push({ kind: 'text', category: null, rel: `${FOLDERS.texts}${encodeURIComponent(entry.name)}`, ...entry });
+      }
+    }
+    for (const entry of await listFolder(FOLDERS.images)) {
+      if (!entry.isDir) found.push({ kind: 'image', rel: `${FOLDERS.images}${encodeURIComponent(entry.name)}`, ...entry });
+    }
+    for (const entry of await listFolder(FOLDERS.presentations)) {
+      if (!entry.isDir) found.push({ kind: 'presentation', rel: `${FOLDERS.presentations}${encodeURIComponent(entry.name)}`, ...entry });
+    }
+
+    const next = {};
+    const errors = [];
+    for (const file of found) {
+      const ext = path.extname(file.name).toLowerCase();
+      const key = `${file.kind}:${file.path}`;
+      const previous = filesIndex[key];
+      if (previous && previous.version === file.version && previous.category === file.category) {
+        next[key] = previous;
+        continue;
+      }
+      const id = `nas-${shortHash(file.path)}`;
+      try {
+        let item = null;
+        if (file.kind === 'text' && ext === '.txt') {
+          const text = (await getFile(file.rel)).toString('utf8').replace(/^\uFEFF/, '').replace(/\r\n?/g, '\n').trim();
+          const { number, title } = parseTextName(file.name);
+          const category = file.category ? slug(file.category) : jksCategory(number) || OWN_CATEGORY.id;
+          item = { id, title, ...(number ? { number } : {}), category, lyrics: text, fromFile: true };
+        } else if (file.kind === 'image' && IMAGE_EXT.has(ext)) {
+          // Názov podľa verzie súboru: po zmene na NAS sa v prehliadači nezobrazí stará verzia z cache
+          const name = `f-${shortHash(`${file.path}|${file.version}`)}${ext === '.jpeg' ? '.jpg' : ext}`;
+          writeAtomic(path.join(mediaDir, name), await getFile(file.rel));
+          item = { id, title: file.name.replace(/\.[^.]+$/, ''), imageUrl: NAS_MEDIA_PREFIX + name, fromFile: true };
+        } else if (file.kind === 'presentation' && PRESENTATION_EXT.has(ext)) {
+          let pdf = await getFile(file.rel);
+          if (ext !== '.pdf') {
+            if (!(await presentations.canConvert())) throw new Error('PowerPoint sa dá zobraziť iba s LibreOffice – ulož ho na NAS ako PDF');
+            pdf = await presentations.convertToPdf(pdf, ext);
+          }
+          const name = `f-${shortHash(`${file.path}|${file.version}`)}.pdf`;
+          writeAtomic(path.join(mediaDir, name), pdf);
+          item = { id, title: file.name.replace(/\.[^.]+$/, ''), type: 'pdf', pdfUrl: NAS_MEDIA_PREFIX + name, pageCount: await presentations.countPdfPages(pdf), fromFile: true };
+        }
+        if (item) next[key] = { version: file.version, category: file.category, item };
+      } catch (e) {
+        errors.push(`${file.name}: ${e.message}`);
+        if (previous) next[key] = previous; // ponechaj poslednú dobrú verziu
+      }
+    }
+    status.fileErrors = errors;
+    const changed = JSON.stringify(next) !== JSON.stringify(filesIndex);
+    if (changed) {
+      filesIndex = next;
+      writeAtomic(filesIndexFile, JSON.stringify(filesIndex));
+    }
+    return changed;
+  }
+
+  // Položky zo súborov na NAS podľa druhu
+  function fileItems() {
+    const entries = Object.values(filesIndex).map((e) => e.item);
+    return {
+      songs: entries.filter((i) => i.lyrics || i.type === 'pdf'),
+      images: entries.filter((i) => i.imageUrl),
+    };
+  }
+
+  // Zoznam pre aplikáciu: dáta aplikácie + súbory vložené na NAS
+  function combinedList(file) {
+    const own = readCache(file);
+    const extra = file === 'songs.json' ? fileItems().songs : fileItems().images;
+    if (!own && !extra.length) return null;
+    return [...(own || []), ...extra];
+  }
+
+  // Názvy kategórií z podpriečinkov texty/ (s diakritikou, ako ich človek pomenoval)
+  function fileCategories() {
+    const names = new Map();
+    for (const entry of Object.values(filesIndex)) {
+      const { item, category } = entry;
+      if (!item.lyrics) continue;
+      if (category) names.set(item.category, category);
+      else if (item.category === OWN_CATEGORY.id) names.set(OWN_CATEGORY.id, OWN_CATEGORY.name);
+    }
+    return [...names].map(([id, name]) => ({ id, name }));
   }
 
   async function download(name) {
@@ -249,11 +412,13 @@ export function createNasStorage({ url, username, password, ignoreCert = false, 
     ready,
     status,
     syncNow: sync,
-    // Zoznam z kópie na disku (null, kým sa prvýkrát nestiahne)
-    readList: (file) => readCache(file),
+    // Zoznam z kópie na disku vrátane súborov vložených na NAS (null, kým sa prvýkrát nestiahne)
+    readList: (file) => (file === 'categories.json' ? fileCategories() : combinedList(file)),
 
-    // Uloží zoznam: hneď do kópie, na NAS hneď alebo neskôr (keď nie je spojenie)
+    // Uloží zoznam: hneď do kópie, na NAS hneď alebo neskôr (keď nie je spojenie).
+    // Položky zo súborov na NAS sa do zoznamu neukladajú – sú v priečinkoch texty/, obrazky/, prezentacie/.
     async writeList(file, list) {
+      list = list.filter((item) => !item.fromFile);
       writeCache(file, list);
       if (!pending.files.includes(file)) pending.files.push(file);
       savePending();
