@@ -28,9 +28,73 @@ sudo bash tvdisplay-orangepi-install.sh               # na Orange Pi (Armbian, D
 Aplikácia sa nainštaluje do `/opt/tvdisplay` a spúšťa sa sama po zapnutí. Nastavenia sú v `/opt/tvdisplay/.env`.
 Opätovné spustenie inštalátora aplikáciu aktualizuje a nezmení nastavenia, piesne ani prezentácie.
 Voľby: `--yes`, `--no-kiosk` (bez obrazovky na TV), `--no-powerpoint` (bez LibreOffice),
-`--church-url=ADRESA` (napojenie na administráciu kostolov, pozri nižšie).
+`--nas-url=…` (piesne na NAS, pozri nižšie), `--church-url=ADRESA` (administrácia kostolov).
 
-## Administrácia kostolov (Synology NAS)
+## Piesne, fotky a prezentácie na NAS (Synology)
+
+Aplikácia beží na Orange Pi, na NAS je iba priečinok s dátami. Každý kostol má na NAS svoj priečinok
+a jeho Orange Pi dostane odkaz naň (adresu priečinka).
+
+Texty, fotky a prezentácie stačí vložiť do priečinka kostola, napr. cez **File Station** alebo **Synology Drive**:
+
+```
+tvdisplay/
+  kostol-sv-martina/                      ← odkaz pre Orange Pi v tomto kostole
+    texty/
+      Ohlášky.txt                         → kategória „Vlastné“
+      150 Ó, Ježišu môj zranený.txt       → pieseň č. 150 (číslo JKS určí kategóriu, tu Pôstne)
+      Pohreb/Odpočinutie večné.txt        → podpriečinok = kategória „Pohreb“
+    obrazky/
+      Vianoce.jpg                         → JPG, PNG, WEBP, GIF
+    prezentacie/
+      Ohlášky 1. nedeľa.pdf               → PDF (PowerPoint iba ak je na Orange Pi LibreOffice)
+    songs.json, images.json, media/       ← spravuje aplikácia, nemeň ručne
+```
+
+- **Texty** sú obyčajné `.txt` súbory (UTF-8, ako ich uloží Poznámkový blok). Strofy oddeľ prázdnym riadkom,
+  každá strofa je jedna strana na TV. Názov súboru je názov piesne. Číslo na začiatku („150 …“, „150. …“)
+  je číslo piesne.
+- Nový, zmenený alebo zmazaný súbor sa v ovládaní aj na TV prejaví do minúty, bez reštartu.
+- Položky zo súborov majú v ovládaní značku **NAS** a menia sa iba na NAS. Spevník JKS a texty, fotky
+  a prezentácie pridané v ovládaní (záložka **Obsah**, chránená PIN-om) sa ukladajú do `songs.json`,
+  `images.json` a `media/` v tom istom priečinku.
+
+- Orange Pi má kópiu dát u seba, takže TV aj ovládanie fungujú, aj keď NAS alebo internet nie je dostupný.
+  Zmeny urobené bez spojenia sa na NAS nahrajú, keď sa spojenie obnoví.
+- Každú minútu kontroluje zmeny na NAS – viac Orange Pi s tým istým priečinkom (napr. v jednom kostole) vidí
+  tie isté piesne. Každý kostol môže mať na NAS svoj podpriečinok.
+- Pri prvom spustení s prázdnym priečinkom sa naň nahrajú piesne, fotky a prezentácie, ktoré Orange Pi už má
+  (celý spevník JKS aj vlastné úpravy).
+
+### Nastavenie NAS (raz)
+
+1. **Centrum balíkov** → nainštaluj **WebDAV Server**. V jeho nastaveniach zapni HTTP (port 5005) alebo HTTPS (port 5006).
+2. **Ovládací panel → Zdieľaný priečinok** → vytvor priečinok `tvdisplay`.
+3. **Ovládací panel → Používateľ** → vytvor používateľa napr. `tvdisplay`:
+   - právo **Čítať/Zapisovať** iba na priečinok `tvdisplay`,
+   - v časti **Aplikácie** povoľ **WebDAV**.
+4. Adresa priečinka pre Orange Pi:
+   - v tej istej sieti: `http://<IP-NAS>:5005/tvdisplay/<kostol>`, napr. `http://192.168.1.10:5005/tvdisplay/kostol-sv-martina`,
+   - cez internet: `https://<adresa-NAS>:5006/tvdisplay/<kostol>`. Treba DDNS adresu (Ovládací panel → Externý prístup → DDNS),
+     na routeri presmerovaný port 5006 na NAS a certifikát Let's Encrypt (Ovládací panel → Zabezpečenie → Certifikát).
+     Cez internet používaj iba HTTPS, inak by heslo išlo nezašifrované.
+
+Podpriečinok kostola netreba vytvárať, Orange Pi si ho vytvorí sám.
+
+### Nastavenie Orange Pi
+
+- **Nová inštalácia:** inštalátor sa opýta na adresu priečinka, meno a heslo.
+- **Už nainštalované Orange Pi:**
+
+```bash
+sudo bash tvdisplay-orangepi-install.sh --nas-url=http://192.168.1.10:5005/tvdisplay/kostol-sv-martina --nas-user=tvdisplay --nas-password=HESLO
+```
+
+Pri HTTPS s certifikátom, ktorý vystavil samotný NAS (nie Let's Encrypt), pridaj `--nas-ignore-cert`.
+Stav spojenia s NAS je v ovládaní v záložke **Obsah → Synchronizácia**.
+Napojenie zrušíš voľbou `--nas-url=` (prázdna adresa); piesne sa potom znova berú z GitHubu.
+
+## Alternatíva: administrácia kostolov s prihlasovaním (Docker na NAS)
 
 Centrálna stránka s prihlásením, kde sa spravujú piesne, kategórie, obrázky a prezentácie viacerých kostolov.
 
@@ -111,6 +175,9 @@ Mobil / PC (ovládanie) ──PATCH /api/state──►  server (port 3002)  ─
 - **Prezentácie** (PDF, PPT, PPTX, ODP) sa nahrávajú na server do `uploads/`, v `songs.json` je iba odkaz.
   Počet strán sa zistí automaticky. PowerPoint server prevedie na PDF cez LibreOffice:
   na Raspberry Pi `sudo apt install libreoffice-impress` (bez neho funguje iba PDF).
+- **Kategórie** piesní zodpovedajú oddielom spevníka JKS podľa čísla piesne (adventné 1–33, vianočné 34–113, …,
+  latinské 532–543), rozsahy sú v `server/jksCategories.js`. Po pridaní piesní s číslom JKS do `songs.json`
+  ich zaradí `node scripts/categorize_jks.js`.
 - **Žalmy** sú v `Texty/Žalmy RRRR.json`. Nový rok stiahneš cez `node scripts/fetch_psalms_2027.js`.
 - **PIN**: ak je v `.env` nastavený `CONTROL_PIN`, ovládanie si ho vypýta. Displej PIN nepotrebuje.
 - **Administrácia kostolov** (`ADMIN_DATA_DIR`) a **napojenie na ňu** (`CHURCH_DATA_URL`): pozri vyššie.
@@ -147,6 +214,7 @@ Ladiace výpisy v konzole zapneš príkazom `localStorage.setItem('tvdisplay-deb
 - `server/index.js` – API, WebSocket, GitHub, nahrávanie PDF, servírovanie `dist/`
 - `server/admin.js` – administrácia kostolov (prihlásenie, kostoly, používatelia, obsah)
 - `server/churchSync.js` – Orange Pi: sťahovanie dát kostola z administrácie a ich kópia na disku
+- `server/nasStorage.js` – Orange Pi: piesne, fotky a prezentácie v priečinku na NAS (WebDAV) a ich kópia na disku
 - `src/admin/*` – stránka administrácie (`#admin`)
 - `src/api/stateClient.js` – zdieľaný stav a pripojenie
 - `src/api/api.js` – knižnica piesní, obrázkov, PDF a žalmov

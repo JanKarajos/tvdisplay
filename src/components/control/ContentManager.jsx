@@ -7,18 +7,11 @@ import { toast } from '../../lib/toast';
 import { normalizeText } from '../../lib/lyrics';
 import { stateClient } from '../../api/stateClient';
 import SongEditor from './SongEditor';
+import { prepareImage } from '../../lib/image';
 
 const input = 'field';
 const primary = 'btn-primary';
 
-function readAsDataUrl(file) {
-  return new Promise((resolve, reject) => {
-    const reader = new FileReader();
-    reader.onload = () => resolve(reader.result);
-    reader.onerror = reject;
-    reader.readAsDataURL(file);
-  });
-}
 
 function AddText({ categories }) {
   const [title, setTitle] = useState('');
@@ -82,7 +75,7 @@ function Images({ images, readOnly }) {
           accept="image/*"
           required
           className="text-sm flex-1 min-w-[10rem] file:btn file:mr-3 file:!min-h-[40px]"
-          onChange={async (e) => setDataUrl(e.target.files?.[0] ? await readAsDataUrl(e.target.files[0]) : '')}
+          onChange={async (e) => setDataUrl(e.target.files?.[0] ? await prepareImage(e.target.files[0]) : '')}
         />
         {dataUrl && <img src={dataUrl} alt="" className="h-11 rounded-lg border border-line" />}
         <button className={primary} disabled={busy || !title || !dataUrl}>{busy ? 'Ukladám…' : 'Pridať'}</button>
@@ -94,7 +87,8 @@ function Images({ images, readOnly }) {
             <img src={img.imageUrl} alt={img.title} className="w-full aspect-video object-cover" />
             <div className="flex items-center gap-1 pl-2 min-h-[44px]">
               <span className="flex-1 min-w-0 text-xs truncate" title={img.title}>{img.title}</span>
-              {!readOnly && <button onClick={() => remove(img)} className="btn-icon hover:!text-danger" title="Vymazať" aria-label={`Vymazať: ${img.title}`}>🗑</button>}
+              {img.fromFile && <span className="px-2 text-[10px] text-muted" title="Súbor v priečinku obrazky/ na NAS – mení sa tam">NAS</span>}
+              {!readOnly && !img.fromFile && <button onClick={() => remove(img)} className="btn-icon hover:!text-danger" title="Vymazať" aria-label={`Vymazať: ${img.title}`}>🗑</button>}
             </div>
             <div className="grid grid-cols-2 gap-1 p-1 pt-0">
               <button onClick={() => actions.addToPlaylist(img.id)} className="btn !min-h-[36px] !px-2 text-xs">+ Poradie</button>
@@ -173,7 +167,8 @@ function Presentations({ presentations, canConvert, readOnly }) {
             <span className="text-xs text-muted">{p.pageCount} {pluralPages(p.pageCount)}</span>
             <button onClick={() => actions.addToPlaylist(p.id)} className="btn !min-h-[36px] !px-3 text-xs">+ Do poradia</button>
             <button onClick={() => actions.show(p)} className="btn-icon" title="Zobraziť hneď" aria-label={`Zobraziť hneď: ${p.title}`}>▶</button>
-            {!readOnly && <button onClick={() => removeSong(p, 'prezentáciu')} className="btn-icon hover:!text-danger" title="Vymazať" aria-label={`Vymazať: ${p.title}`}>🗑</button>}
+            {p.fromFile && <span className="text-[10px] text-muted" title="Súbor v priečinku prezentacie/ na NAS – mení sa tam">NAS</span>}
+            {!readOnly && !p.fromFile && <button onClick={() => removeSong(p, 'prezentáciu')} className="btn-icon hover:!text-danger" title="Vymazať" aria-label={`Vymazať: ${p.title}`}>🗑</button>}
           </div>
         ))}
       </div>
@@ -211,8 +206,14 @@ function ManageSongs({ songs, categories }) {
               <span className="block text-sm truncate">{s.title}</span>
               <span className="block text-xs text-muted">{categoryName(s.category)}</span>
             </span>
-            <button onClick={() => setEditing(s)} className="btn !min-h-[36px] !px-3 text-xs">Upraviť</button>
-            <button onClick={() => removeSong(s, 'pieseň')} className="btn-icon hover:!text-danger" title="Vymazať" aria-label={`Vymazať: ${s.title}`}>🗑</button>
+            {s.fromFile ? (
+              <span className="px-3 text-xs text-muted" title="Súbor v priečinku texty/ na NAS – upravuje sa tam">súbor na NAS</span>
+            ) : (
+              <>
+                <button onClick={() => setEditing(s)} className="btn !min-h-[36px] !px-3 text-xs">Upraviť</button>
+                <button onClick={() => removeSong(s, 'pieseň')} className="btn-icon hover:!text-danger" title="Vymazať" aria-label={`Vymazať: ${s.title}`}>🗑</button>
+              </>
+            )}
           </div>
         ))}
       </div>
@@ -228,12 +229,23 @@ function pluralPages(n) {
 
 function Sync({ lib, health }) {
   const [busy, setBusy] = useState(false);
-  const sourceLabel = { GitHub: 'GitHub', server: 'lokálna kópia na serveri', administrácia: 'administrácia kostola', cache: 'uložená kópia v prehliadači' }[lib.source] || 'nič';
+  const sourceLabel = { GitHub: 'GitHub', server: 'lokálna kópia na serveri', administrácia: 'administrácia kostola', NAS: 'NAS', cache: 'uložená kópia v prehliadači' }[lib.source] || 'nič';
   const library = health?.library;
   return (
     <div className="space-y-2 text-sm">
       <div>Piesne načítané z: <b>{sourceLabel}</b> ({lib.songs.length} piesní, {lib.images.length} obrázkov)</div>
-      {!lib.managed && lib.source && lib.source !== 'GitHub' && <div className="text-warn">GitHub nie je dostupný – zobrazuje sa záložná kópia.</div>}
+      {!lib.managed && !lib.nas && lib.source && lib.source !== 'GitHub' && <div className="text-warn">GitHub nie je dostupný – zobrazuje sa záložná kópia.</div>}
+      {lib.nas && (
+        <div>
+          Spojenie s NAS:{' '}
+          {health == null ? <b className="text-danger">server nedostupný</b> : library?.lastError ? <b className="text-warn">nedostupný – používa sa kópia na tomto zariadení</b> : library?.lastSync ? <b className="text-ok">v poriadku (kontrola {new Date(library.lastSync).toLocaleTimeString('sk-SK')})</b> : <b className="text-warn">zatiaľ bez spojenia</b>}
+          {library?.lastError && <div className="text-warn">{library.lastError}</div>}
+          {library?.fileErrors?.length > 0 && (
+            <div className="text-warn">Niektoré súbory na NAS sa nedajú zobraziť: {library.fileErrors.join('; ')}</div>
+          )}
+          {library?.pending > 0 && <div className="text-warn">Čaká na nahratie na NAS: {library.pending} {library.pending === 1 ? 'zmena' : library.pending <= 4 ? 'zmeny' : 'zmien'} – nahrajú sa, keď bude NAS dostupný.</div>}
+        </div>
+      )}
       {lib.managed && (
         <div>
           Posledná kontrola zmien v administrácii:{' '}
@@ -241,7 +253,7 @@ function Sync({ lib, health }) {
           {library?.lastError && <div className="text-warn">Administrácia teraz nie je dostupná ({library.lastError}) – používa sa uložená kópia.</div>}
         </div>
       )}
-      {!lib.managed && <div>
+      {!lib.managed && !lib.nas && <div>
         Ukladanie na GitHub:{' '}
         {health == null ? <b className="text-danger">server nedostupný</b> : health.github?.tokenConfigured ? <b className="text-ok">aktívne (token je na serveri)</b> : <b className="text-warn">token na serveri chýba – ukladá sa iba lokálne</b>}
       </div>}
@@ -277,7 +289,7 @@ export default function ContentManager({ lib, health }) {
   return (
     <Card
       title="Správa obsahu"
-      subtitle={lib.managed ? 'Obsah tohto kostola sa upravuje v administrácii' : 'Nové texty, obrázky a prezentácie sa uložia na server aj na GitHub'}
+      subtitle={lib.managed ? 'Obsah tohto kostola sa upravuje v administrácii' : lib.nas ? 'Nové texty, obrázky a prezentácie sa uložia na NAS' : 'Nové texty, obrázky a prezentácie sa uložia na server aj na GitHub'}
       className="max-w-4xl mx-auto"
     >
       {lib.managed && (

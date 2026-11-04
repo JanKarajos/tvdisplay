@@ -2,6 +2,7 @@
 import { SERVER_URL, SONGS_URL, IMAGES_URL, resolveServerUrl } from '../config';
 import { stateClient, writeHeaders, markAuthRequired } from './stateClient';
 import { log } from '../lib/log';
+import { CATEGORY_NAMES, categoryOrder } from '../../server/jksCategories.js';
 
 // --- Žalmy --------------------------------------------------------------
 
@@ -73,17 +74,21 @@ let songs = [];
 let images = [];
 let extraCategories = [];
 let managedCategories = null; // názvy kategórií z administrácie (s diakritikou)
-let loadInfo = { loaded: false, source: null, error: null, managed: false, adminUrl: null };
+let fileCategories = []; // kategórie z podpriečinkov texty/ na NAS (iba názvy)
+let loadInfo = { loaded: false, source: null, error: null, managed: false, adminUrl: null, nas: false };
 let snapshot = null;
 const listeners = new Set();
 
+// Názov kategórie: oddiely JKS majú pekné názvy, vlastné kategórie sa odvodia z id
 function categoryName(id) {
-  return id.replace(/[-_]/g, ' ').replace(/\b\w/g, (c) => c.toUpperCase());
+  return CATEGORY_NAMES[id] || id.replace(/[-_]/g, ' ').replace(/\b\w/g, (c) => c.toUpperCase());
 }
 
 function buildSnapshot() {
-  const ids = Array.from(new Set([...(managedCategories || []).map((c) => c.id), ...songs.map((s) => s.category).filter(Boolean), ...extraCategories]));
-  const names = new Map((managedCategories || []).map((c) => [c.id, c.name]));
+  // Kategórie z administrácie v jej poradí, inak v poradí spevníka JKS (vlastné na konci)
+  const fromSongs = Array.from(new Set(songs.map((s) => s.category).filter(Boolean))).sort((a, b) => categoryOrder(a) - categoryOrder(b));
+  const ids = Array.from(new Set([...(managedCategories || []).map((c) => c.id), ...fromSongs, ...extraCategories]));
+  const names = new Map([...fileCategories, ...(managedCategories || [])].map((c) => [c.id, c.name]));
   snapshot = {
     songs,
     images,
@@ -182,7 +187,8 @@ async function libraryMode() {
     const res = await fetch(`${SERVER_URL}/health`, { signal: AbortSignal.timeout(4000), cache: 'no-store' });
     if (res.ok) {
       const library = (await res.json()).library || {};
-      const mode = { managed: Boolean(library.managed), adminUrl: library.adminUrl || null };
+      // nas: piesne, obrázky a prezentácie sú na NAS – upravujú sa tu, ukladajú sa cez server na NAS
+      const mode = { managed: Boolean(library.managed), adminUrl: library.adminUrl || null, nas: library.storage === 'nas' };
       try {
         localStorage.setItem(MODE_KEY, JSON.stringify(mode));
       } catch {
@@ -194,19 +200,19 @@ async function libraryMode() {
     // server nedostupný
   }
   try {
-    return { managed: false, adminUrl: null, ...JSON.parse(localStorage.getItem(MODE_KEY) || '{}') };
+    return { managed: false, adminUrl: null, nas: false, ...JSON.parse(localStorage.getItem(MODE_KEY) || '{}') };
   } catch {
-    return { managed: false, adminUrl: null };
+    return { managed: false, adminUrl: null, nas: false };
   }
 }
 
-// Dáta kostola z administrácie: iba zo servera (ten má kópiu), inak posledná verzia v prehliadači
-async function loadManagedList(file) {
+// Dáta z administrácie alebo z NAS: iba zo servera (ten má kópiu), inak posledná verzia v prehliadači
+async function loadManagedList(file, source = 'administrácia') {
   try {
     const data = await fetchJson(`${SERVER_URL}/api/data/${file}`, 20000);
     if (Array.isArray(data)) {
       writeCache(`church-${file}`, data);
-      return { data, source: 'administrácia' };
+      return { data, source };
     }
   } catch (e) {
     log(`[library] ${file} zo servera zlyhalo:`, e.message);
@@ -216,8 +222,28 @@ async function loadManagedList(file) {
   return { data: [], source: null };
 }
 
-// Relatívne odkazy (/church-media/..., /uploads/...) patria serveru
+// Relatívne odkazy (/church-media/..., /nas-media/..., /uploads/...) patria serveru
 const withServerUrls = (list) => list.map((item) => (typeof item.imageUrl === 'string' ? { ...item, imageUrl: resolveServerUrl(item.imageUrl) } : item));
+// Pri ukladaní späť na relatívne odkazy, aby fungovali z každého zariadenia
+const withoutServerUrls = (list) => list.map((item) => (typeof item.imageUrl === 'string' && item.imageUrl.startsWith(`${SERVER_URL}/`)
+  ? { ...item, imageUrl: item.imageUrl.slice(SERVER_URL.length) }
+  : item));
+
+// Názov súboru na NAS z odkazu ".../nas-media/x.jpg"
+function nasMediaName(url) {
+  const i = typeof url === 'string' ? url.indexOf('/nas-media/') : -1;
+  return i >= 0 ? url.slice(i + '/nas-media/'.length) : null;
+}
+
+async function deleteNasMedia(url) {
+  const name = nasMediaName(url);
+  if (!name) return;
+  try {
+    await fetch(`${SERVER_URL}/api/media/${encodeURIComponent(name)}`, { method: 'DELETE', headers: writeHeaders() });
+  } catch {
+    // súbor ostane na NAS, v zozname už nie je
+  }
+}
 
 let loadingPromise = null;
 
@@ -229,8 +255,13 @@ export function loadLibrary({ force = false, preferServer = false } = {}) {
     let imagesResult;
     if (mode.managed) {
       let categoriesResult;
-      [songsResult, imagesResult, categoriesResult] = await Promise.all(['songs.json', 'images.json', 'categories.json'].map(loadManagedList));
+      [songsResult, imagesResult, categoriesResult] = await Promise.all(['songs.json', 'images.json', 'categories.json'].map((f) => loadManagedList(f)));
       managedCategories = categoriesResult.data;
+    } else if (mode.nas) {
+      let categoriesResult;
+      [songsResult, imagesResult, categoriesResult] = await Promise.all(['songs.json', 'images.json', 'categories.json'].map((f) => loadManagedList(f, 'NAS')));
+      managedCategories = null;
+      fileCategories = categoriesResult.data;
     } else {
       [songsResult, imagesResult] = await Promise.all([
         loadList('songs.json', songsUrl(), preferServer),
@@ -246,6 +277,7 @@ export function loadLibrary({ force = false, preferServer = false } = {}) {
       error: songsResult.source ? null : 'Piesne sa nepodarilo načítať zo žiadneho zdroja',
       managed: mode.managed,
       adminUrl: mode.adminUrl,
+      nas: mode.nas,
     };
     notify();
     return snapshot;
@@ -253,7 +285,8 @@ export function loadLibrary({ force = false, preferServer = false } = {}) {
   return loadingPromise;
 }
 
-async function saveFile(file, content, message) {
+async function saveFile(file, list, message) {
+  const content = withoutServerUrls(list);
   writeCache(file, content);
   try {
     const res = await fetch(`${SERVER_URL}/api/github/${file}`, {
@@ -304,7 +337,26 @@ export const library = {
     return saveFile('songs.json', songs, `Pridaný text: ${title}`);
   },
 
+  // imageUrl je data URL; pri NAS sa obrázok uloží ako súbor a v zozname je iba odkaz naň
   async addImage({ title, imageUrl }) {
+    if (loadInfo.nas) {
+      try {
+        const res = await fetch(`${SERVER_URL}/api/media`, {
+          method: 'POST',
+          headers: writeHeaders(),
+          body: JSON.stringify({ dataUrl: imageUrl, name: title }),
+        });
+        if (res.status === 401) {
+          markAuthRequired();
+          return { ok: false, error: 'Je potrebný PIN' };
+        }
+        const body = await res.json().catch(() => ({}));
+        if (!res.ok) return { ok: false, error: body.error || `Chyba ${res.status}` };
+        imageUrl = resolveServerUrl(body.url);
+      } catch {
+        return { ok: false, error: 'Server nie je dostupný – obrázok sa nedá nahrať' };
+      }
+    }
     images = [...images, { id: newId('img'), title, imageUrl }];
     notify();
     return saveFile('images.json', images, `Pridaný obrázok: ${title}`);
@@ -314,6 +366,7 @@ export const library = {
     const img = images.find((i) => i.id === id);
     images = images.filter((i) => i.id !== id);
     notify();
+    await deleteNasMedia(img?.imageUrl);
     return saveFile('images.json', images, `Vymazaný obrázok: ${img?.title || id}`);
   },
 
@@ -340,6 +393,7 @@ export const library = {
     if (!song) return { ok: false, error: 'Položka sa nenašla' };
     songs = songs.filter((s) => s.id !== id);
     notify();
+    await deleteNasMedia(song.pdfUrl);
     if (typeof song.pdfUrl === 'string' && song.pdfUrl.startsWith('/uploads/')) {
       try {
         await fetch(`${SERVER_URL}/api/uploads/${encodeURIComponent(song.pdfUrl.slice('/uploads/'.length))}`, {

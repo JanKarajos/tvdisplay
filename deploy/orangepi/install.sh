@@ -6,8 +6,12 @@
 # Voľby:       --yes            bez otázok (TV áno, PowerPoint áno, bez PIN a tokenu)
 #              --no-kiosk       nezobrazovať aplikáciu na TV pripojenej k tomuto zariadeniu
 #              --no-powerpoint  neinštalovať LibreOffice
-#              --church-url=URL piesne kostola z administrácie na NAS (adresa zo záložky Kostoly);
-#                               pri aktualizácii zmení adresu v nastaveniach, --church-url= ju zruší
+#              --nas-url=URL    piesne, fotky a prezentácie v priečinku na NAS (Synology WebDAV),
+#                               napr. https://mojnas.synology.me:5006/tvdisplay/kostol-sv-martina
+#              --nas-user=MENO, --nas-password=HESLO   prihlásenie do NAS
+#              --nas-ignore-cert  prijať certifikát vystavený samotným NAS (https v miestnej sieti)
+#                               pri aktualizácii tieto voľby zmenia nastavenia, --nas-url= napojenie zruší
+#              --church-url=URL piesne kostola z administrácie (Docker na NAS, adresa zo záložky Kostoly)
 #
 # Opätovné spustenie aplikáciu aktualizuje. Nastavenia, piesne ani prezentácie nezmení.
 set -euo pipefail
@@ -25,12 +29,21 @@ WANT_KIOSK=ask
 WANT_POWERPOINT=ask
 CHURCH_URL_SET=0
 CHURCH_DATA_URL=""
+NAS_SET=0
+NAS_URL=""
+NAS_USER=""
+NAS_PASSWORD=""
+NAS_IGNORE_CERT=0
 for arg in "$@"; do
   case "$arg" in
     --yes) ASSUME_YES=1 ;;
     --no-kiosk) WANT_KIOSK=no ;;
     --no-powerpoint) WANT_POWERPOINT=no ;;
     --church-url=*) CHURCH_URL_SET=1; CHURCH_DATA_URL="${arg#--church-url=}" ;;
+    --nas-url=*) NAS_SET=1; NAS_URL="${arg#--nas-url=}" ;;
+    --nas-user=*) NAS_SET=1; NAS_USER="${arg#--nas-user=}" ;;
+    --nas-password=*) NAS_SET=1; NAS_PASSWORD="${arg#--nas-password=}" ;;
+    --nas-ignore-cert) NAS_SET=1; NAS_IGNORE_CERT=1 ;;
     *) echo "Neznáma voľba: $arg"; exit 2 ;;
   esac
 done
@@ -102,17 +115,34 @@ CONTROL_PIN=""
 GITHUB_TOKEN=""
 if [ "$ENV_EXISTS" -eq 0 ]; then
   CONTROL_PIN=$(ask_value "PIN na ovládanie (prázdne = bez PIN)")
-  if [ "$CHURCH_URL_SET" -eq 0 ]; then
-    echo "Ak piesne kostola spravuje administrácia na NAS, zadaj adresu kostola (administrácia -> Kostoly),"
-    echo "napr. https://mojnas.synology.me/api/public/churches/kostol-sv-martina"
-    CHURCH_DATA_URL=$(ask_value "Adresa kostola (prázdne = piesne z GitHubu)")
+  if [ "$NAS_SET" -eq 0 ] && [ "$CHURCH_URL_SET" -eq 0 ]; then
+    echo "Piesne, fotky a prezentácie môžu byť v priečinku na NAS (Synology, balík WebDAV Server),"
+    echo "napr. https://mojnas.synology.me:5006/tvdisplay/kostol-sv-martina alebo http://192.168.1.10:5005/tvdisplay/kostol-sv-martina"
+    NAS_URL=$(ask_value "Adresa priečinka na NAS (prázdne = piesne z GitHubu)")
+    if [ -n "$NAS_URL" ]; then
+      NAS_USER=$(ask_value "Meno používateľa na NAS")
+      NAS_PASSWORD=$(ask_value "Heslo používateľa na NAS (nezobrazuje sa)" 1)
+    fi
   fi
-  if [ -z "$CHURCH_DATA_URL" ]; then
+  if [ -z "$CHURCH_DATA_URL" ] && [ -z "$NAS_URL" ]; then
     echo "GitHub token je potrebný na trvalé ukladanie úprav piesní. Možno ho doplniť aj neskôr v $APP_DIR/.env"
     GITHUB_TOKEN=$(ask_value "GitHub token (prázdne = preskočiť, nezobrazuje sa)" 1)
   fi
 fi
 CHURCH_DATA_URL="${CHURCH_DATA_URL%/}"
+NAS_URL="${NAS_URL%/}"
+if [ -n "$NAS_URL" ] && command -v curl >/dev/null; then
+  CURL_CERT=()
+  [ "$NAS_IGNORE_CERT" -eq 1 ] && CURL_CERT=(-k)
+  NAS_STATUS=$(curl -sS -o /dev/null -w '%{http_code}' --max-time 10 "${CURL_CERT[@]}" -u "$NAS_USER:$NAS_PASSWORD" "$NAS_URL/songs.json" 2>/dev/null || true)
+  case "$NAS_STATUS" in
+    200) echo "Priečinok na NAS je dostupný." ;;
+    404) echo "Priečinok na NAS je prázdny – piesne, fotky a prezentácie tohto zariadenia sa naň nahrajú pri prvom spustení." ;;
+    401|403) warn "NAS odmietol prihlásenie – skontroluj meno, heslo a právo používateľa na WebDAV." ;;
+    000) warn "NAS sa nepodarilo dosiahnuť ($NAS_URL). Pri https s vlastným certifikátom NAS pridaj --nas-ignore-cert." ;;
+    *) warn "NAS vrátil chybu $NAS_STATUS pre $NAS_URL." ;;
+  esac
+fi
 if [ -n "$CHURCH_DATA_URL" ] && command -v curl >/dev/null; then
   if curl -fsS -o /dev/null --max-time 10 "$CHURCH_DATA_URL/songs.json"; then
     echo "Administrácia kostola je dostupná."
@@ -214,12 +244,25 @@ if [ "$ENV_EXISTS" -eq 0 ]; then
       echo "STATE_PORT=$STATE_PORT"
       echo "APP_PORT=$APP_PORT"
       echo "CHURCH_DATA_URL=$CHURCH_DATA_URL"
+      echo "NAS_URL=$NAS_URL"
+      echo "NAS_USER=$NAS_USER"
+      echo "NAS_PASSWORD=$NAS_PASSWORD"
+      echo "NAS_IGNORE_CERT=$NAS_IGNORE_CERT"
     } >"$APP_DIR/.env"
   )
-elif [ "$CHURCH_URL_SET" -eq 1 ]; then
-  # Aktualizácia s --church-url: zmeň iba adresu kostola, ostatné nastavenia ostanú
-  sed -i '/^CHURCH_DATA_URL=/d' "$APP_DIR/.env"
-  echo "CHURCH_DATA_URL=$CHURCH_DATA_URL" >>"$APP_DIR/.env"
+else
+  # Aktualizácia s voľbami: zmeň iba zadané nastavenia, ostatné ostanú
+  set_env() {
+    sed -i "/^$1=/d" "$APP_DIR/.env"
+    printf '%s=%s\n' "$1" "$2" >>"$APP_DIR/.env"
+  }
+  [ "$CHURCH_URL_SET" -eq 1 ] && set_env CHURCH_DATA_URL "$CHURCH_DATA_URL"
+  if [ "$NAS_SET" -eq 1 ]; then
+    set_env NAS_URL "$NAS_URL"
+    [ -n "$NAS_USER" ] && set_env NAS_USER "$NAS_USER"
+    [ -n "$NAS_PASSWORD" ] && set_env NAS_PASSWORD "$NAS_PASSWORD"
+    set_env NAS_IGNORE_CERT "$NAS_IGNORE_CERT"
+  fi
 fi
 chown -R "$APP_USER:$APP_USER" "$APP_DIR"
 chmod 600 "$APP_DIR/.env"
@@ -372,7 +415,14 @@ echo "  Obrazovka:             http://$IP_ADDRESS:$APP_PORT/#display"
 echo "  Stav a záznamy:        systemctl status tvdisplay  /  journalctl -u tvdisplay -f"
 echo "  Nastavenia:            $APP_DIR/.env (po zmene: sudo systemctl restart tvdisplay)"
 CURRENT_CHURCH_URL=$(sed -n 's/^CHURCH_DATA_URL=//p' "$APP_DIR/.env" | tail -n1)
-echo "  Piesne:                ${CURRENT_CHURCH_URL:-GitHub (bez administrácie)}"
+CURRENT_NAS_URL=$(sed -n 's/^NAS_URL=//p' "$APP_DIR/.env" | tail -n1)
+if [ -n "$CURRENT_CHURCH_URL" ]; then
+  echo "  Piesne:                administrácia $CURRENT_CHURCH_URL"
+elif [ -n "$CURRENT_NAS_URL" ]; then
+  echo "  Piesne:                NAS $CURRENT_NAS_URL"
+else
+  echo "  Piesne:                GitHub"
+fi
 if [ "$REBOOT_NEEDED" -eq 1 ]; then
   echo "  Obrazovka na TV sa zapne po reštarte: sudo reboot"
 fi
