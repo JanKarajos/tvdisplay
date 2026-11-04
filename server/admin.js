@@ -2,6 +2,8 @@
 // Zapne sa premennou ADMIN_DATA_DIR. Dáta sú v tomto priečinku:
 //   users.json, churches.json
 //   churches/<id>/songs.json, images.json, categories.json, media/<súbory>
+// S ADMIN_CHURCHES_DIR sú priečinky kostolov priamo v zdieľanom priečinku na NAS (napr. tvdisplay/),
+// ktorý Orange Pi čítajú cez WebDAV (NAS_URL). Každý podpriečinok je jeden kostol.
 // Orange Pi v kostoloch čítajú dáta svojho kostola z /api/public/churches/<id>/... (iba čítanie).
 import express from 'express';
 import fs from 'node:fs';
@@ -100,10 +102,13 @@ const wrap = (fn) => (req, res, next) => Promise.resolve(fn(req, res, next)).cat
 
 // --- Administrácia -------------------------------------------------------
 
-export function createAdmin({ dataDir, seedSongsFile }) {
+export function createAdmin({ dataDir, seedSongsFile, churchesDir }) {
   const usersFile = path.join(dataDir, 'users.json');
   const churchesFile = path.join(dataDir, 'churches.json');
-  const churchDir = (id) => path.join(dataDir, 'churches', id);
+  // Zdieľaný priečinok s Orange Pi: kostoly sú jeho podpriečinky
+  const sharedFolder = Boolean(churchesDir);
+  const churchesRoot = churchesDir || path.join(dataDir, 'churches');
+  const churchDir = (id) => path.join(churchesRoot, id);
   const sessions = new Map(); // token -> { userId, expires }
   const loginFails = new Map(); // meno -> { count, first }
 
@@ -111,10 +116,40 @@ export function createAdmin({ dataDir, seedSongsFile }) {
 
   const loadUsers = () => readJsonFile(usersFile, []);
   const saveUsers = (users) => writeJsonFile(usersFile, users);
-  const loadChurches = () => readJsonFile(churchesFile, []);
+  // Kostoly z churches.json; v zdieľanom priečinku aj podpriečinky, ktoré vytvorilo Orange Pi alebo človek
+  const loadChurches = () => {
+    const listed = readJsonFile(churchesFile, []);
+    if (!sharedFolder) return listed;
+    let folders = [];
+    try {
+      folders = fs.readdirSync(churchesRoot, { withFileTypes: true })
+        .filter((d) => d.isDirectory() && !/^[.@#]/.test(d.name)) // skryté, @eaDir, #recycle
+        .map((d) => d.name);
+    } catch {
+      // priečinok ešte nie je pripojený
+    }
+    return [
+      ...listed.filter((c) => folders.includes(c.id)),
+      ...folders.filter((f) => !listed.some((c) => c.id === f)).map((f) => ({ id: f, name: f })),
+    ];
+  };
   const saveChurches = (churches) => writeJsonFile(churchesFile, churches);
   const loadList = (id, name) => readJsonFile(path.join(churchDir(id), name), []);
   const saveList = (id, name, list) => writeJsonFile(path.join(churchDir(id), name), list);
+
+  // Kategórie kostola; doplní tie, ktoré používajú piesne, ale v zozname chýbajú
+  // (napr. piesne, ktoré priniesol Orange Pi bez categories.json)
+  function loadCategories(id) {
+    const categories = loadList(id, 'categories.json');
+    const known = new Set(categories.map((c) => c.id));
+    const missing = [...new Set(loadList(id, 'songs.json').map((s) => s.category).filter(Boolean))]
+      .filter((cid) => !known.has(cid))
+      .sort((a, b) => categoryOrder(a) - categoryOrder(b));
+    if (!missing.length) return categories;
+    const merged = [...categories, ...missing.map((cid) => ({ id: cid, name: CATEGORY_NAMES[cid] || cid }))];
+    saveList(id, 'categories.json', merged);
+    return merged;
+  }
 
   // Prvý administrátor z premenných prostredia
   if (loadUsers().length === 0) {
@@ -181,7 +216,7 @@ export function createAdmin({ dataDir, seedSongsFile }) {
   function addJksSongs(churchId) {
     const jks = readJsonFile(seedSongsFile, []).filter((s) => s.category && s.category !== 'test' && s.type !== 'pdf' && s.lyrics);
     const songs = loadList(churchId, 'songs.json');
-    const categories = loadList(churchId, 'categories.json');
+    const categories = loadCategories(churchId);
     const have = new Set(songs.map((s) => s.id));
     const missing = jks.filter((s) => !have.has(s.id));
     // Chýbajúce kategórie v poradí spevníka (adventné, vianočné, …)
@@ -218,8 +253,9 @@ export function createAdmin({ dataDir, seedSongsFile }) {
     return `media/${name}`;
   }
 
+  // Odkazy "media/x" (administrácia) aj "/nas-media/x" (Orange Pi) vedú do priečinka media/ kostola
   function deleteMedia(churchId, relUrl) {
-    if (typeof relUrl !== 'string' || !relUrl.startsWith('media/')) return;
+    if (typeof relUrl !== 'string' || !(relUrl.startsWith('media/') || relUrl.startsWith('/nas-media/'))) return;
     const name = path.basename(relUrl);
     fs.rm(path.join(churchDir(churchId), 'media', name), { force: true }, () => {});
   }
@@ -288,7 +324,8 @@ export function createAdmin({ dataDir, seedSongsFile }) {
   });
 
   api.get('/me', (req, res) => {
-    res.json({ user: publicUser(req.user), churches: visibleChurches(req.user) });
+    // shareName: názov zdieľaného priečinka na NAS (pre adresu, ktorú dostane Orange Pi)
+    res.json({ user: publicUser(req.user), churches: visibleChurches(req.user), sharedFolder, shareName: sharedFolder ? (process.env.ADMIN_SHARE_NAME || 'tvdisplay').trim() : null });
   });
 
   api.put('/me/password', (req, res) => {
@@ -396,8 +433,8 @@ export function createAdmin({ dataDir, seedSongsFile }) {
   api.delete('/churches/:churchId', (req, res) => {
     requireAdmin(req.user);
     const { churchId } = req.params;
-    // Dáta sa nemažú natrvalo, presunú sa do priečinka deleted/
-    const trash = path.join(dataDir, 'deleted');
+    // Dáta sa nemažú natrvalo, presunú sa do priečinka deleted/ (v zdieľanom priečinku do skrytého .zmazane/)
+    const trash = sharedFolder ? path.join(churchesRoot, '.zmazane') : path.join(dataDir, 'deleted');
     fs.mkdirSync(trash, { recursive: true });
     if (fs.existsSync(churchDir(churchId))) fs.renameSync(churchDir(churchId), path.join(trash, `${churchId}-${Date.now()}`));
     saveChurches(loadChurches().filter((c) => c.id !== churchId));
@@ -407,11 +444,11 @@ export function createAdmin({ dataDir, seedSongsFile }) {
 
   // --- Kategórie ---
 
-  api.get('/churches/:churchId/categories', (req, res) => res.json(loadList(req.params.churchId, 'categories.json')));
+  api.get('/churches/:churchId/categories', (req, res) => res.json(loadCategories(req.params.churchId)));
 
   api.post('/churches/:churchId/categories', (req, res) => {
     const { churchId } = req.params;
-    const categories = loadList(churchId, 'categories.json');
+    const categories = loadCategories(churchId);
     const name = str(req.body?.name, 'názov', { required: true, max: 60 });
     const base = slugify(name) || 'kategoria';
     let id = base;
@@ -423,7 +460,7 @@ export function createAdmin({ dataDir, seedSongsFile }) {
 
   api.put('/churches/:churchId/categories/:id', (req, res) => {
     const { churchId, id } = req.params;
-    const categories = loadList(churchId, 'categories.json');
+    const categories = loadCategories(churchId);
     const category = categories.find((c) => c.id === id);
     if (!category) throw new HttpError(404, 'Kategória neexistuje');
     category.name = str(req.body?.name, 'názov', { required: true, max: 60 });
@@ -447,7 +484,7 @@ export function createAdmin({ dataDir, seedSongsFile }) {
 
   api.post('/churches/:churchId/songs', (req, res) => {
     const { churchId } = req.params;
-    const song = { id: randomId('s'), ...validateSong(req.body, loadList(churchId, 'categories.json')) };
+    const song = { id: randomId('s'), ...validateSong(req.body, loadCategories(churchId)) };
     saveList(churchId, 'songs.json', [...loadList(churchId, 'songs.json'), song]);
     res.status(201).json(song);
   });
@@ -457,7 +494,7 @@ export function createAdmin({ dataDir, seedSongsFile }) {
     const songs = loadList(churchId, 'songs.json');
     const index = songs.findIndex((s) => s.id === id && s.type !== 'pdf');
     if (index < 0) throw new HttpError(404, 'Pieseň neexistuje');
-    songs[index] = { id, ...validateSong(req.body, loadList(churchId, 'categories.json')) };
+    songs[index] = { id, ...validateSong(req.body, loadCategories(churchId)) };
     saveList(churchId, 'songs.json', songs);
     res.json(songs[index]);
   });

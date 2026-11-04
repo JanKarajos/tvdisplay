@@ -5,6 +5,7 @@
 //             node server/index.js --serve    (API + hotová aplikácia z dist/)
 // Premenné v .env: STATE_PORT, APP_PORT, CONTROL_PIN, GITHUB_TOKEN, GITHUB_OWNER, GITHUB_REPO, GITHUB_BRANCH
 //   ADMIN_DATA_DIR   – zapne administráciu kostolov (NAS), napr. ./admin-data
+//   ADMIN_CHURCHES_DIR – priečinky kostolov v zdieľanom priečinku NAS, ktorý Orange Pi čítajú cez WebDAV
 //   CHURCH_DATA_URL  – Orange Pi berie piesne svojho kostola z administrácie namiesto GitHubu
 //   NAS_URL, NAS_USER, NAS_PASSWORD – piesne, obrázky a prezentácie v priečinku na NAS (WebDAV) namiesto GitHubu
 
@@ -187,7 +188,12 @@ function requirePin(req, res, next) {
 }
 
 if (ADMIN_DATA_DIR) {
-  const admin = createAdmin({ dataDir: path.resolve(ADMIN_DATA_DIR), seedSongsFile: path.join(ROOT, 'songs.json') });
+  const admin = createAdmin({
+    dataDir: path.resolve(ADMIN_DATA_DIR),
+    seedSongsFile: path.join(ROOT, 'songs.json'),
+    // Priečinky kostolov priamo v zdieľanom priečinku, ktorý Orange Pi čítajú cez WebDAV
+    churchesDir: (process.env.ADMIN_CHURCHES_DIR || '').trim() ? path.resolve(process.env.ADMIN_CHURCHES_DIR.trim()) : null,
+  });
   app.use('/api/admin', admin.api);
   app.use('/api/public', admin.pub);
   // Administrácia je dostupná z internetu – zápisy ovládania (stav TV, GitHub, nahrávanie) tu nemajú čo robiť

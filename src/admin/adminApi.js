@@ -58,10 +58,14 @@ export const adminApi = {
 
 // Súbor (obrázok/PDF) uložený v administrácii
 export function mediaUrl(churchId, relUrl) {
-  return `/api/public/churches/${encodeURIComponent(churchId)}/${relUrl}`;
+  // Obrázky nahraté z Orange Pi majú odkaz "/nas-media/x", sú v tom istom priečinku media/
+  const rel = typeof relUrl === 'string' && relUrl.startsWith('/nas-media/') ? `media/${relUrl.slice('/nas-media/'.length)}` : relUrl;
+  return `/api/public/churches/${encodeURIComponent(churchId)}/${rel}`;
 }
 
-// Adresa, ktorú treba zadať pri inštalácii Orange Pi v kostole
-export function churchDataUrl(churchId) {
+// Adresa, ktorú treba zadať pri inštalácii Orange Pi v kostole.
+// Pri zdieľanom priečinku je to WebDAV adresa priečinka kostola (port 5005 balíka WebDAV Server).
+export function churchDataUrl(churchId, shareName = null) {
+  if (shareName) return `http://${window.location.hostname}:5005/${encodeURIComponent(shareName)}/${encodeURIComponent(churchId)}`;
   return `${window.location.origin}/api/public/churches/${encodeURIComponent(churchId)}`;
 }

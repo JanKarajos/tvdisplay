@@ -11,6 +11,11 @@ services:
       # Po prihlásení si heslo zmeň v administrácii (ikona 🔑).
       ADMIN_USERNAME: admin
       ADMIN_PASSWORD: zmen-toto-heslo
+      # Kostoly sú podpriečinky zdieľaného priečinka tvdisplay – ten istý, ktorý Orange Pi čítajú cez WebDAV
+      ADMIN_CHURCHES_DIR: /churches
+      ADMIN_SHARE_NAME: tvdisplay
     volumes:
-      # Používatelia, kostoly, piesne, obrázky a prezentácie – tento priečinok zálohuj
+      # Používatelia a prihlásenia – tento priečinok zálohuj
       - ./admin-data:/data
+      # Zdieľaný priečinok s piesňami, obrázkami a prezentáciami kostolov (cesta na NAS podľa File Station → Vlastnosti)
+      - /volume1/tvdisplay:/churches

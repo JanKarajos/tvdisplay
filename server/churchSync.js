@@ -9,8 +9,11 @@ const TIMEOUT_MS = 15000;
 export const MEDIA_PREFIX = '/church-media/';
 
 // "media/x.jpg" z administrácie -> "/church-media/x.jpg" na tomto serveri
+// Súbor v media/ kostola: "media/x" (administrácia) alebo "/nas-media/x" (Orange Pi s NAS)
+const isMediaLink = (url) => typeof url === 'string' && (url.startsWith('media/') || url.startsWith('/nas-media/'));
+
 function localMediaUrl(url) {
-  return typeof url === 'string' && url.startsWith('media/') ? MEDIA_PREFIX + path.basename(url) : url;
+  return isMediaLink(url) ? MEDIA_PREFIX + path.basename(url) : url;
 }
 
 export function createChurchSync({ dataUrl, cacheDir, intervalMs = 60000, onChange }) {
@@ -47,7 +50,7 @@ export function createChurchSync({ dataUrl, cacheDir, intervalMs = 60000, onChan
     for (const file of ['songs.json', 'images.json']) {
       for (const item of readList(file, false)) {
         for (const url of [item.imageUrl, item.pdfUrl]) {
-          if (typeof url === 'string' && url.startsWith('media/')) used.add(path.basename(url));
+          if (isMediaLink(url)) used.add(path.basename(url));
         }
       }
     }

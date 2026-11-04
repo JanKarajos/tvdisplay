@@ -108,9 +108,12 @@ Pri HTTPS s certifikátom, ktorý vystavil samotný NAS (nie Let's Encrypt), pri
 Stav spojenia s NAS je v ovládaní v záložke **Obsah → Synchronizácia**.
 Napojenie zrušíš voľbou `--nas-url=` (prázdna adresa); piesne sa potom znova berú z GitHubu.
 
-## Alternatíva: administrácia kostolov s prihlasovaním (Docker na NAS)
+## Administrácia kostolov s prihlasovaním (Docker na NAS)
 
 Centrálna stránka s prihlásením, kde sa spravujú piesne, kategórie, obrázky a prezentácie viacerých kostolov.
+Beží na NAS a zapisuje **priamo do zdieľaného priečinka `tvdisplay`** – do toho istého `tvdisplay/<kostol>/`,
+ktorý čítajú Orange Pi cez WebDAV (časť vyššie). Zmena v administrácii sa na TV prejaví do minúty.
+Kostol, ktorého priečinok už existuje (vytvorilo ho Orange Pi alebo človek), sa v administrácii objaví sám.
 
 - **Administrátor** vytvára kostoly a používateľov a môže upravovať obsah všetkých kostolov.
 - **Editor** má priradený jeden kostol a vidí iba ten.
@@ -125,13 +128,25 @@ Centrálna stránka s prihlásením, kde sa spravujú piesne, kategórie, obráz
 
 1. V Centre balíkov nainštaluj **Container Manager**.
 2. Stiahni tento repozitár (GitHub → *Code* → *Download ZIP*) a cez File Station ho rozbaľ, napr. do `/docker/tvdisplay`.
-3. V `docker-compose.yml` zmeň `ADMIN_PASSWORD`. Je to heslo prvého administrátora a použije sa iba pri prvom spustení.
+3. V `docker-compose.yml`:
+   - zmeň `ADMIN_PASSWORD` (heslo prvého administrátora, použije sa iba pri prvom spustení),
+   - skontroluj cestu k zdieľanému priečinku `/volume1/tvdisplay` (File Station → `tvdisplay` → Vlastnosti → Umiestnenie;
+     na NAS s viacerými zväzkami môže byť napr. `/volume2/tvdisplay`).
 4. Container Manager → **Projekt** → **Vytvoriť** → cesta `/docker/tvdisplay` → použiť existujúci `docker-compose.yml`.
    Prvé zostavenie trvá niekoľko minút.
-5. Otvor `http://<IP-NAS>:8080` a prihlás sa ako `admin`. Potom:
+5. Otvor `http://<IP-NAS>:8080` (alebo cez Tailscale `http://<názov-NAS>:8080`) a prihlás sa ako `admin`. Potom:
    - zmeň si heslo (ikona 🔑),
-   - v záložke **Kostoly** pridaj kostoly,
+   - v záložke **Kostoly** pridaj kostoly (každý dostane priečinok `tvdisplay/<kostol>` so spevníkom JKS) –
+     pri kostole je adresa priečinka pre Orange Pi (`--nas-url`),
    - v záložke **Používatelia** vytvor editorov a priraď im kostol.
+
+Upravuj obsah radšej na jednom mieste naraz: ak sa tá istá pieseň zmení v administrácii aj v ovládaní
+na Orange Pi v tej istej minúte, platí neskoršia zmena. Súbory vložené cez Synology Drive do `texty/`,
+`obrazky/` a `prezentacie/` administrácia nemení, Orange Pi ich zobrazí ako doteraz.
+
+Ak by Orange Pi po úprave v administrácii hlásilo pri ukladaní chybu prístupu (403), nastav v File Station
+pre priečinok `tvdisplay` → Vlastnosti → Povolenie používateľovi `tvdisplay` Čítať/Zapisovať a zaškrtni
+*Použiť na tento priečinok, podpriečinky a súbory*.
 
 **Prístup z internetu** (pre editorov a pre Orange Pi v kostoloch):
 1. Ovládací panel → Prihlasovací portál → Rozšírené → **Reverzný proxy server**.
