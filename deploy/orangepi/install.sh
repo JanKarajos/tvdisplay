@@ -11,6 +11,10 @@
 #              --nas-user=MENO, --nas-password=HESLO   prihlásenie do NAS
 #              --nas-ignore-cert  prijať certifikát vystavený samotným NAS (https v miestnej sieti)
 #                               pri aktualizácii tieto voľby zmenia nastavenia, --nas-url= napojenie zruší
+#              --tailscale      spojenie s NAS v inej sieti cez Tailscale (bez nastavovania routera);
+#                               bez kľúča sa zobrazí odkaz na prihlásenie do Tailscale účtu
+#              --tailscale-authkey=KĽÚČ   prihlásenie do Tailscale kľúčom (admin konzola Tailscale -> Settings -> Keys)
+#              --no-tailscale   nepýtať sa na Tailscale
 #              --church-url=URL piesne kostola z administrácie (Docker na NAS, adresa zo záložky Kostoly)
 #
 # Opätovné spustenie aplikáciu aktualizuje. Nastavenia, piesne ani prezentácie nezmení.
@@ -34,6 +38,8 @@ NAS_URL=""
 NAS_USER=""
 NAS_PASSWORD=""
 NAS_IGNORE_CERT=0
+WANT_TAILSCALE=ask
+TAILSCALE_AUTHKEY=""
 for arg in "$@"; do
   case "$arg" in
     --yes) ASSUME_YES=1 ;;
@@ -44,6 +50,9 @@ for arg in "$@"; do
     --nas-user=*) NAS_SET=1; NAS_USER="${arg#--nas-user=}" ;;
     --nas-password=*) NAS_SET=1; NAS_PASSWORD="${arg#--nas-password=}" ;;
     --nas-ignore-cert) NAS_SET=1; NAS_IGNORE_CERT=1 ;;
+    --tailscale) WANT_TAILSCALE=yes ;;
+    --tailscale-authkey=*) WANT_TAILSCALE=yes; TAILSCALE_AUTHKEY="${arg#--tailscale-authkey=}" ;;
+    --no-tailscale) WANT_TAILSCALE=no ;;
     *) echo "Neznáma voľba: $arg"; exit 2 ;;
   esac
 done
@@ -84,6 +93,34 @@ apt_candidate() { # existuje balík v repozitári?
 
 apt_install() {
   DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends "$@"
+}
+
+tailscale_connected() { # je zariadenie prihlásené do Tailscale?
+  command -v tailscale >/dev/null && tailscale status >/dev/null 2>&1
+}
+
+# Overí, či sú piesne dostupné (po pripojení Tailscale, keď už je nainštalovaný curl)
+check_sources() {
+  if [ -n "$NAS_URL" ]; then
+    local cert=()
+    [ "$NAS_IGNORE_CERT" -eq 1 ] && cert=(-k)
+    local status
+    status=$(curl -sS -o /dev/null -w '%{http_code}' --max-time 15 "${cert[@]}" -u "$NAS_USER:$NAS_PASSWORD" "$NAS_URL/songs.json" 2>/dev/null || true)
+    case "$status" in
+      200) echo "Priečinok na NAS je dostupný." ;;
+      404) echo "Priečinok na NAS je prázdny – piesne, fotky a prezentácie tohto zariadenia sa naň nahrajú pri prvom spustení." ;;
+      401|403) warn "NAS odmietol prihlásenie – skontroluj meno, heslo a právo používateľa na WebDAV." ;;
+      000) warn "NAS sa nepodarilo dosiahnuť ($NAS_URL). Skontroluj adresu a spojenie (Tailscale: sudo tailscale status). Pri https s vlastným certifikátom NAS pridaj --nas-ignore-cert." ;;
+      *) warn "NAS vrátil chybu $status pre $NAS_URL." ;;
+    esac
+  fi
+  if [ -n "$CHURCH_DATA_URL" ]; then
+    if curl -fsS -o /dev/null --max-time 10 "$CHURCH_DATA_URL/songs.json"; then
+      echo "Administrácia kostola je dostupná."
+    else
+      warn "Adresu $CHURCH_DATA_URL sa teraz nepodarilo načítať. Skontroluj ju; Orange Pi to bude skúšať každú minútu."
+    fi
+  fi
 }
 
 # --- Kontroly ------------------------------------------------------------
@@ -131,24 +168,27 @@ if [ "$ENV_EXISTS" -eq 0 ]; then
 fi
 CHURCH_DATA_URL="${CHURCH_DATA_URL%/}"
 NAS_URL="${NAS_URL%/}"
-if [ -n "$NAS_URL" ] && command -v curl >/dev/null; then
-  CURL_CERT=()
-  [ "$NAS_IGNORE_CERT" -eq 1 ] && CURL_CERT=(-k)
-  NAS_STATUS=$(curl -sS -o /dev/null -w '%{http_code}' --max-time 10 "${CURL_CERT[@]}" -u "$NAS_USER:$NAS_PASSWORD" "$NAS_URL/songs.json" 2>/dev/null || true)
-  case "$NAS_STATUS" in
-    200) echo "Priečinok na NAS je dostupný." ;;
-    404) echo "Priečinok na NAS je prázdny – piesne, fotky a prezentácie tohto zariadenia sa naň nahrajú pri prvom spustení." ;;
-    401|403) warn "NAS odmietol prihlásenie – skontroluj meno, heslo a právo používateľa na WebDAV." ;;
-    000) warn "NAS sa nepodarilo dosiahnuť ($NAS_URL). Pri https s vlastným certifikátom NAS pridaj --nas-ignore-cert." ;;
-    *) warn "NAS vrátil chybu $NAS_STATUS pre $NAS_URL." ;;
-  esac
-fi
-if [ -n "$CHURCH_DATA_URL" ] && command -v curl >/dev/null; then
-  if curl -fsS -o /dev/null --max-time 10 "$CHURCH_DATA_URL/songs.json"; then
-    echo "Administrácia kostola je dostupná."
-  else
-    warn "Adresu $CHURCH_DATA_URL sa teraz nepodarilo načítať. Skontroluj ju; Orange Pi to bude skúšať každú minútu."
+# Pri aktualizácii platia nastavenia NAS z .env, pokiaľ ich voľby nemenia
+env_value() { sed -n "s/^$1=//p" "$APP_DIR/.env" | tail -n1; }
+if [ "$ENV_EXISTS" -eq 1 ]; then
+  if [ "$NAS_SET" -eq 0 ]; then
+    NAS_URL=$(env_value NAS_URL)
+    [ "$(env_value NAS_IGNORE_CERT)" = 1 ] && NAS_IGNORE_CERT=1
   fi
+  [ -z "$NAS_USER" ] && NAS_USER=$(env_value NAS_USER)
+  [ -z "$NAS_PASSWORD" ] && NAS_PASSWORD=$(env_value NAS_PASSWORD)
+fi
+
+# NAS v inej sieti: Tailscale vytvorí šifrované spojenie bez presmerovania portov na routeri
+if [ "$WANT_TAILSCALE" = ask ]; then
+  WANT_TAILSCALE=no
+  if [ -n "$NAS_URL" ] && [ "$ASSUME_YES" -eq 0 ] && ! tailscale_connected; then
+    if ask_yes "Je NAS v inej sieti ako toto zariadenie? Pripojiť sa k nemu cez Tailscale?"; then WANT_TAILSCALE=yes; fi
+  fi
+fi
+if [ "$WANT_TAILSCALE" = yes ] && [ -z "$TAILSCALE_AUTHKEY" ] && ! tailscale_connected; then
+  echo "Kľúč vytvoríš v admin konzole Tailscale (Settings -> Keys -> Generate auth key). Bez kľúča sa zobrazí odkaz na prihlásenie."
+  TAILSCALE_AUTHKEY=$(ask_value "Tailscale kľúč (prázdne = prihlásiť sa odkazom, nezobrazuje sa)" 1)
 fi
 
 if [ "$WANT_KIOSK" = ask ]; then
@@ -173,6 +213,32 @@ fi
 step "Aktualizujem zoznam balíkov"
 apt-get update || warn "Zoznam balíkov sa nepodarilo celý obnoviť, pokračujem."
 apt_install ca-certificates curl tar xz-utils
+
+# --- Tailscale (spojenie s NAS v inej sieti) -----------------------------
+
+if [ "$WANT_TAILSCALE" = yes ]; then
+  step "Pripájam Tailscale"
+  if ! command -v tailscale >/dev/null; then
+    # Oficiálny inštalačný skript Tailscale (pridá ich repozitár a nainštaluje balík)
+    curl -fsSL https://tailscale.com/install.sh | sh || warn "Tailscale sa nepodarilo nainštalovať."
+  fi
+  if command -v tailscale >/dev/null; then
+    systemctl enable --now tailscaled >/dev/null 2>&1 || true
+    TS_NAME="tvdisplay-$(hostname | tr -cd 'a-zA-Z0-9-')"
+    if tailscale_connected; then
+      echo "Tailscale je už pripojený."
+    elif [ -n "$TAILSCALE_AUTHKEY" ]; then
+      tailscale up --authkey="$TAILSCALE_AUTHKEY" --hostname="$TS_NAME" || warn "Prihlásenie do Tailscale kľúčom zlyhalo. Skús: sudo tailscale up"
+    elif [ "$ASSUME_YES" -eq 0 ]; then
+      echo "Otvor odkaz, ktorý sa zobrazí (napr. v mobile), a prihlás sa do Tailscale účtu, v ktorom je NAS."
+      tailscale up --hostname="$TS_NAME" || warn "Tailscale sa nepripojil. Skús neskôr: sudo tailscale up"
+    else
+      warn "Tailscale je nainštalovaný, ale neprihlásený. Spusti: sudo tailscale up"
+    fi
+  fi
+fi
+
+command -v curl >/dev/null && check_sources
 
 # --- Node.js -------------------------------------------------------------
 
@@ -420,6 +486,9 @@ if [ -n "$CURRENT_CHURCH_URL" ]; then
   echo "  Piesne:                administrácia $CURRENT_CHURCH_URL"
 elif [ -n "$CURRENT_NAS_URL" ]; then
   echo "  Piesne:                NAS $CURRENT_NAS_URL"
+  if tailscale_connected; then
+    echo "  Tailscale:             pripojený ($(tailscale ip -4 2>/dev/null | head -n1))"
+  fi
 else
   echo "  Piesne:                GitHub"
 fi

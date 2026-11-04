@@ -27,7 +27,7 @@ sudo bash tvdisplay-orangepi-install.sh               # na Orange Pi (Armbian, D
 
 Aplikácia sa nainštaluje do `/opt/tvdisplay` a spúšťa sa sama po zapnutí. Nastavenia sú v `/opt/tvdisplay/.env`.
 Opätovné spustenie inštalátora aplikáciu aktualizuje a nezmení nastavenia, piesne ani prezentácie.
-Voľby: `--yes`, `--no-kiosk` (bez obrazovky na TV), `--no-powerpoint` (bez LibreOffice),
+Voľby: `--yes`, `--no-kiosk` (bez obrazovky na TV), `--no-powerpoint` (bez LibreOffice), `--tailscale`,
 `--nas-url=…` (piesne na NAS, pozri nižšie), `--church-url=ADRESA` (administrácia kostolov).
 
 ## Piesne, fotky a prezentácie na NAS (Synology)
@@ -68,27 +68,41 @@ tvdisplay/
 
 ### Nastavenie NAS (raz)
 
-1. **Centrum balíkov** → nainštaluj **WebDAV Server**. V jeho nastaveniach zapni HTTP (port 5005) alebo HTTPS (port 5006).
+1. **Centrum balíkov** → nainštaluj **WebDAV Server** a v jeho nastaveniach zapni HTTP (port 5005).
 2. **Ovládací panel → Zdieľaný priečinok** → vytvor priečinok `tvdisplay`.
-3. **Ovládací panel → Používateľ** → vytvor používateľa napr. `tvdisplay`:
+3. **Synology Drive Admin Console → Tímový priečinok** → zapni priečinok `tvdisplay`.
+   Uvidíš ho v Synology Drive (aplikácia v počítači či mobile aj web), nahrávaš doň texty, fotky a prezentácie
+   a ľuďom môžeš posielať zdieľacie odkazy ako doteraz.
+4. **Ovládací panel → Používateľ** → vytvor používateľa napr. `tvdisplay` pre Orange Pi:
    - právo **Čítať/Zapisovať** iba na priečinok `tvdisplay`,
    - v časti **Aplikácie** povoľ **WebDAV**.
-4. Adresa priečinka pre Orange Pi:
-   - v tej istej sieti: `http://<IP-NAS>:5005/tvdisplay/<kostol>`, napr. `http://192.168.1.10:5005/tvdisplay/kostol-sv-martina`,
-   - cez internet: `https://<adresa-NAS>:5006/tvdisplay/<kostol>`. Treba DDNS adresu (Ovládací panel → Externý prístup → DDNS),
-     na routeri presmerovaný port 5006 na NAS a certifikát Let's Encrypt (Ovládací panel → Zabezpečenie → Certifikát).
-     Cez internet používaj iba HTTPS, inak by heslo išlo nezašifrované.
+5. **Centrum balíkov** → nainštaluj **Tailscale** a prihlás sa ním do svojho Tailscale účtu (bezplatný, napr. cez Google účet).
+   V admin konzole Tailscale (login.tailscale.com) uvidíš názov NAS, napr. `karajos-nas`.
+   Ak chceš inštalovať Orange Pi bez prihlasovania odkazom, vytvor tam kľúč: **Settings → Keys → Generate auth key**
+   (zaškrtni *Reusable*, aby platil pre viac Orange Pi).
 
-Podpriečinok kostola netreba vytvárať, Orange Pi si ho vytvorí sám.
+Podpriečinok kostola netreba vytvárať, Orange Pi si ho vytvorí sám. Zdieľací odkaz zo Synology Drive
+(`…quickconnect.to/d/s/…`) je iba pre ľudí: ide cez QuickConnect, je len na čítanie a Orange Pi ho nevie použiť.
+Orange Pi dostane adresu priečinka cez WebDAV.
+
+**Prečo Tailscale:** NAS a Orange Pi v kostoloch nie sú v jednej sieti. Tailscale ich spojí šifrovane cez internet
+bez presmerovania portov na routeri, takže WebDAV (port 5005) nie je viditeľný z internetu.
+Adresa priečinka pre Orange Pi potom je `http://<názov-NAS-v-Tailscale>:5005/tvdisplay/<kostol>`,
+napr. `http://karajos-nas:5005/tvdisplay/kostol-sv-martina`. Orange Pi v tej istej sieti ako NAS môže použiť
+priamo `http://192.168.x.x:5005/tvdisplay/<kostol>` a Tailscale nepotrebuje.
 
 ### Nastavenie Orange Pi
 
-- **Nová inštalácia:** inštalátor sa opýta na adresu priečinka, meno a heslo.
+- **Nová inštalácia:** inštalátor sa opýta na adresu priečinka, meno a heslo a na to, či je NAS v inej sieti.
+  Ak áno, nainštaluje Tailscale a pripojí sa kľúčom, alebo zobrazí odkaz, ktorý otvoríš v mobile a prihlásiš sa.
 - **Už nainštalované Orange Pi:**
 
 ```bash
-sudo bash tvdisplay-orangepi-install.sh --nas-url=http://192.168.1.10:5005/tvdisplay/kostol-sv-martina --nas-user=tvdisplay --nas-password=HESLO
+sudo bash tvdisplay-orangepi-install.sh --tailscale \
+  --nas-url=http://karajos-nas:5005/tvdisplay/kostol-sv-martina --nas-user=tvdisplay --nas-password=HESLO
 ```
+
+S kľúčom namiesto odkazu: pridaj `--tailscale-authkey=tskey-auth-…`.
 
 Pri HTTPS s certifikátom, ktorý vystavil samotný NAS (nie Let's Encrypt), pridaj `--nas-ignore-cert`.
 Stav spojenia s NAS je v ovládaní v záložke **Obsah → Synchronizácia**.
