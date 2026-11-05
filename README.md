@@ -1,4 +1,4 @@
-# SongDisplay (tvdisplay)
+# Laudate (tvdisplay)
 
 Zobrazovanie textov piesní, žalmov, obrázkov a PDF prezentácií na TV v kostole.
 Ovládanie beží v prehliadači na mobile/PC, displej na zariadení pri TV (napr. Raspberry Pi v kiosk režime).
