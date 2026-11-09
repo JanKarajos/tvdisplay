@@ -16,7 +16,7 @@ export const isPortrait = (rotation) => rotation === 90 || rotation === 270;
 // Štýl obalu, ktorý otočí celý obsah displeja. Pri 90°/270° má obal rozmery
 // výška × šírka okna, takže text sa prispôsobí obrazovke na výšku.
 export function rotationStyle(rotation) {
-  if (!rotation) return { position: 'absolute', inset: 0 };
+  if (!rotation) return { position: 'absolute', top: 0, right: 0, bottom: 0, left: 0 };
   const portrait = isPortrait(rotation);
   return {
     position: 'absolute',

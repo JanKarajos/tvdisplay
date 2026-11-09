@@ -89,3 +89,12 @@ body {
   .animate-fade-in,
   .animate-toast-in { animation: none; }
 }
+
+/* Staršie prehliadače (Chrome < 87, smart TV, starší Android) nepoznajú vlastnosť "inset",
+   ktorú používa trieda inset-0 – bez tohto by obrazovka TV aj náhľady ostali prázdne. */
+.inset-0 {
+  top: 0;
+  right: 0;
+  bottom: 0;
+  left: 0;
+}

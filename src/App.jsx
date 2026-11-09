@@ -1,3 +1,4 @@
+import { timeoutSignal } from './lib/net';
 import React, { Suspense, lazy, useEffect, useState } from 'react';
 import DisplayPage from './pages/DisplayPage';
 import ControlPage from './pages/ControlPage';
@@ -24,7 +25,7 @@ export default function App() {
   // Bez adresy v URL: na serveri administrácie (NAS) otvor administráciu, inak ovládanie
   useEffect(() => {
     if (route || defaultRoute) return;
-    fetch(`${SERVER_URL}/health`, { signal: AbortSignal.timeout(3000) })
+    fetch(`${SERVER_URL}/health`, { signal: timeoutSignal(3000) })
       .then((r) => (r.ok ? r.json() : {}))
       .catch(() => ({}))
       .then((h) => setDefaultRoute(h.admin ? 'admin' : 'control'));

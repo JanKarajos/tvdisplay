@@ -1,4 +1,5 @@
 // Knižnica piesní, obrázkov a PDF + žalmy. Ukladanie ide cez server (GitHub token je iba tam).
+import { timeoutSignal } from '../lib/net';
 import { SERVER_URL, SONGS_URL, IMAGES_URL, resolveServerUrl } from '../config';
 import { stateClient, writeHeaders, markAuthRequired } from './stateClient';
 import { log } from '../lib/log';
@@ -29,7 +30,7 @@ for (const [file, data] of Object.entries(bundledPsalms)) {
 async function ensurePsalmYear(year) {
   if (!/^\d{4}$/.test(year) || psalmMaps.has(year)) return;
   try {
-    const res = await fetch(`${SERVER_URL}/api/psalms/${year}`, { signal: AbortSignal.timeout(4000) });
+    const res = await fetch(`${SERVER_URL}/api/psalms/${year}`, { signal: timeoutSignal(4000) });
     if (!res.ok) return;
     const map = buildPsalmMap(await res.json());
     if (map.size) psalmMaps.set(year, map);
@@ -126,7 +127,7 @@ function readCache(file) {
 }
 
 async function fetchJson(url, timeout = 8000) {
-  const res = await fetch(url, { signal: AbortSignal.timeout(timeout), cache: 'no-store' });
+  const res = await fetch(url, { signal: timeoutSignal(timeout), cache: 'no-store' });
   if (!res.ok) throw new Error(`${res.status} ${res.statusText}`);
   return res.json();
 }
@@ -150,9 +151,14 @@ async function fetchFromGithub(rawUrl) {
 }
 
 // Poradie: GitHub → lokálna kópia na serveri → posledná úspešná verzia v prehliadači
+// Obrazovka na TV berie dáta vždy najprv zo zariadenia v kostole: je v tej istej sieti a má aktuálnu kópiu
+const isDisplay = () => (typeof window !== 'undefined' && /^#\/?display/.test(window.location.hash || ''));
+
 async function loadList(file, remoteUrl, preferServer = false) {
   const github = ['GitHub', () => fetchFromGithub(remoteUrl)];
-  const server = ['server', () => fetchJson(`${SERVER_URL}/api/data/${file}`, 4000)];
+  // Dlhší limit: songs.json má stovky kB a prehliadač v TV ho spracúva pomaly
+  const server = ['server', () => fetchJson(`${SERVER_URL}/api/data/${file}`, 30000)];
+  if (isDisplay()) preferServer = true;
   const sources = preferServer ? [server, github] : [github, server];
   for (const [name, load] of sources) {
     try {
@@ -184,7 +190,7 @@ const MODE_KEY = 'tvdisplay-library-mode';
 
 async function libraryMode() {
   try {
-    const res = await fetch(`${SERVER_URL}/health`, { signal: AbortSignal.timeout(4000), cache: 'no-store' });
+    const res = await fetch(`${SERVER_URL}/health`, { signal: timeoutSignal(4000), cache: 'no-store' });
     if (res.ok) {
       const library = (await res.json()).library || {};
       // nas: piesne, obrázky a prezentácie sú na NAS – upravujú sa tu, ukladajú sa cez server na NAS
@@ -209,7 +215,7 @@ async function libraryMode() {
 // Dáta z administrácie alebo z NAS: iba zo servera (ten má kópiu), inak posledná verzia v prehliadači
 async function loadManagedList(file, source = 'administrácia') {
   try {
-    const data = await fetchJson(`${SERVER_URL}/api/data/${file}`, 20000);
+    const data = await fetchJson(`${SERVER_URL}/api/data/${file}`, 30000);
     if (Array.isArray(data)) {
       writeCache(`church-${file}`, data);
       return { data, source };
@@ -246,6 +252,7 @@ async function deleteNasMedia(url) {
 }
 
 let loadingPromise = null;
+let retryLoadTimer = null;
 
 export function loadLibrary({ force = false, preferServer = false } = {}) {
   if (loadingPromise && !force) return loadingPromise;
@@ -280,6 +287,11 @@ export function loadLibrary({ force = false, preferServer = false } = {}) {
       nas: mode.nas,
     };
     notify();
+    // Nepodarilo sa nič načítať (server sa ešte spúšťa, výpadok Wi-Fi): skús znova o chvíľu
+    if (!songsResult.source) {
+      clearTimeout(retryLoadTimer);
+      retryLoadTimer = setTimeout(() => loadLibrary({ force: true }), 15000);
+    }
     return snapshot;
   })();
   return loadingPromise;
@@ -448,7 +460,7 @@ export const library = {
     if (find()) return find();
     for (const [file, list] of [['songs.json', 'songs'], ['images.json', 'images']]) {
       try {
-        const found = (await fetchJson(`${SERVER_URL}/api/data/${file}`, 4000)).find((x) => x.id === id);
+        const found = (await fetchJson(`${SERVER_URL}/api/data/${file}`, 30000)).find((x) => x.id === id);
         const item = found && withServerUrls([found])[0];
         if (item) {
           if (list === 'songs') songs = [...songs, item];
