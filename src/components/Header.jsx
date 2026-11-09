@@ -22,7 +22,7 @@ export default function Header({ status, clients, tab, onTab, uiTheme, onCycleTh
       <div className="max-w-7xl mx-auto px-3 sm:px-4 flex flex-wrap items-center gap-x-4">
         <div className="flex items-center gap-2 h-14 mr-auto">
           <span className="w-8 h-8 rounded-lg bg-accent text-on-accent grid place-items-center font-bold">♪</span>
-          <span className="font-bold tracking-tight">SongDisplay</span>
+          <span className="font-bold tracking-tight">Laudate</span>
         </div>
 
         <nav className="order-last sm:order-none w-full sm:w-auto flex gap-1 -mx-1 pb-2 sm:pb-0" aria-label="Sekcie">

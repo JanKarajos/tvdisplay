@@ -1,4 +1,4 @@
-# Automatické spúšťanie TVDisplay aplikácie
+# Automatické spúšťanie aplikácie Laudate
 
 Tento návod popisuje, ako nastaviť automatické spúšťanie aplikácie po zapnutí zariadenia.
 

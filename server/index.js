@@ -1,4 +1,4 @@
-// TVDisplay server: zdieľaný stav (REST + WebSocket), žalmy, ukladanie na GitHub
+// Laudate server (tvdisplay): zdieľaný stav (REST + WebSocket), žalmy, ukladanie na GitHub
 // a v produkcii aj servírovanie buildu frontendu (dist/).
 //
 // Spustenie:  node server/index.js            (iba API, pre vývoj s Vite)
@@ -427,7 +427,7 @@ app.put('/api/github/:file', requirePin, rejectWhenManaged, async (req, res) => 
 const apiServer = http.createServer(app);
 attachWebSocket(apiServer);
 apiServer.listen(STATE_PORT, '0.0.0.0', () => {
-  console.log(`📡 TVDisplay server beží na porte ${STATE_PORT} (PIN: ${CONTROL_PIN ? 'zapnutý' : 'vypnutý'}, GitHub token: ${GITHUB.token ? 'áno' : 'nie'})`);
+  console.log(`📡 Laudate server beží na porte ${STATE_PORT} (PIN: ${CONTROL_PIN ? 'zapnutý' : 'vypnutý'}, GitHub token: ${GITHUB.token ? 'áno' : 'nie'})`);
   if (ADMIN_DATA_DIR) console.log(`🔐 Administrácia kostolov zapnutá (dáta v ${path.resolve(ADMIN_DATA_DIR)}), adresa: /#admin`);
   if (church) console.log(`⛪ Piesne kostola z administrácie: ${CHURCH_DATA_URL}`);
   if (nas) console.log(`🗄️  Piesne, obrázky a prezentácie na NAS: ${NAS_URL}`);

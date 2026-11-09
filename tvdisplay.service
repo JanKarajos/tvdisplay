@@ -1,5 +1,5 @@
 [Unit]
-Description=TVDisplay Aplikacia - Zobrazovanie piesni
+Description=Laudate - zobrazovanie piesni
 After=network-online.target
 Wants=network-online.target
 

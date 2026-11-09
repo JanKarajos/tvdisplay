@@ -28,7 +28,7 @@ function Logo() {
   return (
     <div className="flex items-center gap-2">
       <span className="w-8 h-8 rounded-lg bg-accent text-on-accent grid place-items-center font-bold">♪</span>
-      <span className="font-bold tracking-tight">SongDisplay</span>
+      <span className="font-bold tracking-tight">Laudate</span>
     </div>
   );
 }

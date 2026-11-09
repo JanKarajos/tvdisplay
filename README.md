@@ -1,4 +1,4 @@
-# SongDisplay (tvdisplay)
+# Laudate (tvdisplay)
 
 Zobrazovanie textov piesní, žalmov, obrázkov a PDF prezentácií na TV v kostole.
 Ovládanie beží v prehliadači na mobile/PC, displej na zariadení pri TV (napr. Raspberry Pi v kiosk režime).
@@ -188,6 +188,24 @@ Napojenie zrušíš voľbou `--church-url=` (prázdna adresa); piesne sa potom z
 
 Vývoj administrácie na počítači: `ADMIN_DATA_DIR=admin-data ADMIN_PASSWORD=heslo1234 npm run dev`, potom `http://localhost:5173/#admin`.
 
+## Aplikácia pre Android
+
+Ovládanie z mobilu sa dá používať aj ako aplikácia **Laudate** (`dist-android/Laudate.apk`).
+Je to okno s webovým ovládaním `http://<IP adresa Orange Pi>:5173/#control`, navyše:
+
+- pripojí sa priamo na 192.168.1.15 (iná adresa sa dá zadať cez tlačidlo Späť → Zmeniť adresu; port 5173 sa doplní sám),
+- obrazovka mobilu počas omše nezhasne,
+- keď sa zariadenie nedá nájsť, ukáže sa „Skúsiť znova“ / „Zmeniť adresu“,
+- tlačidlo Späť ponúkne obnovenie stránky, zmenu adresy alebo ukončenie.
+
+**Inštalácia:** stiahnite `Laudate.apk` do mobilu (napr. z GitHubu alebo cez e-mail), otvorte ho a povoľte
+inštaláciu z neznámych zdrojov. Aplikácia nie je v Google Play.
+
+**Zostavenie:** `scripts/build_android.sh` (Java 17+ a Android SDK). Kľúč na podpis nie je v repozitári:
+súbor `laudate.keystore` a `keystore.properties` (storeFile, storePassword, keyAlias, keyPassword) dajte do
+priečinka `android/` a nikam ich nezverejňujte. Novú verziu treba podpísať tým istým kľúčom, inak sa nedá
+nainštalovať cez starú; pred novou verziou zvýšte `versionCode` v `android/app/build.gradle`.
+
 ## Ako to funguje
 
 ```
@@ -210,6 +228,12 @@ Mobil / PC (ovládanie) ──PATCH /api/state──►  server (port 3002)  ─
 - **Žalmy** sú v `Texty/Žalmy RRRR.json`. Nový rok stiahneš cez `node scripts/fetch_psalms_2027.js`.
 - **PIN**: ak je v `.env` nastavený `CONTROL_PIN`, ovládanie si ho vypýta. Displej PIN nepotrebuje.
 - **Administrácia kostolov** (`ADMIN_DATA_DIR`) a **napojenie na ňu** (`CHURCH_DATA_URL`): pozri vyššie.
+
+## Televízor na výšku
+
+V ovládaní v záložke **Obrazovka → Otočenie obrazovky** sa dá obraz na TV otočiť: na šírku, na výšku (doprava
+alebo doľava) alebo hore nohami. Nastavenie sa uloží na zariadení v kostole, takže platí pre všetky televízory
+a ostane aj po reštarte. Náhľady v ovládaní sa pri TV na výšku zobrazujú na výšku.
 
 ## Priebeh omše
 

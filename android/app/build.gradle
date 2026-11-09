@@ -1,0 +1,47 @@
+plugins {
+    id 'com.android.application'
+}
+
+android {
+    namespace 'sk.laudate.app'
+    compileSdk 35
+
+    defaultConfig {
+        applicationId 'sk.laudate.app'
+        minSdk 24
+        targetSdk 35
+        versionCode 2
+        versionName '1.1'
+    }
+
+    // Kľúč na podpis nie je v repozitári. Údaje sú v android/keystore.properties
+    // (storeFile, storePassword, keyAlias, keyPassword). Bez neho sa APK podpíše
+    // ladiacim kľúčom; také APK sa nedá nainštalovať ako aktualizácia cez verziu
+    // podpísanú kľúčom Laudate.
+    def keyProps = new Properties()
+    def keyFile = rootProject.file('keystore.properties')
+    if (keyFile.exists()) keyFile.withInputStream { keyProps.load(it) }
+
+    signingConfigs {
+        if (keyFile.exists()) {
+            laudate {
+                storeFile rootProject.file(keyProps['storeFile'])
+                storePassword keyProps['storePassword']
+                keyAlias keyProps['keyAlias']
+                keyPassword keyProps['keyPassword']
+            }
+        }
+    }
+
+    buildTypes {
+        release {
+            minifyEnabled false
+            signingConfig keyFile.exists() ? signingConfigs.laudate : signingConfigs.debug
+        }
+    }
+
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_11
+        targetCompatibility JavaVersion.VERSION_11
+    }
+}

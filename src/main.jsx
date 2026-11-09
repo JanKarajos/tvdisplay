@@ -1,3 +1,4 @@
+import './lib/polyfills';
 import React from 'react';
 import { createRoot } from 'react-dom/client';
 import '@fontsource/source-sans-3/400.css';

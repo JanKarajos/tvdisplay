@@ -1,5 +1,5 @@
 #!/bin/bash
-# SongDisplay – inštalátor pre Orange Pi PC (Armbian / Debian / Ubuntu).
+# Laudate – inštalátor pre Orange Pi PC (Armbian / Debian / Ubuntu).
 # Súbor obsahuje hotovú aplikáciu, na zariadení sa nič nekompiluje.
 #
 # Spustenie:   sudo bash tvdisplay-orangepi-install.sh
@@ -144,7 +144,7 @@ timedatectl set-ntp true 2>/dev/null || true
 
 # --- Otázky (všetky naraz, potom už inštalácia beží sama) ----------------
 
-echo "SongDisplay – inštalácia na $(uname -m)"
+echo "Laudate – inštalácia na $(uname -m)"
 
 ENV_EXISTS=0
 [ -f "$APP_DIR/.env" ] && ENV_EXISTS=1
@@ -201,7 +201,7 @@ fi
 DISPLAY_MANAGER_ACTIVE=0
 if [ "$WANT_KIOSK" = yes ] && systemctl is-active --quiet display-manager 2>/dev/null; then
   DISPLAY_MANAGER_ACTIVE=1
-  if ! ask_yes "Beží tu pracovné prostredie. Má ho po reštarte nahradiť obrazovka SongDisplay?"; then
+  if ! ask_yes "Beží tu pracovné prostredie. Má ho po reštarte nahradiť obrazovka Laudate?"; then
     WANT_KIOSK=no
     DISPLAY_MANAGER_ACTIVE=0
     warn "Obrazovka sa nenastaví. Otvor http://localhost:$APP_PORT/#display v prehliadači ručne."
@@ -335,7 +335,7 @@ chmod 600 "$APP_DIR/.env"
 
 cat >/etc/systemd/system/tvdisplay.service <<EOF
 [Unit]
-Description=SongDisplay server
+Description=Laudate server
 After=network-online.target
 Wants=network-online.target
 
@@ -413,7 +413,7 @@ EOF
 
   cat >/etc/systemd/system/tvdisplay-kiosk.service <<EOF
 [Unit]
-Description=SongDisplay obrazovka na TV
+Description=Laudate obrazovka na TV
 After=tvdisplay.service systemd-user-sessions.service
 Wants=tvdisplay.service
 Conflicts=getty@tty7.service
@@ -437,7 +437,7 @@ fi
 
 # --- Spustenie -----------------------------------------------------------
 
-step "Spúšťam SongDisplay"
+step "Spúšťam Laudate"
 systemctl daemon-reload
 systemctl enable tvdisplay.service >/dev/null
 systemctl restart tvdisplay.service
