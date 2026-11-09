@@ -5,6 +5,7 @@ import { useLibrary } from '../hooks/useLibrary';
 import { useSong } from '../hooks/useSong';
 import { stateClient } from '../api/stateClient';
 import { getPageCount } from '../lib/lyrics';
+import { getRotation, rotationStyle } from '../lib/rotation';
 
 export default function DisplayPage() {
   const { state, status } = useAppState();
@@ -40,7 +41,9 @@ export default function DisplayPage() {
 
   return (
     <div className="fixed inset-0 bg-black cursor-none select-none">
-      <Stage state={state} song={state.currentSongId ? song : null} />
+      <div style={rotationStyle(getRotation(state.settings))}>
+        <Stage state={state} song={state.currentSongId ? song : null} />
+      </div>
       {showOffline && (
         <div className="absolute bottom-3 left-3 flex items-center gap-2 text-xs text-white/40" title="Spojenie so serverom je prerušené">
           <span className="w-2 h-2 rounded-full bg-red-500/70 animate-pulse" />

@@ -3,6 +3,7 @@ import Card from '../Card';
 import Preview from '../Preview';
 import { actions } from '../../lib/actions';
 import { THEMES, liturgicalSeason } from '../../lib/liturgy';
+import { ROTATIONS, getRotation } from '../../lib/rotation';
 
 function Toggle({ checked, onChange, label, hint }) {
   return (
@@ -28,6 +29,7 @@ export default function ScreenSettings({ state, images, sampleSong }) {
   const settings = state.settings || {};
   const season = liturgicalSeason();
   const themeOptions = [['auto', `Automaticky – ${THEMES[season].name}`, THEMES[season]], ...Object.entries(THEMES).map(([id, t]) => [id, t.name, t])];
+  const rotation = getRotation(settings);
   const backgrounds = [
     { label: 'Podľa témy', value: null },
     { label: 'Čierna', value: '#000000', swatch: '#000' },
@@ -62,6 +64,34 @@ export default function ScreenSettings({ state, images, sampleSong }) {
             label="Text cez obrázok pozadia"
             hint="Obrázok ostane pod textom stmavený. Inak je pod textom téma."
           />
+        </div>
+      </Card>
+
+      <Card title="Otočenie obrazovky" subtitle="Pre televízor zavesený na výšku. Ak je text naopak, zvoľte druhú možnosť na výšku.">
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-2" role="radiogroup" aria-label="Otočenie obrazovky">
+          {ROTATIONS.map((r) => {
+            const active = rotation === r.value;
+            const portrait = r.value === 90 || r.value === 270;
+            return (
+              <button
+                key={r.value}
+                role="radio"
+                aria-checked={active}
+                onClick={() => actions.setSettings({ rotation: r.value })}
+                className={`rounded-xl border-2 p-3 flex flex-col items-center gap-2 transition ${active ? 'border-accent bg-accent/10' : 'border-line hover:border-accent/50'}`}
+              >
+                <span className="h-12 grid place-items-center">
+                  <span
+                    className={`grid place-items-center rounded-md border-2 ${active ? 'border-accent' : 'border-muted'} ${portrait ? 'w-7 h-12' : 'w-12 h-7'}`}
+                  >
+                    <span className="text-[10px] font-bold leading-none">Aa</span>
+                  </span>
+                </span>
+                <span className="text-sm font-semibold">{r.label}</span>
+                <span className="text-[11px] text-muted -mt-1.5">{r.hint}</span>
+              </button>
+            );
+          })}
         </div>
       </Card>
 

@@ -229,6 +229,12 @@ Mobil / PC (ovládanie) ──PATCH /api/state──►  server (port 3002)  ─
 - **PIN**: ak je v `.env` nastavený `CONTROL_PIN`, ovládanie si ho vypýta. Displej PIN nepotrebuje.
 - **Administrácia kostolov** (`ADMIN_DATA_DIR`) a **napojenie na ňu** (`CHURCH_DATA_URL`): pozri vyššie.
 
+## Televízor na výšku
+
+V ovládaní v záložke **Obrazovka → Otočenie obrazovky** sa dá obraz na TV otočiť: na šírku, na výšku (doprava
+alebo doľava) alebo hore nohami. Nastavenie sa uloží na zariadení v kostole, takže platí pre všetky televízory
+a ostane aj po reštarte. Náhľady v ovládaní sa pri TV na výšku zobrazujú na výšku.
+
 ## Priebeh omše
 
 1. V záložke **Omša** klikaj na piesne v zozname, každá sa pridá na koniec **poradia**.
