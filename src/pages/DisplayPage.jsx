@@ -3,7 +3,7 @@ import Stage from '../components/Stage';
 import { useAppState } from '../hooks/useAppState';
 import { useLibrary } from '../hooks/useLibrary';
 import { useSong } from '../hooks/useSong';
-import { stateClient } from '../api/stateClient';
+import { stateClient, enableAutoReload } from '../api/stateClient';
 import { getPageCount } from '../lib/lyrics';
 import { getRotation, rotationStyle } from '../lib/rotation';
 
@@ -12,6 +12,8 @@ export default function DisplayPage() {
   const lib = useLibrary();
   const song = useSong(state.currentSongId, lib);
   const [showOffline, setShowOffline] = useState(false);
+
+  useEffect(() => enableAutoReload(), []);
 
   // Indikátor výpadku až po 5 s, aby krátke odpojenia nerušili
   useEffect(() => {

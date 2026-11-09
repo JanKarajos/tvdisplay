@@ -13,6 +13,7 @@ import 'dotenv/config';
 import express from 'express';
 import cors from 'cors';
 import http from 'node:http';
+import crypto from 'node:crypto';
 import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -104,6 +105,17 @@ function applyPatch(patch) {
 
 const sockets = new Set();
 
+// Verzia webovej aplikácie (mení sa pri každom novom zostavení). Obrazovka na TV sa podľa nej
+// po aktualizácii sama obnoví, inak by na TV bežal starý kód až do reštartu prehliadača.
+function readAppBuild() {
+  try {
+    const html = fs.readFileSync(path.join(DIST_DIR, 'index.html'));
+    return crypto.createHash('sha1').update(html).digest('hex').slice(0, 12);
+  } catch {
+    return null;
+  }
+}
+
 function broadcast(message = { type: 'state', state, version }) {
   const msg = JSON.stringify(message);
   for (const ws of sockets) {
@@ -118,6 +130,7 @@ function attachWebSocket(server) {
     ws.isAlive = true;
     ws.on('pong', () => { ws.isAlive = true; });
     ws.on('close', () => sockets.delete(ws));
+    ws.send(JSON.stringify({ type: 'hello', build: readAppBuild() }));
     ws.send(JSON.stringify({ type: 'state', state, version }));
   });
   // Odpojených klientov (napr. uspaný mobil) upraceme
@@ -440,8 +453,14 @@ if (SERVE_APP) {
   }
   const web = express();
   web.use(app); // rovnaké API aj na porte aplikácie
+  // index.html sa nesmie držať v cache (prehliadače v TV), súbory v assets/ majú v názve hash
+  const sendIndex = (req, res) => {
+    res.set('Cache-Control', 'no-cache');
+    res.sendFile(path.join(DIST_DIR, 'index.html'));
+  };
+  web.get(['/', '/index.html'], sendIndex);
   web.use(express.static(DIST_DIR));
-  web.get('*', (req, res) => res.sendFile(path.join(DIST_DIR, 'index.html')));
+  web.get('*', sendIndex);
   const webServer = http.createServer(web);
   attachWebSocket(webServer);
   webServer.listen(APP_PORT, '0.0.0.0', () => {
