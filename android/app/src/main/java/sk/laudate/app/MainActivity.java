@@ -32,13 +32,15 @@ import android.widget.TextView;
 /**
  * Laudate – ovládanie textov na TV v kostole.
  * Aplikácia je len okno s webovým ovládaním (http://ADRESA:5173/#control),
- * ktoré beží na Orange Pi v kostole. Adresa sa zadá pri prvom spustení.
+ * ktoré beží na Orange Pi v kostole (predvolene 192.168.1.15).
  */
 public class MainActivity extends Activity {
 
     private static final String PREFS = "laudate";
     private static final String KEY_ADDRESS = "address";
     private static final int DEFAULT_PORT = 5173;
+    /** Adresa Orange Pi v kostole; dá sa zmeniť v aplikácii (tlačidlo Späť → Zmeniť adresu) */
+    private static final String DEFAULT_ADDRESS = "192.168.1.15";
     private static final int FILE_CHOOSER = 1;
 
     private WebView webView;
@@ -77,9 +79,6 @@ public class MainActivity extends Activity {
         if (savedInstanceState != null) {
             webView.restoreState(savedInstanceState);
             currentAddress = savedInstanceState.getString(KEY_ADDRESS, savedAddress());
-        } else if (savedAddress().isEmpty()) {
-            showWelcome();
-            askAddress(false);
         } else {
             open(savedAddress());
         }
@@ -109,7 +108,7 @@ public class MainActivity extends Activity {
     }
 
     private String savedAddress() {
-        return prefs().getString(KEY_ADDRESS, "");
+        return prefs().getString(KEY_ADDRESS, DEFAULT_ADDRESS);
     }
 
     /** "192.168.1.50" → "http://192.168.1.50:5173/#control" */
@@ -140,13 +139,13 @@ public class MainActivity extends Activity {
         box.setPadding(pad, dp(8), pad, 0);
 
         TextView info = new TextView(this);
-        info.setText("Zadajte IP adresu Orange Pi v kostole, napríklad 192.168.1.50.\n"
+        info.setText("Zadajte IP adresu Orange Pi v kostole, napríklad " + DEFAULT_ADDRESS + ".\n"
                 + "Je to tá istá adresa, ktorú používate v prehliadači (port 5173 sa doplní sám).");
         info.setTextSize(TypedValue.COMPLEX_UNIT_SP, 14);
         box.addView(info);
 
         EditText input = new EditText(this);
-        input.setHint("192.168.1.50");
+        input.setHint(DEFAULT_ADDRESS);
         input.setSingleLine(true);
         input.setInputType(InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_VARIATION_URI);
         input.setImeOptions(EditorInfo.IME_ACTION_DONE);
@@ -167,7 +166,7 @@ public class MainActivity extends Activity {
             String value = input.getText().toString().trim();
             if (value.isEmpty() || Uri.parse(controlUrl(value)).getHost() == null
                     || Uri.parse(controlUrl(value)).getHost().isEmpty()) {
-                input.setError("Zadajte adresu, napríklad 192.168.1.50");
+                input.setError("Zadajte adresu, napríklad " + DEFAULT_ADDRESS);
                 return;
             }
             prefs().edit().putString(KEY_ADDRESS, value).apply();
@@ -175,12 +174,6 @@ public class MainActivity extends Activity {
             open(value);
         }));
         dialog.show();
-    }
-
-    private void showWelcome() {
-        webView.loadDataWithBaseURL(null, page("Vitajte v aplikácii Laudate",
-                "Na ovládanie textov na TV v kostole potrebujete adresu zariadenia v kostole.", false),
-                "text/html", "utf-8", null);
     }
 
     private void showError(String detail) {

@@ -193,7 +193,7 @@ Vývoj administrácie na počítači: `ADMIN_DATA_DIR=admin-data ADMIN_PASSWORD=
 Ovládanie z mobilu sa dá používať aj ako aplikácia **Laudate** (`dist-android/Laudate.apk`).
 Je to okno s webovým ovládaním `http://<IP adresa Orange Pi>:5173/#control`, navyše:
 
-- pri prvom spustení sa zadá IP adresa zariadenia v kostole (port 5173 sa doplní sám, dá sa zadať aj celá adresa, napr. cez Tailscale),
+- pripojí sa priamo na 192.168.1.15 (iná adresa sa dá zadať cez tlačidlo Späť → Zmeniť adresu; port 5173 sa doplní sám),
 - obrazovka mobilu počas omše nezhasne,
 - keď sa zariadenie nedá nájsť, ukáže sa „Skúsiť znova“ / „Zmeniť adresu“,
 - tlačidlo Späť ponúkne obnovenie stránky, zmenu adresy alebo ukončenie.
