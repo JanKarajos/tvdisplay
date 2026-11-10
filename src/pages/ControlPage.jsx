@@ -115,7 +115,7 @@ export default function ControlPage() {
             </div>
           </div>
         )}
-        {tab === 'screen' && <ScreenSettings state={state} images={lib.images} sampleSong={SAMPLE_SONG} />}
+        {tab === 'screen' && <ScreenSettings state={state} images={lib.images} sampleSong={SAMPLE_SONG} health={health} />}
         {tab === 'content' && <ContentManager lib={lib} health={health} />}
       </main>
 

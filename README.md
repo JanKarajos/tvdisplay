@@ -229,6 +229,34 @@ Mobil / PC (ovládanie) ──PATCH /api/state──►  server (port 3002)  ─
 - **PIN**: ak je v `.env` nastavený `CONTROL_PIN`, ovládanie si ho vypýta. Displej PIN nepotrebuje.
 - **Administrácia kostolov** (`ADMIN_DATA_DIR`) a **napojenie na ňu** (`CHURCH_DATA_URL`): pozri vyššie.
 
+## Reštart aplikácie a Orange Pi (tlačidlá)
+
+**V ovládaní:** ⚙ → Obrazovka → *Zariadenie v kostole* → „Reštartovať aplikáciu“ alebo „Reštartovať Orange Pi“
+(ak je nastavený PIN, chráni aj tieto tlačidlá).
+
+**Fyzické tlačidlá a LED** (inštalátor ich zapne sám, vypnúť: `--no-buttons`). Dve obyčajné tlačidlá (spínacie, bez aretácie)
+a dve LED na 40-pinovom konektore Orange Pi PC. Tlačidlá bez rezistorov (pin drží vnútorný pull-up),
+každá LED cez rezistor 220–330 Ω (dlhšia nožička LED = + smerom k pinu).
+
+| | Tlačidlo (druhý kontakt GND pin 9) | LED (cez rezistor na GND pin 14) | Podržať |
+|---|---|---|---|
+| Reštart aplikácie (spustí ju aj keď nebeží) | pin 11 (PA1) | pin 15 (PA3) | 1 s |
+| Reštart Orange Pi | pin 13 (PA0) | pin 16 (PC4) | 3 s |
+
+LED sa rozsvieti hneď po stlačení (aj krátkom – vidno, že stlačenie zariadenie zaznamenalo). Po podržaní ostane
+svietiť, kým sa akcia nevykoná: pri reštarte aplikácie zhasne, keď aplikácia znova beží; pri reštarte Orange Pi
+zhasne s vypnutím zariadenia.
+
+```
+pin  9 GND ──┬──────────┐            pin 14 GND ──┬──────────────┐
+          [APP]     [REBOOT]                      │              │
+pin 11 ──────┘          │                   [LED APP]≺       [LED REBOOT]≺
+pin 13 ─────────────────┘            pin 15 ──[330 Ω]┘   pin 16 ──[330 Ω]┘
+```
+
+Iné piny, LED alebo čas držania: `/etc/default/laudate-buttons` (LED vypnete prázdnym `LED_APP_LINE=` / `LED_REBOOT_LINE=`), potom `sudo systemctl restart tvdisplay-buttons`.
+Záznamy: `journalctl -u tvdisplay-buttons -f`.
+
 ## Televízor na výšku
 
 V ovládaní v záložke **Obrazovka → Otočenie obrazovky** sa dá obraz na TV otočiť: na šírku, na výšku (doprava
