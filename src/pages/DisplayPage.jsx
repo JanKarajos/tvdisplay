@@ -3,7 +3,7 @@ import Stage from '../components/Stage';
 import { useAppState } from '../hooks/useAppState';
 import { useLibrary } from '../hooks/useLibrary';
 import { useSong } from '../hooks/useSong';
-import { stateClient } from '../api/stateClient';
+import { stateClient, enableAutoReload } from '../api/stateClient';
 import { getPageCount } from '../lib/lyrics';
 import { getRotation, rotationStyle } from '../lib/rotation';
 
@@ -12,6 +12,18 @@ export default function DisplayPage() {
   const lib = useLibrary();
   const song = useSong(state.currentSongId, lib);
   const [showOffline, setShowOffline] = useState(false);
+
+  useEffect(() => enableAutoReload(), []);
+
+  // Pieseň je vybraná, ale TV ju nevie načítať – po chvíli ukáž dôvod (inak by TV len mlčala)
+  const missing = Boolean(state.currentSongId) && !song && lib.loaded;
+  const [showMissing, setShowMissing] = useState(false);
+  useEffect(() => {
+    setShowMissing(false);
+    if (!missing) return undefined;
+    const t = setTimeout(() => setShowMissing(true), 6000);
+    return () => clearTimeout(t);
+  }, [missing, state.currentSongId]);
 
   // Indikátor výpadku až po 5 s, aby krátke odpojenia nerušili
   useEffect(() => {
@@ -44,6 +56,11 @@ export default function DisplayPage() {
       <div style={rotationStyle(getRotation(state.settings))}>
         <Stage state={state} song={state.currentSongId ? song : null} />
       </div>
+      {showMissing && (
+        <div className="absolute bottom-3 right-3 max-w-[60%] text-right text-xs text-white/50">
+          Pieseň sa nepodarilo načítať. {lib.error || `V zozname je ${lib.songs.length} piesní (zdroj: ${lib.source || 'žiadny'}).`}
+        </div>
+      )}
       {showOffline && (
         <div className="absolute bottom-3 left-3 flex items-center gap-2 text-xs text-white/40" title="Spojenie so serverom je prerušené">
           <span className="w-2 h-2 rounded-full bg-red-500/70 animate-pulse" />

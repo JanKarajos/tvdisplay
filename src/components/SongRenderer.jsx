@@ -1,10 +1,10 @@
 import React, { useCallback, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import { splitIntoPages } from '../lib/lyrics';
 
-// Písmo sa nastaví podľa najdlhšej strofy (rovnaké na všetkých stranách) a skutočne sa zmeria,
-// takže text sa vždy zmestí. Všetky rozmery sú pomerné k výške plochy, preto náhľad
+// Písmo sa nastaví pre každú strofu zvlášť (krátka strofa nie je malá kvôli dlhej) a skutočne
+// sa zmeria, takže text sa vždy zmestí. Všetky rozmery sú pomerné k výške plochy, preto náhľad
 // v ovládaní vyzerá presne ako zmenšená TV.
-const LINE_HEIGHT = 1.35;
+const LINE_HEIGHT = 1.25;
 
 function fitFontSize(measure, pages, height, maxSize) {
   let best = Infinity;
@@ -31,17 +31,18 @@ export default function SongRenderer({ lyrics, title, number, imageUrl, currentP
   const [boxHeight, setBoxHeight] = useState(0);
 
   const pages = useMemo(() => splitIntoPages(lyrics), [lyrics]);
+  const pageIndex = Math.max(0, Math.min(currentPage, pages.length - 1));
 
   const fit = useCallback(() => {
     const box = boxRef.current;
     const measure = measureRef.current;
-    if (!box || !measure || !pages.length) return;
+    if (!box || !measure || !pages[pageIndex]) return;
     const { clientHeight } = box;
     if (!clientHeight) return;
     setBoxHeight(clientHeight);
-    // Hore je nadpis v rohu, dole bodky – text má zvyšných ~84 % výšky
-    setFontSize(fitFontSize(measure, pages, clientHeight * 0.84, clientHeight / 8.5));
-  }, [pages]);
+    // Hore je nadpis v rohu, dole bodky – text má zvyšných ~86 % výšky
+    setFontSize(fitFontSize(measure, [pages[pageIndex]], clientHeight * 0.86, clientHeight / 7.5));
+  }, [pages, pageIndex]);
 
   useLayoutEffect(() => {
     fit();
@@ -64,14 +65,13 @@ export default function SongRenderer({ lyrics, title, number, imageUrl, currentP
     return <div className="w-full h-full flex items-center justify-center text-white/50">Žiadny text</div>;
   }
 
-  const pageIndex = Math.max(0, Math.min(currentPage, pages.length - 1));
   const textStyle = { lineHeight: LINE_HEIGHT, whiteSpace: 'pre-wrap', textAlign: 'center', fontWeight: 600 };
   const unit = boxHeight / 100; // 1 % výšky
 
   return (
     <div ref={boxRef} className="relative w-full h-full flex items-center justify-center overflow-hidden text-white">
       {/* Neviditeľný prvok na meranie textu */}
-      <div ref={measureRef} aria-hidden="true" className="song-text absolute invisible pointer-events-none left-0 top-0" style={{ ...textStyle, width: '90%' }} />
+      <div ref={measureRef} aria-hidden="true" className="song-text absolute invisible pointer-events-none left-0 top-0" style={{ ...textStyle, width: '94%' }} />
 
       {!hideTitle && title && (
         <div
@@ -84,7 +84,7 @@ export default function SongRenderer({ lyrics, title, number, imageUrl, currentP
 
       <div
         key={`${pageIndex}-${lyrics.length}`}
-        className="song-text animate-fade-in w-[90%]"
+        className="song-text animate-fade-in w-[94%]"
         style={{ ...textStyle, overflowWrap: 'anywhere', fontSize: fontSize ?? 0, visibility: fontSize ? 'visible' : 'hidden' }}
       >
         {pages[pageIndex].join('\n')}

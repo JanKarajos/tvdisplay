@@ -15,7 +15,7 @@ export const TABS = [
   ['content', 'Obsah'],
 ];
 
-export default function Header({ status, clients, tab, onTab, uiTheme, onCycleTheme }) {
+export default function Header({ status, clients, tab, onTab, uiTheme, onCycleTheme, showSettings, onToggleSettings }) {
   const [dot, label] = STATUS[status] || STATUS.connecting;
   return (
     <header className="sticky top-0 z-30 bg-surface/90 backdrop-blur border-b border-line">
@@ -25,7 +25,8 @@ export default function Header({ status, clients, tab, onTab, uiTheme, onCycleTh
           <span className="font-bold tracking-tight">Laudate</span>
         </div>
 
-        <nav className="order-last sm:order-none w-full sm:w-auto flex gap-1 -mx-1 pb-2 sm:pb-0" aria-label="Sekcie">
+        {/* Bežne je vidieť iba omšu; Obrazovka a Obsah sa ukážu cez ozubené koliesko */}
+        {showSettings && <nav className="order-last sm:order-none w-full sm:w-auto flex gap-1 -mx-1 pb-2 sm:pb-0" aria-label="Sekcie">
           {TABS.map(([id, text]) => (
             <button
               key={id}
@@ -36,13 +37,22 @@ export default function Header({ status, clients, tab, onTab, uiTheme, onCycleTh
               {text}
             </button>
           ))}
-        </nav>
+        </nav>}
 
         <div className="flex items-center gap-1 h-14">
           <span className="flex items-center gap-2 px-2 text-sm text-muted" title={clients != null ? `${label} · pripojených zariadení: ${clients}` : label}>
             <span className={`w-2.5 h-2.5 rounded-full ${dot}`} />
             <span className="hidden lg:inline">{label}</span>
           </span>
+          <button
+            onClick={onToggleSettings}
+            className={`btn-icon text-lg ${showSettings ? 'text-accent' : ''}`}
+            title={showSettings ? 'Skryť nastavenia (iba omša)' : 'Nastavenia obrazovky a obsahu'}
+            aria-label={showSettings ? 'Skryť nastavenia' : 'Nastavenia'}
+            aria-pressed={showSettings}
+          >
+            ⚙
+          </button>
           <button onClick={onCycleTheme} className="btn-icon text-lg" title={THEME_LABEL[uiTheme]} aria-label={THEME_LABEL[uiTheme]}>
             {THEME_ICON[uiTheme]}
           </button>

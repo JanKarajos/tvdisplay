@@ -2,7 +2,7 @@ import React from 'react';
 import { actions } from '../../lib/actions';
 import { getPageCount } from '../../lib/lyrics';
 
-// Diaľkový ovládač: vždy viditeľný dole, veľké tlačidlá pre omšu
+// Diaľkový ovládač: vždy viditeľný dole, čo najväčšie tlačidlá pre omšu (trafí sa aj naslepo)
 export default function BottomBar({ state, song, nextItem, hasPrev }) {
   const pageCount = getPageCount(song);
   const page = Math.min(state.currentPage || 0, Math.max(0, pageCount - 1));
@@ -38,18 +38,18 @@ export default function BottomBar({ state, song, nextItem, hasPrev }) {
         </div>
 
         <div className="grid grid-cols-[1fr_1fr_2fr] sm:flex gap-2">
-          <button onClick={() => actions.prev(song)} disabled={!canPrev} className="btn h-14 sm:w-28 text-base" aria-label="Späť">
+          <button onClick={() => actions.prev(song)} disabled={!canPrev} className="btn h-20 sm:h-24 sm:w-36 text-2xl" aria-label="Späť">
             ← <span className="hidden sm:inline">Späť</span>
           </button>
           <button
             onClick={actions.toggleHide}
             disabled={!song}
-            className={`btn h-14 sm:w-32 text-base ${state.isHidden ? '!bg-danger !text-white !border-danger' : ''}`}
+            className={`btn h-20 sm:h-24 sm:w-40 text-lg ${state.isHidden ? '!bg-danger !text-white !border-danger' : ''}`}
             title="Kláves H"
           >
             {state.isHidden ? 'Zobraziť' : 'Skryť'}
           </button>
-          <button onClick={() => actions.next(song)} disabled={!canNext} className="btn-primary h-14 sm:w-56 text-base" title="Kláves → alebo PageDown">
+          <button onClick={() => actions.next(song)} disabled={!canNext} className="btn-primary h-20 sm:h-24 sm:w-80 text-2xl font-bold" title="Kláves → alebo PageDown">
             Ďalej →
           </button>
         </div>

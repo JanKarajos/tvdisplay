@@ -27,7 +27,8 @@ export default function NowPlaying({ state, song, nextSong, categories }) {
         </div>
       }
     >
-      <div className="grid grid-cols-[3fr_2fr] gap-3">
+      {/* Ďalšia je väčšia – ťuknutím na ňu sa prepne (rýchlejšie ako hľadať tlačidlo) */}
+      <div className="grid grid-cols-[2fr_3fr] gap-3 items-start">
         <div className="min-w-0">
           <Preview state={state} song={song} />
           <div className="mt-1.5 text-xs text-muted truncate">{song ? song.title : 'Nič sa nezobrazuje'}</div>
@@ -41,7 +42,7 @@ export default function NowPlaying({ state, song, nextSong, categories }) {
             onClick={upcoming ? () => actions.next(song) : undefined}
             label="Prejsť ďalej"
           />
-          <div className="mt-1.5 text-xs text-muted truncate">Ďalej: {upcoming ? upcoming.label : '—'}</div>
+          <div className="mt-1.5 text-sm font-semibold truncate">Ďalej: {upcoming ? upcoming.label : '—'}{upcoming && <span className="font-normal text-muted"> · ťuknite</span>}</div>
         </div>
       </div>
 

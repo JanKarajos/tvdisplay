@@ -20,13 +20,33 @@
       "number": "2026-01-03",
       "strophes": [
         "Uzreli všetky končiny zeme spásu nášho Boha."
+      ],
+      "options": [
+        {
+          "label": "Féria",
+          "refrain": "Uzreli všetky končiny zeme spásu nášho Boha."
+        },
+        {
+          "label": "V omši o Najsvätejšom mene Ježiš",
+          "refrain": "Pane, náš Vládca, aké vznešené je tvoje meno na celej zemi!"
+        }
       ]
     },
     {
-      "name": "2026-01-04 - Slovo sa telom stalo a prebývalo medzi nami. alebo",
+      "name": "2026-01-04 - Slovo sa telom stalo a prebývalo medzi nami.",
       "number": "2026-01-04",
       "strophes": [
-        "Slovo sa telom stalo a prebývalo medzi nami. alebo"
+        "Slovo sa telom stalo a prebývalo medzi nami."
+      ],
+      "options": [
+        {
+          "label": "",
+          "refrain": "Slovo sa telom stalo a prebývalo medzi nami."
+        },
+        {
+          "label": "alebo",
+          "refrain": "Aleluja."
+        }
       ]
     },
     {
@@ -79,10 +99,20 @@
       ]
     },
     {
-      "name": "2026-01-12 - Prinesiem ti, Pane, obetu chvály. alebo",
+      "name": "2026-01-12 - Prinesiem ti, Pane, obetu chvály.",
       "number": "2026-01-12",
       "strophes": [
-        "Prinesiem ti, Pane, obetu chvály. alebo"
+        "Prinesiem ti, Pane, obetu chvály."
+      ],
+      "options": [
+        {
+          "label": "",
+          "refrain": "Prinesiem ti, Pane, obetu chvály."
+        },
+        {
+          "label": "alebo",
+          "refrain": "Aleluja."
+        }
       ]
     },
     {
@@ -219,10 +249,20 @@
       ]
     },
     {
-      "name": "2026-02-01 - Blahoslavení chudobní v duchu, lebo ich je nebeské kráľovstvo. alebo",
+      "name": "2026-02-01 - Blahoslavení chudobní v duchu, lebo ich je nebeské kráľovstvo.",
       "number": "2026-02-01",
       "strophes": [
-        "Blahoslavení chudobní v duchu, lebo ich je nebeské kráľovstvo. alebo"
+        "Blahoslavení chudobní v duchu, lebo ich je nebeské kráľovstvo."
+      ],
+      "options": [
+        {
+          "label": "",
+          "refrain": "Blahoslavení chudobní v duchu, lebo ich je nebeské kráľovstvo."
+        },
+        {
+          "label": "alebo",
+          "refrain": "Aleluja."
+        }
       ]
     },
     {
@@ -268,10 +308,20 @@
       ]
     },
     {
-      "name": "2026-02-08 - Spravodlivým žiari svetlo v temnotách. alebo",
+      "name": "2026-02-08 - Spravodlivým žiari svetlo v temnotách.",
       "number": "2026-02-08",
       "strophes": [
-        "Spravodlivým žiari svetlo v temnotách. alebo"
+        "Spravodlivým žiari svetlo v temnotách."
+      ],
+      "options": [
+        {
+          "label": "",
+          "refrain": "Spravodlivým žiari svetlo v temnotách."
+        },
+        {
+          "label": "alebo",
+          "refrain": "Aleluja."
+        }
       ]
     },
     {
@@ -314,6 +364,16 @@
       "number": "2026-02-14",
       "strophes": [
         "Pamätaj na nás, Pane, z lásky k svojmu ľudu."
+      ],
+      "options": [
+        {
+          "label": "Féria",
+          "refrain": "Pamätaj na nás, Pane, z lásky k svojmu ľudu."
+        },
+        {
+          "label": "Na votívnu omšu o svätých Cyrilovi a Metodovi",
+          "refrain": "Pán zvestoval svoju spásu."
+        }
       ]
     },
     {
@@ -657,356 +717,902 @@
       "number": "2026-04-04",
       "strophes": [
         "Pane, zošli svojho Ducha a obnov tvárnosť zeme."
+      ],
+      "options": [
+        {
+          "label": "Vigília – 1. žalm",
+          "refrain": "Pane, zošli svojho Ducha a obnov tvárnosť zeme."
+        },
+        {
+          "label": "Vigília – 2. žalm",
+          "refrain": "Milosti Pánovej plná je zem."
+        },
+        {
+          "label": "Vigília – 3. žalm",
+          "refrain": "Ochráň ma, Bože, k tebe sa utiekam."
+        },
+        {
+          "label": "Vigília – 4. žalm",
+          "refrain": "Spievajme Pánovi, lebo sa preslávil."
+        },
+        {
+          "label": "Vigília – 5. žalm",
+          "refrain": "Budem ťa, Pane, oslavovať, že si ma vyslobodil."
+        },
+        {
+          "label": "Vigília – 6. žalm",
+          "refrain": "Čerpajme vodu s radosťou z prameňov spásy."
+        },
+        {
+          "label": "Vigília – 7. žalm",
+          "refrain": "Pane, ty máš slová večného života."
+        },
+        {
+          "label": "Vigília – 8. žalm",
+          "refrain": "Ako jeleň dychtí za vodou z prameňa, tak moja duša, Bože, túži za tebou."
+        },
+        {
+          "label": "Vigília – 9. žalm",
+          "refrain": "Bože, stvor vo mne srdce čisté."
+        },
+        {
+          "label": "Vigília – 10. žalm",
+          "refrain": "Aleluja."
+        }
       ]
     },
     {
-      "name": "2026-04-05 - Toto je deň Krista Pána, radujme sa, aleluja. alebo",
+      "name": "2026-04-05 - Toto je deň Krista Pána, radujme sa, aleluja.",
       "number": "2026-04-05",
       "strophes": [
-        "Toto je deň Krista Pána, radujme sa, aleluja. alebo"
+        "Toto je deň Krista Pána, radujme sa, aleluja."
+      ],
+      "options": [
+        {
+          "label": "Omša cez deň",
+          "refrain": "Toto je deň Krista Pána, radujme sa, aleluja."
+        },
+        {
+          "label": "Omša cez deň – alebo",
+          "refrain": "Aleluja."
+        }
       ]
     },
     {
-      "name": "2026-04-06 - Ochráň ma, Bože, k tebe sa utiekam. alebo",
+      "name": "2026-04-06 - Ochráň ma, Bože, k tebe sa utiekam.",
       "number": "2026-04-06",
       "strophes": [
-        "Ochráň ma, Bože, k tebe sa utiekam. alebo"
+        "Ochráň ma, Bože, k tebe sa utiekam."
+      ],
+      "options": [
+        {
+          "label": "",
+          "refrain": "Ochráň ma, Bože, k tebe sa utiekam."
+        },
+        {
+          "label": "alebo",
+          "refrain": "Aleluja."
+        }
       ]
     },
     {
-      "name": "2026-04-07 - Milosti Pánovej plná je zem. alebo",
+      "name": "2026-04-07 - Milosti Pánovej plná je zem.",
       "number": "2026-04-07",
       "strophes": [
-        "Milosti Pánovej plná je zem. alebo"
+        "Milosti Pánovej plná je zem."
+      ],
+      "options": [
+        {
+          "label": "",
+          "refrain": "Milosti Pánovej plná je zem."
+        },
+        {
+          "label": "alebo",
+          "refrain": "Aleluja."
+        }
       ]
     },
     {
-      "name": "2026-04-08 - Nech sa radujú srdcia tých, čo hľadajú Pána. alebo",
+      "name": "2026-04-08 - Nech sa radujú srdcia tých, čo hľadajú Pána.",
       "number": "2026-04-08",
       "strophes": [
-        "Nech sa radujú srdcia tých, čo hľadajú Pána. alebo"
+        "Nech sa radujú srdcia tých, čo hľadajú Pána."
+      ],
+      "options": [
+        {
+          "label": "",
+          "refrain": "Nech sa radujú srdcia tých, čo hľadajú Pána."
+        },
+        {
+          "label": "alebo",
+          "refrain": "Aleluja."
+        }
       ]
     },
     {
-      "name": "2026-04-09 - Pane, náš Vládca, aké vznešené je tvoje meno na celej zemi! alebo",
+      "name": "2026-04-09 - Pane, náš Vládca, aké vznešené je tvoje meno na celej zemi!",
       "number": "2026-04-09",
       "strophes": [
-        "Pane, náš Vládca, aké vznešené je tvoje meno na celej zemi! alebo"
+        "Pane, náš Vládca, aké vznešené je tvoje meno na celej zemi!"
+      ],
+      "options": [
+        {
+          "label": "",
+          "refrain": "Pane, náš Vládca, aké vznešené je tvoje meno na celej zemi!"
+        },
+        {
+          "label": "alebo",
+          "refrain": "Aleluja."
+        }
       ]
     },
     {
-      "name": "2026-04-10 - Kameň, čo stavitelia zavrhli, stal sa kameňom uholným. alebo",
+      "name": "2026-04-10 - Kameň, čo stavitelia zavrhli, stal sa kameňom uholným.",
       "number": "2026-04-10",
       "strophes": [
-        "Kameň, čo stavitelia zavrhli, stal sa kameňom uholným. alebo"
+        "Kameň, čo stavitelia zavrhli, stal sa kameňom uholným."
+      ],
+      "options": [
+        {
+          "label": "",
+          "refrain": "Kameň, čo stavitelia zavrhli, stal sa kameňom uholným."
+        },
+        {
+          "label": "alebo",
+          "refrain": "Aleluja."
+        }
       ]
     },
     {
-      "name": "2026-04-11 - Vzdávame ti vďaky, Pane, Bože milosrdný. alebo",
+      "name": "2026-04-11 - Vzdávame ti vďaky, Pane, Bože milosrdný.",
       "number": "2026-04-11",
       "strophes": [
-        "Vzdávame ti vďaky, Pane, Bože milosrdný. alebo"
+        "Vzdávame ti vďaky, Pane, Bože milosrdný."
+      ],
+      "options": [
+        {
+          "label": "",
+          "refrain": "Vzdávame ti vďaky, Pane, Bože milosrdný."
+        },
+        {
+          "label": "alebo",
+          "refrain": "Aleluja."
+        }
       ]
     },
     {
-      "name": "2026-04-12 - Oslavujme Pána, lebo je dobrý, lebo jeho milosrdenstvo trvá naveky. alebo",
+      "name": "2026-04-12 - Oslavujme Pána, lebo je dobrý, lebo jeho milosrdenstvo trvá naveky.",
       "number": "2026-04-12",
       "strophes": [
-        "Oslavujme Pána, lebo je dobrý, lebo jeho milosrdenstvo trvá naveky. alebo"
+        "Oslavujme Pána, lebo je dobrý, lebo jeho milosrdenstvo trvá naveky."
+      ],
+      "options": [
+        {
+          "label": "",
+          "refrain": "Oslavujme Pána, lebo je dobrý, lebo jeho milosrdenstvo trvá naveky."
+        },
+        {
+          "label": "alebo",
+          "refrain": "Aleluja."
+        }
       ]
     },
     {
-      "name": "2026-04-13 - Šťastní sú všetci, čo sa spoliehajú na Pána. alebo",
+      "name": "2026-04-13 - Šťastní sú všetci, čo sa spoliehajú na Pána.",
       "number": "2026-04-13",
       "strophes": [
-        "Šťastní sú všetci, čo sa spoliehajú na Pána. alebo"
+        "Šťastní sú všetci, čo sa spoliehajú na Pána."
+      ],
+      "options": [
+        {
+          "label": "",
+          "refrain": "Šťastní sú všetci, čo sa spoliehajú na Pána."
+        },
+        {
+          "label": "alebo",
+          "refrain": "Aleluja."
+        }
       ]
     },
     {
-      "name": "2026-04-14 - Pán kraľuje, velebou sa zaodel. alebo",
+      "name": "2026-04-14 - Pán kraľuje, velebou sa zaodel.",
       "number": "2026-04-14",
       "strophes": [
-        "Pán kraľuje, velebou sa zaodel. alebo"
+        "Pán kraľuje, velebou sa zaodel."
+      ],
+      "options": [
+        {
+          "label": "",
+          "refrain": "Pán kraľuje, velebou sa zaodel."
+        },
+        {
+          "label": "alebo",
+          "refrain": "Aleluja."
+        }
       ]
     },
     {
-      "name": "2026-04-15 - Úbožiak zavolal a Pán ho vyslyšal. alebo",
+      "name": "2026-04-15 - Úbožiak zavolal a Pán ho vyslyšal.",
       "number": "2026-04-15",
       "strophes": [
-        "Úbožiak zavolal a Pán ho vyslyšal. alebo"
+        "Úbožiak zavolal a Pán ho vyslyšal."
+      ],
+      "options": [
+        {
+          "label": "",
+          "refrain": "Úbožiak zavolal a Pán ho vyslyšal."
+        },
+        {
+          "label": "alebo",
+          "refrain": "Aleluja."
+        }
       ]
     },
     {
-      "name": "2026-04-16 - Úbožiak zavolal a Pán ho vyslyšal. alebo",
+      "name": "2026-04-16 - Úbožiak zavolal a Pán ho vyslyšal.",
       "number": "2026-04-16",
       "strophes": [
-        "Úbožiak zavolal a Pán ho vyslyšal. alebo"
+        "Úbožiak zavolal a Pán ho vyslyšal."
+      ],
+      "options": [
+        {
+          "label": "",
+          "refrain": "Úbožiak zavolal a Pán ho vyslyšal."
+        },
+        {
+          "label": "alebo",
+          "refrain": "Aleluja."
+        }
       ]
     },
     {
-      "name": "2026-04-17 - Pán je moje svetlo a moja spása. alebo",
+      "name": "2026-04-17 - Pán je moje svetlo a moja spása.",
       "number": "2026-04-17",
       "strophes": [
-        "Pán je moje svetlo a moja spása. alebo"
+        "Pán je moje svetlo a moja spása."
+      ],
+      "options": [
+        {
+          "label": "",
+          "refrain": "Pán je moje svetlo a moja spása."
+        },
+        {
+          "label": "alebo",
+          "refrain": "Aleluja."
+        }
       ]
     },
     {
-      "name": "2026-04-18 - Tvoje milosrdenstvo, Pane, nech je nad nami, ako dúfame v teba. alebo",
+      "name": "2026-04-18 - Tvoje milosrdenstvo, Pane, nech je nad nami, ako dúfame v teba.",
       "number": "2026-04-18",
       "strophes": [
-        "Tvoje milosrdenstvo, Pane, nech je nad nami, ako dúfame v teba. alebo"
+        "Tvoje milosrdenstvo, Pane, nech je nad nami, ako dúfame v teba."
+      ],
+      "options": [
+        {
+          "label": "",
+          "refrain": "Tvoje milosrdenstvo, Pane, nech je nad nami, ako dúfame v teba."
+        },
+        {
+          "label": "alebo",
+          "refrain": "Aleluja."
+        }
       ]
     },
     {
-      "name": "2026-04-19 - Ukáž mi, Pane, cestu života. alebo",
+      "name": "2026-04-19 - Ukáž mi, Pane, cestu života.",
       "number": "2026-04-19",
       "strophes": [
-        "Ukáž mi, Pane, cestu života. alebo"
+        "Ukáž mi, Pane, cestu života."
+      ],
+      "options": [
+        {
+          "label": "",
+          "refrain": "Ukáž mi, Pane, cestu života."
+        },
+        {
+          "label": "alebo",
+          "refrain": "Aleluja."
+        }
       ]
     },
     {
-      "name": "2026-04-20 - Blažení tí, čo kráčajú podľa zákona Pánovho. alebo",
+      "name": "2026-04-20 - Blažení tí, čo kráčajú podľa zákona Pánovho.",
       "number": "2026-04-20",
       "strophes": [
-        "Blažení tí, čo kráčajú podľa zákona Pánovho. alebo"
+        "Blažení tí, čo kráčajú podľa zákona Pánovho."
+      ],
+      "options": [
+        {
+          "label": "",
+          "refrain": "Blažení tí, čo kráčajú podľa zákona Pánovho."
+        },
+        {
+          "label": "alebo",
+          "refrain": "Aleluja."
+        }
       ]
     },
     {
-      "name": "2026-04-21 - Do tvojich rúk, Pane, porúčam svojho ducha. alebo",
+      "name": "2026-04-21 - Do tvojich rúk, Pane, porúčam svojho ducha.",
       "number": "2026-04-21",
       "strophes": [
-        "Do tvojich rúk, Pane, porúčam svojho ducha. alebo"
+        "Do tvojich rúk, Pane, porúčam svojho ducha."
+      ],
+      "options": [
+        {
+          "label": "",
+          "refrain": "Do tvojich rúk, Pane, porúčam svojho ducha."
+        },
+        {
+          "label": "alebo",
+          "refrain": "Aleluja."
+        }
       ]
     },
     {
-      "name": "2026-04-22 - Jasaj Bohu, celá zem. alebo",
+      "name": "2026-04-22 - Jasaj Bohu, celá zem.",
       "number": "2026-04-22",
       "strophes": [
-        "Jasaj Bohu, celá zem. alebo"
+        "Jasaj Bohu, celá zem."
+      ],
+      "options": [
+        {
+          "label": "",
+          "refrain": "Jasaj Bohu, celá zem."
+        },
+        {
+          "label": "alebo",
+          "refrain": "Aleluja."
+        }
       ]
     },
     {
-      "name": "2026-04-23 - Jasaj Bohu, celá zem. alebo",
+      "name": "2026-04-23 - Jasaj Bohu, celá zem.",
       "number": "2026-04-23",
       "strophes": [
-        "Jasaj Bohu, celá zem. alebo"
+        "Jasaj Bohu, celá zem."
+      ],
+      "options": [
+        {
+          "label": "",
+          "refrain": "Jasaj Bohu, celá zem."
+        },
+        {
+          "label": "alebo",
+          "refrain": "Aleluja."
+        }
       ]
     },
     {
-      "name": "2026-04-24 - Choďte do celého sveta a hlásajte evanjelium. alebo",
+      "name": "2026-04-24 - Choďte do celého sveta a hlásajte evanjelium.",
       "number": "2026-04-24",
       "strophes": [
-        "Choďte do celého sveta a hlásajte evanjelium. alebo"
+        "Choďte do celého sveta a hlásajte evanjelium."
+      ],
+      "options": [
+        {
+          "label": "",
+          "refrain": "Choďte do celého sveta a hlásajte evanjelium."
+        },
+        {
+          "label": "alebo",
+          "refrain": "Aleluja."
+        }
       ]
     },
     {
-      "name": "2026-04-25 - Tvoje milosrdenstvo, Pane, ospevovať budem naveky. alebo",
+      "name": "2026-04-25 - Tvoje milosrdenstvo, Pane, ospevovať budem naveky.",
       "number": "2026-04-25",
       "strophes": [
-        "Tvoje milosrdenstvo, Pane, ospevovať budem naveky. alebo"
+        "Tvoje milosrdenstvo, Pane, ospevovať budem naveky."
+      ],
+      "options": [
+        {
+          "label": "",
+          "refrain": "Tvoje milosrdenstvo, Pane, ospevovať budem naveky."
+        },
+        {
+          "label": "alebo",
+          "refrain": "Aleluja."
+        }
       ]
     },
     {
-      "name": "2026-04-26 - Pán je môj pastier, nič mi nechýba. alebo",
+      "name": "2026-04-26 - Pán je môj pastier, nič mi nechýba.",
       "number": "2026-04-26",
       "strophes": [
-        "Pán je môj pastier, nič mi nechýba. alebo"
+        "Pán je môj pastier, nič mi nechýba."
+      ],
+      "options": [
+        {
+          "label": "",
+          "refrain": "Pán je môj pastier, nič mi nechýba."
+        },
+        {
+          "label": "alebo",
+          "refrain": "Aleluja."
+        }
       ]
     },
     {
-      "name": "2026-04-27 - Po Bohu žízni moja duša, po Bohu živom. alebo",
+      "name": "2026-04-27 - Po Bohu žízni moja duša, po Bohu živom.",
       "number": "2026-04-27",
       "strophes": [
-        "Po Bohu žízni moja duša, po Bohu živom. alebo"
+        "Po Bohu žízni moja duša, po Bohu živom."
+      ],
+      "options": [
+        {
+          "label": "",
+          "refrain": "Po Bohu žízni moja duša, po Bohu živom."
+        },
+        {
+          "label": "alebo",
+          "refrain": "Aleluja."
+        }
       ]
     },
     {
-      "name": "2026-04-28 - Chváľte Pána, všetky národy. alebo",
+      "name": "2026-04-28 - Chváľte Pána, všetky národy.",
       "number": "2026-04-28",
       "strophes": [
-        "Chváľte Pána, všetky národy. alebo"
+        "Chváľte Pána, všetky národy."
+      ],
+      "options": [
+        {
+          "label": "",
+          "refrain": "Chváľte Pána, všetky národy."
+        },
+        {
+          "label": "alebo",
+          "refrain": "Aleluja."
+        }
       ]
     },
     {
-      "name": "2026-04-29 - Duša moja, dobroreč svojmu Bohu. alebo",
+      "name": "2026-04-29 - Duša moja, dobroreč svojmu Bohu.",
       "number": "2026-04-29",
       "strophes": [
-        "Duša moja, dobroreč svojmu Bohu. alebo"
+        "Duša moja, dobroreč svojmu Bohu."
+      ],
+      "options": [
+        {
+          "label": "",
+          "refrain": "Duša moja, dobroreč svojmu Bohu."
+        },
+        {
+          "label": "alebo",
+          "refrain": "Aleluja."
+        }
       ]
     },
     {
-      "name": "2026-04-30 - Tvoje milosrdenstvo, Pane, ospevovať budem naveky. alebo",
+      "name": "2026-04-30 - Tvoje milosrdenstvo, Pane, ospevovať budem naveky.",
       "number": "2026-04-30",
       "strophes": [
-        "Tvoje milosrdenstvo, Pane, ospevovať budem naveky. alebo"
+        "Tvoje milosrdenstvo, Pane, ospevovať budem naveky."
+      ],
+      "options": [
+        {
+          "label": "",
+          "refrain": "Tvoje milosrdenstvo, Pane, ospevovať budem naveky."
+        },
+        {
+          "label": "alebo",
+          "refrain": "Aleluja."
+        }
       ]
     },
     {
-      "name": "2026-05-01 - Oslávil si, Otče, svojho Syna. alebo",
+      "name": "2026-05-01 - Oslávil si, Otče, svojho Syna.",
       "number": "2026-05-01",
       "strophes": [
-        "Oslávil si, Otče, svojho Syna. alebo"
+        "Oslávil si, Otče, svojho Syna."
+      ],
+      "options": [
+        {
+          "label": "Féria",
+          "refrain": "Oslávil si, Otče, svojho Syna."
+        },
+        {
+          "label": "Féria – alebo",
+          "refrain": "Aleluja."
+        },
+        {
+          "label": "V omši o svätom Jozefovi",
+          "refrain": "Požehnaj, Pane, námahu našich rúk."
+        }
       ]
     },
     {
-      "name": "2026-05-02 - Uzreli všetky končiny zeme spásu nášho Boha. alebo",
+      "name": "2026-05-02 - Uzreli všetky končiny zeme spásu nášho Boha.",
       "number": "2026-05-02",
       "strophes": [
-        "Uzreli všetky končiny zeme spásu nášho Boha. alebo"
+        "Uzreli všetky končiny zeme spásu nášho Boha."
+      ],
+      "options": [
+        {
+          "label": "",
+          "refrain": "Uzreli všetky končiny zeme spásu nášho Boha."
+        },
+        {
+          "label": "alebo",
+          "refrain": "Aleluja."
+        }
       ]
     },
     {
-      "name": "2026-05-03 - Tvoje milosrdenstvo, Pane, nech je nad nami, ako dúfame v teba. alebo",
+      "name": "2026-05-03 - Tvoje milosrdenstvo, Pane, nech je nad nami, ako dúfame v teba.",
       "number": "2026-05-03",
       "strophes": [
-        "Tvoje milosrdenstvo, Pane, nech je nad nami, ako dúfame v teba. alebo"
+        "Tvoje milosrdenstvo, Pane, nech je nad nami, ako dúfame v teba."
+      ],
+      "options": [
+        {
+          "label": "",
+          "refrain": "Tvoje milosrdenstvo, Pane, nech je nad nami, ako dúfame v teba."
+        },
+        {
+          "label": "alebo",
+          "refrain": "Aleluja."
+        }
       ]
     },
     {
-      "name": "2026-05-04 - Nie nás, Pane, ale svoje meno osláv. alebo",
+      "name": "2026-05-04 - Nie nás, Pane, ale svoje meno osláv.",
       "number": "2026-05-04",
       "strophes": [
-        "Nie nás, Pane, ale svoje meno osláv. alebo"
+        "Nie nás, Pane, ale svoje meno osláv."
+      ],
+      "options": [
+        {
+          "label": "",
+          "refrain": "Nie nás, Pane, ale svoje meno osláv."
+        },
+        {
+          "label": "alebo",
+          "refrain": "Aleluja."
+        }
       ]
     },
     {
-      "name": "2026-05-05 - Tvoji svätí, Pane, oznamujú slávu tvojho kráľovstva. alebo",
+      "name": "2026-05-05 - Tvoji svätí, Pane, oznamujú slávu tvojho kráľovstva.",
       "number": "2026-05-05",
       "strophes": [
-        "Tvoji svätí, Pane, oznamujú slávu tvojho kráľovstva. alebo"
+        "Tvoji svätí, Pane, oznamujú slávu tvojho kráľovstva."
+      ],
+      "options": [
+        {
+          "label": "",
+          "refrain": "Tvoji svätí, Pane, oznamujú slávu tvojho kráľovstva."
+        },
+        {
+          "label": "alebo",
+          "refrain": "Aleluja."
+        }
       ]
     },
     {
-      "name": "2026-05-06 - S radosťou pôjdeme do domu Pánovho. alebo",
+      "name": "2026-05-06 - S radosťou pôjdeme do domu Pánovho.",
       "number": "2026-05-06",
       "strophes": [
-        "S radosťou pôjdeme do domu Pánovho. alebo"
+        "S radosťou pôjdeme do domu Pánovho."
+      ],
+      "options": [
+        {
+          "label": "",
+          "refrain": "S radosťou pôjdeme do domu Pánovho."
+        },
+        {
+          "label": "alebo",
+          "refrain": "Aleluja."
+        }
       ]
     },
     {
-      "name": "2026-05-07 - Zvestujte všetkým národom zázraky Pánove. alebo",
+      "name": "2026-05-07 - Zvestujte všetkým národom zázraky Pánove.",
       "number": "2026-05-07",
       "strophes": [
-        "Zvestujte všetkým národom zázraky Pánove. alebo"
+        "Zvestujte všetkým národom zázraky Pánove."
+      ],
+      "options": [
+        {
+          "label": "",
+          "refrain": "Zvestujte všetkým národom zázraky Pánove."
+        },
+        {
+          "label": "alebo",
+          "refrain": "Aleluja."
+        }
       ]
     },
     {
-      "name": "2026-05-08 - Budem ťa, Pane, velebiť medzi národmi. alebo",
+      "name": "2026-05-08 - Budem ťa, Pane, velebiť medzi národmi.",
       "number": "2026-05-08",
       "strophes": [
-        "Budem ťa, Pane, velebiť medzi národmi. alebo"
+        "Budem ťa, Pane, velebiť medzi národmi."
+      ],
+      "options": [
+        {
+          "label": "",
+          "refrain": "Budem ťa, Pane, velebiť medzi národmi."
+        },
+        {
+          "label": "alebo",
+          "refrain": "Aleluja."
+        }
       ]
     },
     {
-      "name": "2026-05-09 - Boh je náš Pán a my sme jeho ľud. alebo",
+      "name": "2026-05-09 - Boh je náš Pán a my sme jeho ľud.",
       "number": "2026-05-09",
       "strophes": [
-        "Boh je náš Pán a my sme jeho ľud. alebo"
+        "Boh je náš Pán a my sme jeho ľud."
+      ],
+      "options": [
+        {
+          "label": "",
+          "refrain": "Boh je náš Pán a my sme jeho ľud."
+        },
+        {
+          "label": "alebo",
+          "refrain": "Aleluja."
+        }
       ]
     },
     {
-      "name": "2026-05-10 - Jasaj Bohu, celá zem. alebo",
+      "name": "2026-05-10 - Jasaj Bohu, celá zem.",
       "number": "2026-05-10",
       "strophes": [
-        "Jasaj Bohu, celá zem. alebo"
+        "Jasaj Bohu, celá zem."
+      ],
+      "options": [
+        {
+          "label": "",
+          "refrain": "Jasaj Bohu, celá zem."
+        },
+        {
+          "label": "alebo",
+          "refrain": "Aleluja."
+        }
       ]
     },
     {
-      "name": "2026-05-11 - Pán, Boh, miluje svoj ľud. alebo",
+      "name": "2026-05-11 - Pán, Boh, miluje svoj ľud.",
       "number": "2026-05-11",
       "strophes": [
-        "Pán, Boh, miluje svoj ľud. alebo"
+        "Pán, Boh, miluje svoj ľud."
+      ],
+      "options": [
+        {
+          "label": "",
+          "refrain": "Pán, Boh, miluje svoj ľud."
+        },
+        {
+          "label": "alebo",
+          "refrain": "Aleluja."
+        }
       ]
     },
     {
-      "name": "2026-05-12 - Chráni ma tvoja pravica, Pane, Bože môj. alebo",
+      "name": "2026-05-12 - Chráni ma tvoja pravica, Pane, Bože môj.",
       "number": "2026-05-12",
       "strophes": [
-        "Chráni ma tvoja pravica, Pane, Bože môj. alebo"
+        "Chráni ma tvoja pravica, Pane, Bože môj."
+      ],
+      "options": [
+        {
+          "label": "",
+          "refrain": "Chráni ma tvoja pravica, Pane, Bože môj."
+        },
+        {
+          "label": "alebo",
+          "refrain": "Aleluja."
+        }
       ]
     },
     {
-      "name": "2026-05-13 - Plné sú nebo i zem tvojej slávy. alebo",
+      "name": "2026-05-13 - Plné sú nebo i zem tvojej slávy.",
       "number": "2026-05-13",
       "strophes": [
-        "Plné sú nebo i zem tvojej slávy. alebo"
+        "Plné sú nebo i zem tvojej slávy."
+      ],
+      "options": [
+        {
+          "label": "",
+          "refrain": "Plné sú nebo i zem tvojej slávy."
+        },
+        {
+          "label": "alebo",
+          "refrain": "Aleluja."
+        }
       ]
     },
     {
-      "name": "2026-05-14 - Pán vystupuje do neba za hlaholu poľnice. alebo",
+      "name": "2026-05-14 - Pán vystupuje do neba za hlaholu poľnice.",
       "number": "2026-05-14",
       "strophes": [
-        "Pán vystupuje do neba za hlaholu poľnice. alebo"
+        "Pán vystupuje do neba za hlaholu poľnice."
+      ],
+      "options": [
+        {
+          "label": "",
+          "refrain": "Pán vystupuje do neba za hlaholu poľnice."
+        },
+        {
+          "label": "alebo",
+          "refrain": "Aleluja."
+        }
       ]
     },
     {
-      "name": "2026-05-15 - Boh je kráľom celej zeme, spievajme mu chválospev. alebo",
+      "name": "2026-05-15 - Boh je kráľom celej zeme, spievajme mu chválospev.",
       "number": "2026-05-15",
       "strophes": [
-        "Boh je kráľom celej zeme, spievajme mu chválospev. alebo"
+        "Boh je kráľom celej zeme, spievajme mu chválospev."
+      ],
+      "options": [
+        {
+          "label": "",
+          "refrain": "Boh je kráľom celej zeme, spievajme mu chválospev."
+        },
+        {
+          "label": "alebo",
+          "refrain": "Aleluja."
+        }
       ]
     },
     {
-      "name": "2026-05-16 - Boh je kráľom celej zeme, spievajme mu chválospev. alebo",
+      "name": "2026-05-16 - Boh je kráľom celej zeme, spievajme mu chválospev.",
       "number": "2026-05-16",
       "strophes": [
-        "Boh je kráľom celej zeme, spievajme mu chválospev. alebo"
+        "Boh je kráľom celej zeme, spievajme mu chválospev."
+      ],
+      "options": [
+        {
+          "label": "",
+          "refrain": "Boh je kráľom celej zeme, spievajme mu chválospev."
+        },
+        {
+          "label": "alebo",
+          "refrain": "Aleluja."
+        }
       ]
     },
     {
-      "name": "2026-05-17 - Verím, že uvidím dobrodenia Pánove v krajine žijúcich. alebo",
+      "name": "2026-05-17 - Verím, že uvidím dobrodenia Pánove v krajine žijúcich.",
       "number": "2026-05-17",
       "strophes": [
-        "Verím, že uvidím dobrodenia Pánove v krajine žijúcich. alebo"
+        "Verím, že uvidím dobrodenia Pánove v krajine žijúcich."
+      ],
+      "options": [
+        {
+          "label": "",
+          "refrain": "Verím, že uvidím dobrodenia Pánove v krajine žijúcich."
+        },
+        {
+          "label": "alebo",
+          "refrain": "Aleluja."
+        }
       ]
     },
     {
-      "name": "2026-05-18 - Spievajme nášmu Pánovi hlasom radostným. alebo",
+      "name": "2026-05-18 - Spievajme nášmu Pánovi hlasom radostným.",
       "number": "2026-05-18",
       "strophes": [
-        "Spievajme nášmu Pánovi hlasom radostným. alebo"
+        "Spievajme nášmu Pánovi hlasom radostným."
+      ],
+      "options": [
+        {
+          "label": "",
+          "refrain": "Spievajme nášmu Pánovi hlasom radostným."
+        },
+        {
+          "label": "alebo",
+          "refrain": "Aleluja."
+        }
       ]
     },
     {
-      "name": "2026-05-19 - Spievajme nášmu Pánovi hlasom radostným. alebo",
+      "name": "2026-05-19 - Spievajme nášmu Pánovi hlasom radostným.",
       "number": "2026-05-19",
       "strophes": [
-        "Spievajme nášmu Pánovi hlasom radostným. alebo"
+        "Spievajme nášmu Pánovi hlasom radostným."
+      ],
+      "options": [
+        {
+          "label": "",
+          "refrain": "Spievajme nášmu Pánovi hlasom radostným."
+        },
+        {
+          "label": "alebo",
+          "refrain": "Aleluja."
+        }
       ]
     },
     {
-      "name": "2026-05-20 - Spievajme nášmu Pánovi hlasom radostným. alebo",
+      "name": "2026-05-20 - Spievajme nášmu Pánovi hlasom radostným.",
       "number": "2026-05-20",
       "strophes": [
-        "Spievajme nášmu Pánovi hlasom radostným. alebo"
+        "Spievajme nášmu Pánovi hlasom radostným."
+      ],
+      "options": [
+        {
+          "label": "",
+          "refrain": "Spievajme nášmu Pánovi hlasom radostným."
+        },
+        {
+          "label": "alebo",
+          "refrain": "Aleluja."
+        }
       ]
     },
     {
-      "name": "2026-05-21 - Ochráň ma, Bože, k tebe sa utiekam. alebo",
+      "name": "2026-05-21 - Ochráň ma, Bože, k tebe sa utiekam.",
       "number": "2026-05-21",
       "strophes": [
-        "Ochráň ma, Bože, k tebe sa utiekam. alebo"
+        "Ochráň ma, Bože, k tebe sa utiekam."
+      ],
+      "options": [
+        {
+          "label": "",
+          "refrain": "Ochráň ma, Bože, k tebe sa utiekam."
+        },
+        {
+          "label": "alebo",
+          "refrain": "Aleluja."
+        }
       ]
     },
     {
-      "name": "2026-05-22 - Dobrorečte Pánovi, čo má trón v nebesiach. alebo",
+      "name": "2026-05-22 - Dobrorečte Pánovi, čo má trón v nebesiach.",
       "number": "2026-05-22",
       "strophes": [
-        "Dobrorečte Pánovi, čo má trón v nebesiach. alebo"
+        "Dobrorečte Pánovi, čo má trón v nebesiach."
+      ],
+      "options": [
+        {
+          "label": "",
+          "refrain": "Dobrorečte Pánovi, čo má trón v nebesiach."
+        },
+        {
+          "label": "alebo",
+          "refrain": "Aleluja."
+        }
       ]
     },
     {
-      "name": "2026-05-23 - Pán tróni na nebesiach; statoční uvidia jeho tvár. alebo",
+      "name": "2026-05-23 - Pán tróni na nebesiach; statoční uvidia jeho tvár.",
       "number": "2026-05-23",
       "strophes": [
-        "Pán tróni na nebesiach; statoční uvidia jeho tvár. alebo"
+        "Pán tróni na nebesiach; statoční uvidia jeho tvár."
+      ],
+      "options": [
+        {
+          "label": "",
+          "refrain": "Pán tróni na nebesiach; statoční uvidia jeho tvár."
+        },
+        {
+          "label": "alebo",
+          "refrain": "Aleluja."
+        }
       ]
     },
     {
-      "name": "2026-05-24 - Pane, zošli svojho Ducha a obnov tvárnosť zeme. alebo",
+      "name": "2026-05-24 - Pane, zošli svojho Ducha a obnov tvárnosť zeme.",
       "number": "2026-05-24",
       "strophes": [
-        "Pane, zošli svojho Ducha a obnov tvárnosť zeme. alebo"
+        "Pane, zošli svojho Ducha a obnov tvárnosť zeme."
+      ],
+      "options": [
+        {
+          "label": "Na omšu v deň slávnosti",
+          "refrain": "Pane, zošli svojho Ducha a obnov tvárnosť zeme."
+        },
+        {
+          "label": "Na omšu v deň slávnosti – alebo",
+          "refrain": "Aleluja."
+        }
       ]
     },
     {
@@ -1024,10 +1630,20 @@
       ]
     },
     {
-      "name": "2026-05-27 - Chváľ, Jeruzalem, Pána, oslavuj, Sion, svojho Boha. alebo",
+      "name": "2026-05-27 - Chváľ, Jeruzalem, Pána, oslavuj, Sion, svojho Boha.",
       "number": "2026-05-27",
       "strophes": [
-        "Chváľ, Jeruzalem, Pána, oslavuj, Sion, svojho Boha. alebo"
+        "Chváľ, Jeruzalem, Pána, oslavuj, Sion, svojho Boha."
+      ],
+      "options": [
+        {
+          "label": "",
+          "refrain": "Chváľ, Jeruzalem, Pána, oslavuj, Sion, svojho Boha."
+        },
+        {
+          "label": "alebo",
+          "refrain": "Aleluja"
+        }
       ]
     },
     {
@@ -1080,10 +1696,20 @@
       ]
     },
     {
-      "name": "2026-06-04 - Chváľ, Jeruzalem, Pána, oslavuj, Sion, svojho Boha. alebo",
+      "name": "2026-06-04 - Chváľ, Jeruzalem, Pána, oslavuj, Sion, svojho Boha.",
       "number": "2026-06-04",
       "strophes": [
-        "Chváľ, Jeruzalem, Pána, oslavuj, Sion, svojho Boha. alebo"
+        "Chváľ, Jeruzalem, Pána, oslavuj, Sion, svojho Boha."
+      ],
+      "options": [
+        {
+          "label": "",
+          "refrain": "Chváľ, Jeruzalem, Pána, oslavuj, Sion, svojho Boha."
+        },
+        {
+          "label": "alebo",
+          "refrain": "Aleluja."
+        }
       ]
     },
     {
@@ -1283,10 +1909,20 @@
       ]
     },
     {
-      "name": "2026-07-03 - Choďte do celého sveta a hlásajte evanjelium. alebo",
+      "name": "2026-07-03 - Choďte do celého sveta a hlásajte evanjelium.",
       "number": "2026-07-03",
       "strophes": [
-        "Choďte do celého sveta a hlásajte evanjelium. alebo"
+        "Choďte do celého sveta a hlásajte evanjelium."
+      ],
+      "options": [
+        {
+          "label": "",
+          "refrain": "Choďte do celého sveta a hlásajte evanjelium."
+        },
+        {
+          "label": "alebo",
+          "refrain": "Aleluja."
+        }
       ]
     },
     {
@@ -1311,17 +1947,37 @@
       ]
     },
     {
-      "name": "2026-07-07 - My dúfame v teba, Pane, Bože náš. alebo",
+      "name": "2026-07-07 - My dúfame v teba, Pane, Bože náš.",
       "number": "2026-07-07",
       "strophes": [
-        "My dúfame v teba, Pane, Bože náš. alebo"
+        "My dúfame v teba, Pane, Bože náš."
+      ],
+      "options": [
+        {
+          "label": "",
+          "refrain": "My dúfame v teba, Pane, Bože náš."
+        },
+        {
+          "label": "alebo",
+          "refrain": "Aleluja."
+        }
       ]
     },
     {
-      "name": "2026-07-08 - Hľadajte Pána, hľadajte jeho tvár. alebo",
+      "name": "2026-07-08 - Hľadajte Pána, hľadajte jeho tvár.",
       "number": "2026-07-08",
       "strophes": [
-        "Hľadajte Pána, hľadajte jeho tvár. alebo"
+        "Hľadajte Pána, hľadajte jeho tvár."
+      ],
+      "options": [
+        {
+          "label": "",
+          "refrain": "Hľadajte Pána, hľadajte jeho tvár."
+        },
+        {
+          "label": "alebo",
+          "refrain": "Aleluja."
+        }
       ]
     },
     {
@@ -1472,10 +2128,20 @@
       ]
     },
     {
-      "name": "2026-07-30 - Blažený človek, ktorý sa spolieha na Pána, svojho Boha. alebo",
+      "name": "2026-07-30 - Blažený človek, ktorý sa spolieha na Pána, svojho Boha.",
       "number": "2026-07-30",
       "strophes": [
-        "Blažený človek, ktorý sa spolieha na Pána, svojho Boha. alebo"
+        "Blažený človek, ktorý sa spolieha na Pána, svojho Boha."
+      ],
+      "options": [
+        {
+          "label": "",
+          "refrain": "Blažený človek, ktorý sa spolieha na Pána, svojho Boha."
+        },
+        {
+          "label": "alebo",
+          "refrain": "Aleluja."
+        }
       ]
     },
     {
@@ -1626,10 +2292,20 @@
       ]
     },
     {
-      "name": "2026-08-21 - Oslavujte Pána, lebo jeho milosrdenstvo trvá naveky. alebo",
+      "name": "2026-08-21 - Oslavujte Pána, lebo jeho milosrdenstvo trvá naveky.",
       "number": "2026-08-21",
       "strophes": [
-        "Oslavujte Pána, lebo jeho milosrdenstvo trvá naveky. alebo"
+        "Oslavujte Pána, lebo jeho milosrdenstvo trvá naveky."
+      ],
+      "options": [
+        {
+          "label": "",
+          "refrain": "Oslavujte Pána, lebo jeho milosrdenstvo trvá naveky."
+        },
+        {
+          "label": "alebo",
+          "refrain": "Aleluja."
+        }
       ]
     },
     {
@@ -1780,10 +2456,20 @@
       ]
     },
     {
-      "name": "2026-09-12 - Prinesiem ti, Pane, obetu chvály. alebo",
+      "name": "2026-09-12 - Prinesiem ti, Pane, obetu chvály.",
       "number": "2026-09-12",
       "strophes": [
-        "Prinesiem ti, Pane, obetu chvály. alebo"
+        "Prinesiem ti, Pane, obetu chvály."
+      ],
+      "options": [
+        {
+          "label": "",
+          "refrain": "Prinesiem ti, Pane, obetu chvály."
+        },
+        {
+          "label": "alebo",
+          "refrain": "Aleluja."
+        }
       ]
     },
     {
@@ -1815,10 +2501,20 @@
       ]
     },
     {
-      "name": "2026-09-17 - Oslavujme Pána, lebo je dobrý, lebo jeho milosrdenstvo trvá naveky. alebo",
+      "name": "2026-09-17 - Oslavujme Pána, lebo je dobrý, lebo jeho milosrdenstvo trvá naveky.",
       "number": "2026-09-17",
       "strophes": [
-        "Oslavujme Pána, lebo je dobrý, lebo jeho milosrdenstvo trvá naveky. alebo"
+        "Oslavujme Pána, lebo je dobrý, lebo jeho milosrdenstvo trvá naveky."
+      ],
+      "options": [
+        {
+          "label": "",
+          "refrain": "Oslavujme Pána, lebo je dobrý, lebo jeho milosrdenstvo trvá naveky."
+        },
+        {
+          "label": "alebo",
+          "refrain": "Aleluja."
+        }
       ]
     },
     {
@@ -1941,10 +2637,20 @@
       ]
     },
     {
-      "name": "2026-10-05 - Pán má svoju zmluvu stále na mysli. alebo",
+      "name": "2026-10-05 - Pán má svoju zmluvu stále na mysli.",
       "number": "2026-10-05",
       "strophes": [
-        "Pán má svoju zmluvu stále na mysli. alebo"
+        "Pán má svoju zmluvu stále na mysli."
+      ],
+      "options": [
+        {
+          "label": "",
+          "refrain": "Pán má svoju zmluvu stále na mysli."
+        },
+        {
+          "label": "alebo",
+          "refrain": "Aleluja."
+        }
       ]
     },
     {
@@ -1969,10 +2675,20 @@
       ]
     },
     {
-      "name": "2026-10-09 - Pán je milosrdný a milostivý, svoju zmluvu má stále na mysli. alebo",
+      "name": "2026-10-09 - Pán je milosrdný a milostivý, svoju zmluvu má stále na mysli.",
       "number": "2026-10-09",
       "strophes": [
-        "Pán je milosrdný a milostivý, svoju zmluvu má stále na mysli. alebo"
+        "Pán je milosrdný a milostivý, svoju zmluvu má stále na mysli."
+      ],
+      "options": [
+        {
+          "label": "",
+          "refrain": "Pán je milosrdný a milostivý, svoju zmluvu má stále na mysli."
+        },
+        {
+          "label": "alebo",
+          "refrain": "Aleluja."
+        }
       ]
     },
     {
@@ -2116,10 +2832,20 @@
       ]
     },
     {
-      "name": "2026-10-30 - Nádherné a vznešené sú tvoje diela, Pane. alebo",
+      "name": "2026-10-30 - Nádherné a vznešené sú tvoje diela, Pane.",
       "number": "2026-10-30",
       "strophes": [
-        "Nádherné a vznešené sú tvoje diela, Pane. alebo"
+        "Nádherné a vznešené sú tvoje diela, Pane."
+      ],
+      "options": [
+        {
+          "label": "",
+          "refrain": "Nádherné a vznešené sú tvoje diela, Pane."
+        },
+        {
+          "label": "alebo",
+          "refrain": "Aleluja."
+        }
       ]
     },
     {
@@ -2137,10 +2863,32 @@
       ]
     },
     {
-      "name": "2026-11-02 - Pán je moje svetlo a moja spása. alebo",
+      "name": "2026-11-02 - Pán je moje svetlo a moja spása.",
       "number": "2026-11-02",
       "strophes": [
-        "Pán je moje svetlo a moja spása. alebo"
+        "Pán je moje svetlo a moja spása."
+      ],
+      "options": [
+        {
+          "label": "V prvej omši",
+          "refrain": "Pán je moje svetlo a moja spása."
+        },
+        {
+          "label": "V prvej omši – alebo",
+          "refrain": "Verím, že uvidím dobrodenia Pánove v krajine žijúcich."
+        },
+        {
+          "label": "V druhej omši",
+          "refrain": "Pred tvárou Pána budem kráčať v krajine žijúcich."
+        },
+        {
+          "label": "V druhej omši – alebo",
+          "refrain": "Aleluja."
+        },
+        {
+          "label": "V tretej omši",
+          "refrain": "Po Bohu žízni moja duša, po Bohu živom."
+        }
       ]
     },
     {
@@ -2158,10 +2906,20 @@
       ]
     },
     {
-      "name": "2026-11-05 - Nech sa radujú srdcia tých, čo hľadajú Pána. alebo",
+      "name": "2026-11-05 - Nech sa radujú srdcia tých, čo hľadajú Pána.",
       "number": "2026-11-05",
       "strophes": [
-        "Nech sa radujú srdcia tých, čo hľadajú Pána. alebo"
+        "Nech sa radujú srdcia tých, čo hľadajú Pána."
+      ],
+      "options": [
+        {
+          "label": "",
+          "refrain": "Nech sa radujú srdcia tých, čo hľadajú Pána."
+        },
+        {
+          "label": "alebo",
+          "refrain": "Aleluja."
+        }
       ]
     },
     {
@@ -2172,10 +2930,20 @@
       ]
     },
     {
-      "name": "2026-11-07 - Blažený muž, ktorý sa bojí Pána. alebo",
+      "name": "2026-11-07 - Blažený muž, ktorý sa bojí Pána.",
       "number": "2026-11-07",
       "strophes": [
-        "Blažený muž, ktorý sa bojí Pána. alebo"
+        "Blažený muž, ktorý sa bojí Pána."
+      ],
+      "options": [
+        {
+          "label": "",
+          "refrain": "Blažený muž, ktorý sa bojí Pána."
+        },
+        {
+          "label": "alebo",
+          "refrain": "Aleluja."
+        }
       ]
     },
     {
@@ -2207,10 +2975,20 @@
       ]
     },
     {
-      "name": "2026-11-12 - Blažený človek, ktorý sa spolieha na Pána, svojho Boha. alebo",
+      "name": "2026-11-12 - Blažený človek, ktorý sa spolieha na Pána, svojho Boha.",
       "number": "2026-11-12",
       "strophes": [
-        "Blažený človek, ktorý sa spolieha na Pána, svojho Boha. alebo"
+        "Blažený človek, ktorý sa spolieha na Pána, svojho Boha."
+      ],
+      "options": [
+        {
+          "label": "",
+          "refrain": "Blažený človek, ktorý sa spolieha na Pána, svojho Boha."
+        },
+        {
+          "label": "alebo",
+          "refrain": "Aleluja."
+        }
       ]
     },
     {
@@ -2253,13 +3031,33 @@
       "number": "2026-11-18",
       "strophes": [
         "Svätý, svätý, svätý je Boh, Pán Boh všemohúci."
+      ],
+      "options": [
+        {
+          "label": "Féria",
+          "refrain": "Svätý, svätý, svätý je Boh, Pán Boh všemohúci."
+        },
+        {
+          "label": "Omša na Výročie posviacky bazilík",
+          "refrain": "Pred očami pohanov vyjavil Pán svoju spásu."
+        }
       ]
     },
     {
-      "name": "2026-11-19 - Urobil si nás kráľovstvom a kňazmi nášmu Bohu. alebo",
+      "name": "2026-11-19 - Urobil si nás kráľovstvom a kňazmi nášmu Bohu.",
       "number": "2026-11-19",
       "strophes": [
-        "Urobil si nás kráľovstvom a kňazmi nášmu Bohu. alebo"
+        "Urobil si nás kráľovstvom a kňazmi nášmu Bohu."
+      ],
+      "options": [
+        {
+          "label": "",
+          "refrain": "Urobil si nás kráľovstvom a kňazmi nášmu Bohu."
+        },
+        {
+          "label": "alebo",
+          "refrain": "Aleluja."
+        }
       ]
     },
     {
@@ -2354,10 +3152,20 @@
       ]
     },
     {
-      "name": "2026-12-03 - Požehnaný, ktorý prichádza v mene Pánovom. alebo",
+      "name": "2026-12-03 - Požehnaný, ktorý prichádza v mene Pánovom.",
       "number": "2026-12-03",
       "strophes": [
-        "Požehnaný, ktorý prichádza v mene Pánovom. alebo"
+        "Požehnaný, ktorý prichádza v mene Pánovom."
+      ],
+      "options": [
+        {
+          "label": "",
+          "refrain": "Požehnaný, ktorý prichádza v mene Pánovom."
+        },
+        {
+          "label": "alebo",
+          "refrain": "Aleluja."
+        }
       ]
     },
     {
@@ -2512,6 +3320,20 @@
       "number": "2026-12-25",
       "strophes": [
         "Dnes sa nám narodil Spasiteľ, Kristus Pán."
+      ],
+      "options": [
+        {
+          "label": "Vo svätej noci",
+          "refrain": "Dnes sa nám narodil Spasiteľ, Kristus Pán."
+        },
+        {
+          "label": "Na úsvite",
+          "refrain": "Dnes zažiari nad nami svetlo, lebo sa nám narodil Pán."
+        },
+        {
+          "label": "Počas dňa",
+          "refrain": "Uzreli všetky končiny zeme spásu nášho Boha."
+        }
       ]
     },
     {
@@ -2526,6 +3348,16 @@
       "number": "2026-12-27",
       "strophes": [
         "Blažení sú všetci, čo sa boja Pána a kráčajú po jeho cestách."
+      ],
+      "options": [
+        {
+          "label": "",
+          "refrain": "Blažení sú všetci, čo sa boja Pána a kráčajú po jeho cestách."
+        },
+        {
+          "label": "",
+          "refrain": "On je náš Pán a Boh, večne pamätá na svoju zmluvu."
+        }
       ]
     },
     {

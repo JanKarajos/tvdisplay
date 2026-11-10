@@ -42,6 +42,23 @@ let snapshot = { state, status, authRequired };
 let ws = null;
 let retryDelay = 1000;
 let retryTimer = null;
+let seenBuild = null;
+let autoReload = false;
+
+// Obrazovka na TV: po aktualizácii aplikácie na serveri sa stránka sama obnoví
+export function enableAutoReload() {
+  autoReload = true;
+}
+
+function onHello(build) {
+  if (!build) return;
+  if (seenBuild && build !== seenBuild && autoReload) {
+    log('[state] Nová verzia aplikácie na serveri – obnovujem stránku');
+    setTimeout(() => window.location.reload(), 1500);
+    return;
+  }
+  seenBuild = build;
+}
 
 const listeners = new Set();
 
@@ -86,6 +103,7 @@ function connect() {
     try {
       const msg = JSON.parse(event.data);
       if (msg.type === 'state') setState(msg.state);
+      else if (msg.type === 'hello') onHello(msg.build);
       else if (msg.type === 'library') window.dispatchEvent(new CustomEvent('tvdisplay:library', { detail: msg.file }));
     } catch (e) {
       console.error('[state] Neplatná správa zo servera', e);
