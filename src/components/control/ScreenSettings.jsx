@@ -4,6 +4,7 @@ import Preview from '../Preview';
 import { actions } from '../../lib/actions';
 import { THEMES, liturgicalSeason } from '../../lib/liturgy';
 import { ROTATIONS, getRotation } from '../../lib/rotation';
+import DeviceCard from './DeviceCard';
 
 function Toggle({ checked, onChange, label, hint }) {
   return (
@@ -25,7 +26,7 @@ function Toggle({ checked, onChange, label, hint }) {
   );
 }
 
-export default function ScreenSettings({ state, images, sampleSong }) {
+export default function ScreenSettings({ state, images, sampleSong, health }) {
   const settings = state.settings || {};
   const season = liturgicalSeason();
   const themeOptions = [['auto', `Automaticky – ${THEMES[season].name}`, THEMES[season]], ...Object.entries(THEMES).map(([id, t]) => [id, t.name, t])];
@@ -120,6 +121,7 @@ export default function ScreenSettings({ state, images, sampleSong }) {
           <Preview state={{ ...state, isHidden: false }} song={sampleSong} page={0} />
         </div>
       </Card>
+      <DeviceCard health={health} />
     </div>
   );
 }

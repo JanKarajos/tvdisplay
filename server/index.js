@@ -22,6 +22,7 @@ import { ACCEPTED_EXTENSIONS, PRESENTATION_EXTENSIONS, convertToPdf, countPdfPag
 import { createAdmin } from './admin.js';
 import { createChurchSync } from './churchSync.js';
 import { createNasStorage, nasMediaName } from './nasStorage.js';
+import { runSystemAction, systemActionsAvailable } from './systemActions.js';
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const STATE_FILE = path.join(ROOT, 'state.json');
@@ -230,6 +231,7 @@ app.get('/health', (req, res) => {
     auth: { pinRequired: Boolean(CONTROL_PIN) },
     converter: { powerpoint: hasSoffice() },
     admin: Boolean(ADMIN_DATA_DIR),
+    system: { actions: systemActionsAvailable() },
     library: church
       ? { managed: true, adminUrl: church.adminUrl, lastSync: church.status.lastSync, lastError: church.status.lastError }
       : nas
@@ -245,6 +247,18 @@ app.get('/health', (req, res) => {
 });
 
 app.post('/api/auth/check', requirePin, (req, res) => res.json({ ok: true }));
+
+// Reštart aplikácie / zariadenia z ovládania (Obrazovka → Zariadenie v kostole)
+app.post('/api/system/:action', requirePin, async (req, res) => {
+  const { action } = req.params;
+  console.log(`🔁 Požiadavka z ovládania: ${action}`);
+  try {
+    await runSystemAction(action);
+    res.json({ ok: true });
+  } catch (e) {
+    res.status(400).json({ error: e.message });
+  }
+});
 
 app.get('/api/state', (req, res) => res.json(state));
 app.patch('/api/state', requirePin, (req, res) => res.json(applyPatch(req.body)));

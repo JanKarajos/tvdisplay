@@ -229,6 +229,31 @@ Mobil / PC (ovládanie) ──PATCH /api/state──►  server (port 3002)  ─
 - **PIN**: ak je v `.env` nastavený `CONTROL_PIN`, ovládanie si ho vypýta. Displej PIN nepotrebuje.
 - **Administrácia kostolov** (`ADMIN_DATA_DIR`) a **napojenie na ňu** (`CHURCH_DATA_URL`): pozri vyššie.
 
+## Reštart aplikácie a Orange Pi (tlačidlá)
+
+**V ovládaní:** ⚙ → Obrazovka → *Zariadenie v kostole* → „Reštartovať aplikáciu“ alebo „Reštartovať Orange Pi“
+(ak je nastavený PIN, chráni aj tieto tlačidlá).
+
+**Fyzické tlačidlá** (inštalátor ich zapne sám, vypnúť: `--no-buttons`). Dve obyčajné tlačidlá (spínacie, bez aretácie)
+na 40-pinovom konektore Orange Pi PC, bez rezistorov (pin drží vnútorný pull-up):
+
+| Tlačidlo | Pin | Druhý kontakt | Podržať |
+|---|---|---|---|
+| Reštart aplikácie (spustí ju aj keď nebeží) | 11 (PA1) | GND – pin 9 | 1 s |
+| Reštart Orange Pi | 13 (PA0) | GND – pin 9 | 3 s |
+
+```
+pin  9  GND ──┬───────────┐
+              │           │
+           [ APP ]    [ REBOOT ]
+              │           │
+pin 11 PA1 ───┘           │
+pin 13 PA0 ───────────────┘
+```
+
+Iné piny alebo čas držania: `/etc/default/laudate-buttons`, potom `sudo systemctl restart tvdisplay-buttons`.
+Záznamy: `journalctl -u tvdisplay-buttons -f`.
+
 ## Televízor na výšku
 
 V ovládaní v záložke **Obrazovka → Otočenie obrazovky** sa dá obraz na TV otočiť: na šírku, na výšku (doprava

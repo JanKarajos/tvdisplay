@@ -16,6 +16,7 @@
 #              --tailscale-authkey=KĽÚČ   prihlásenie do Tailscale kľúčom (admin konzola Tailscale -> Settings -> Keys)
 #              --no-tailscale   nepýtať sa na Tailscale
 #              --church-url=URL piesne kostola z administrácie (Docker na NAS, adresa zo záložky Kostoly)
+#              --no-buttons     neobsluhovať fyzické tlačidlá na pinoch GPIO (reštart aplikácie / zariadenia)
 #
 # Opätovné spustenie aplikáciu aktualizuje. Nastavenia, piesne ani prezentácie nezmení.
 set -euo pipefail
@@ -40,6 +41,7 @@ NAS_PASSWORD=""
 NAS_IGNORE_CERT=0
 WANT_TAILSCALE=ask
 TAILSCALE_AUTHKEY=""
+WANT_BUTTONS=yes
 for arg in "$@"; do
   case "$arg" in
     --yes) ASSUME_YES=1 ;;
@@ -53,6 +55,7 @@ for arg in "$@"; do
     --tailscale) WANT_TAILSCALE=yes ;;
     --tailscale-authkey=*) WANT_TAILSCALE=yes; TAILSCALE_AUTHKEY="${arg#--tailscale-authkey=}" ;;
     --no-tailscale) WANT_TAILSCALE=no ;;
+    --no-buttons) WANT_BUTTONS=no ;;
     *) echo "Neznáma voľba: $arg"; exit 2 ;;
   esac
 done
@@ -212,7 +215,7 @@ fi
 
 step "Aktualizujem zoznam balíkov"
 apt-get update || warn "Zoznam balíkov sa nepodarilo celý obnoviť, pokračujem."
-apt_install ca-certificates curl tar xz-utils
+apt_install ca-certificates curl tar xz-utils sudo
 
 # --- Tailscale (spojenie s NAS v inej sieti) -----------------------------
 
@@ -435,6 +438,110 @@ WantedBy=multi-user.target
 EOF
 fi
 
+# --- Reštart aplikácie a zariadenia (z ovládania aj tlačidlami) --------
+
+step "Nastavujem reštart z ovládania a tlačidlá"
+# Pomocný skript patrí rootovi; aplikácia ho smie spustiť cez sudo a vie iba tieto dve akcie
+cat >/usr/local/sbin/laudate-system <<'EOF'
+#!/bin/bash
+# Laudate: reštart aplikácie alebo celého zariadenia. Akcia sa zaradí do systemd (--no-block),
+# takže sa dokončí, aj keď sa pri nej ukončí server, ktorý ju spustil.
+case "${1:-}" in
+  restart-app)
+    systemctl --no-block restart tvdisplay.service
+    if systemctl -q is-enabled tvdisplay-kiosk.service 2>/dev/null; then
+      systemctl --no-block restart tvdisplay-kiosk.service
+    fi
+    exit 0 ;;
+  reboot)
+    systemctl --no-block reboot
+    exit 0 ;;
+  *) echo "Použitie: laudate-system restart-app|reboot" >&2; exit 2 ;;
+esac
+EOF
+chmod 755 /usr/local/sbin/laudate-system
+chown root:root /usr/local/sbin/laudate-system
+SUDOERS_TMP=$(mktemp)
+printf '%s ALL=(root) NOPASSWD: /usr/local/sbin/laudate-system\n' "$APP_USER" >"$SUDOERS_TMP"
+if ! command -v visudo >/dev/null || visudo -cf "$SUDOERS_TMP" >/dev/null; then
+  install -m 440 -o root -g root "$SUDOERS_TMP" /etc/sudoers.d/laudate
+else
+  warn "Reštart z ovládania sa nepodarilo nastaviť."
+fi
+rm -f "$SUDOERS_TMP"
+
+if [ "$WANT_BUTTONS" = yes ]; then
+  apt_install gpiod || warn "Balík gpiod sa nepodarilo nainštalovať, tlačidlá nebudú fungovať."
+  # Zapojenie (Orange Pi PC, 40-pinový konektor): tlačidlo medzi pin a GND (pin 9),
+  # vnútorný pull-up drží pin v 1, stlačenie ho spojí so zemou (0).
+  if [ ! -f /etc/default/laudate-buttons ]; then
+    cat >/etc/default/laudate-buttons <<'EOF'
+# Fyzické tlačidlá Laudate (Orange Pi PC). Čísla liniek na čipe GPIO (PA0 = 0, PA1 = 1, PA6 = 6 ...)
+# Pin 11 (PA1): reštart aplikácie – podržať 1 s
+# Pin 13 (PA0): reštart Orange Pi – podržať 3 s
+# Druhý kontakt oboch tlačidiel: GND (pin 9)
+# Po zmene: sudo systemctl restart tvdisplay-buttons
+BUTTON_APP_LINE=1
+BUTTON_REBOOT_LINE=0
+BUTTON_APP_HOLD=1
+BUTTON_REBOOT_HOLD=3
+# Prázdne = nájde sa automaticky (hlavný radič 1c20800.pinctrl)
+BUTTON_CHIP=
+EOF
+  fi
+  cat >/usr/local/sbin/laudate-buttons <<'EOF'
+#!/bin/bash
+# Laudate: sleduje fyzické tlačidlá a pri dostatočne dlhom stlačení spustí reštart.
+. /etc/default/laudate-buttons
+CHIP=${BUTTON_CHIP:-$(gpiodetect 2>/dev/null | awk '/1c20800/ {print $1; exit}')}
+CHIP=${CHIP:-gpiochip0}
+if gpioget --version 2>/dev/null | head -n1 | grep -q 'v2'; then
+  read_lines() { gpioget -c "$CHIP" -b pull-up --numeric "$BUTTON_APP_LINE" "$BUTTON_REBOOT_LINE" 2>/dev/null; }
+else
+  read_lines() { gpioget -B pull-up "$CHIP" "$BUTTON_APP_LINE" "$BUTTON_REBOOT_LINE" 2>/dev/null; }
+fi
+if ! read_lines >/dev/null; then
+  echo "Piny GPIO sa nedajú čítať ($CHIP, linky $BUTTON_APP_LINE a $BUTTON_REBOOT_LINE)"
+  exit 1
+fi
+echo "Tlačidlá: $CHIP, reštart aplikácie linka $BUTTON_APP_LINE, reštart zariadenia linka $BUTTON_REBOOT_LINE"
+app=0
+reboot=0
+while sleep 0.1; do
+  read -r a r < <(read_lines) || continue
+  if [ "$a" = 0 ]; then app=$((app + 1)); else app=0; fi
+  if [ "$r" = 0 ]; then reboot=$((reboot + 1)); else reboot=0; fi
+  # Akcia sa spustí raz, keď tlačidlo drží dosť dlho (pri ďalšom držaní sa neopakuje)
+  if [ "$reboot" -eq $((BUTTON_REBOOT_HOLD * 10)) ]; then
+    echo "Tlačidlo: reštart zariadenia"
+    /usr/local/sbin/laudate-system reboot
+  elif [ "$app" -eq $((BUTTON_APP_HOLD * 10)) ]; then
+    echo "Tlačidlo: reštart aplikácie"
+    /usr/local/sbin/laudate-system restart-app
+  fi
+done
+EOF
+  chmod 755 /usr/local/sbin/laudate-buttons
+  cat >/etc/systemd/system/tvdisplay-buttons.service <<'EOF'
+[Unit]
+Description=Laudate fyzické tlačidlá (reštart aplikácie / zariadenia)
+After=multi-user.target
+
+[Service]
+ExecStart=/usr/local/sbin/laudate-buttons
+Restart=on-failure
+RestartSec=30
+
+[Install]
+WantedBy=multi-user.target
+EOF
+  systemctl daemon-reload
+  systemctl enable tvdisplay-buttons.service >/dev/null 2>&1 || true
+  systemctl restart tvdisplay-buttons.service 2>/dev/null || warn "Služba tlačidiel sa nespustila (journalctl -u tvdisplay-buttons)."
+else
+  systemctl disable --now tvdisplay-buttons.service 2>/dev/null || true
+fi
+
 # --- Spustenie -----------------------------------------------------------
 
 step "Spúšťam Laudate"
@@ -480,6 +587,9 @@ echo "  Ovládanie (mobil, PC): http://$IP_ADDRESS:$APP_PORT/#control"
 echo "  Obrazovka:             http://$IP_ADDRESS:$APP_PORT/#display"
 echo "  Stav a záznamy:        systemctl status tvdisplay  /  journalctl -u tvdisplay -f"
 echo "  Nastavenia:            $APP_DIR/.env (po zmene: sudo systemctl restart tvdisplay)"
+if [ "$WANT_BUTTONS" = yes ]; then
+  echo "  Tlačidlá:              pin 11 = reštart aplikácie (1 s), pin 13 = reštart Orange Pi (3 s), druhý kontakt GND pin 9"
+fi
 CURRENT_CHURCH_URL=$(sed -n 's/^CHURCH_DATA_URL=//p' "$APP_DIR/.env" | tail -n1)
 CURRENT_NAS_URL=$(sed -n 's/^NAS_URL=//p' "$APP_DIR/.env" | tail -n1)
 if [ -n "$CURRENT_CHURCH_URL" ]; then
