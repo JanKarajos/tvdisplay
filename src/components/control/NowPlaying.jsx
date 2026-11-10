@@ -4,6 +4,7 @@ import Preview from '../Preview';
 import SongEditor from './SongEditor';
 import { actions } from '../../lib/actions';
 import { getPageCount } from '../../lib/lyrics';
+import { getUpcoming } from '../../lib/upcoming';
 
 export default function NowPlaying({ state, song, nextSong, categories }) {
   const [editing, setEditing] = useState(false);
@@ -12,10 +13,7 @@ export default function NowPlaying({ state, song, nextSong, categories }) {
   const pageCount = getPageCount(song);
   const page = Math.min(state.currentPage || 0, Math.max(0, pageCount - 1));
 
-  // Čo príde po stlačení "Ďalej"
-  let upcoming = null;
-  if (song && page < pageCount - 1) upcoming = { label: `Strofa ${page + 2} / ${pageCount}`, song, page: page + 1 };
-  else if (nextSong) upcoming = { label: nextSong.title, song: nextSong, page: 0 };
+  const upcoming = getUpcoming(state, song, nextSong);
 
   return (
     <Card
@@ -28,7 +26,7 @@ export default function NowPlaying({ state, song, nextSong, categories }) {
       }
     >
       {/* Ďalšia je väčšia – ťuknutím na ňu sa prepne (rýchlejšie ako hľadať tlačidlo) */}
-      <div className="grid grid-cols-[2fr_3fr] gap-3 items-start">
+      <div className="hidden lg:grid grid-cols-[2fr_3fr] gap-3 items-start">
         <div className="min-w-0">
           <Preview state={state} song={song} />
           <div className="mt-1.5 text-xs text-muted truncate">{song ? song.title : 'Nič sa nezobrazuje'}</div>
@@ -47,7 +45,7 @@ export default function NowPlaying({ state, song, nextSong, categories }) {
       </div>
 
       {pageCount > 1 && (
-        <div className="mt-3 flex flex-wrap gap-1.5" aria-label="Strofy">
+        <div className="lg:mt-3 flex flex-wrap gap-1.5" aria-label="Strofy">
           {Array.from({ length: pageCount }, (_, i) => (
             <button
               key={i}

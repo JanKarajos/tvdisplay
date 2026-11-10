@@ -4,7 +4,7 @@ import { getRotation, isPortrait } from '../lib/rotation';
 
 // Zmenšená kópia TV (16:9, pri TV na výšku 9:16). Text je viditeľný aj keď je na TV skrytý, s upozornením.
 // Pomer strán je cez padding (nie aspect-ratio), aby fungoval aj v starších prehliadačoch (Android WebView).
-export default function Preview({ state, song, page, empty = 'Prázdna obrazovka', onClick, label }) {
+export default function Preview({ state, song, page, empty = 'Prázdna obrazovka', onClick, label, height }) {
   const Tag = onClick ? 'button' : 'div';
   const portrait = isPortrait(getRotation(state.settings));
   return (
@@ -14,9 +14,11 @@ export default function Preview({ state, song, page, empty = 'Prázdna obrazovka
       aria-label={label}
       style={{
         // Celý náhľad sa zmestí na obrazovku aj na mobile naležato (výška okna mínus hlavička a tlačidlá)
-        width: portrait ? 'min(56.25%, calc((100vh - 13.5rem) * 0.5625))' : 'min(100%, calc((100vh - 13.5rem) * 1.7778))',
+        width: height
+          ? `min(100%, calc(${height} * ${portrait ? 0.5625 : 1.7778}))`
+          : portrait ? 'min(56.25%, calc((100vh - 13.5rem) * 0.5625))' : 'min(100%, calc((100vh - 13.5rem) * 1.7778))',
       }}
-      className={`relative block mx-auto bg-black rounded-xl overflow-hidden ring-1 ring-line ${onClick ? 'ring-2 !ring-accent hover:opacity-90 active:scale-[0.99] transition' : ''}`}
+      className={`relative block mx-auto shrink-0 bg-black rounded-xl overflow-hidden ring-1 ring-line ${onClick ? 'ring-2 !ring-accent hover:opacity-90 active:scale-[0.99] transition' : ''}`}
     >
       <div style={{ paddingTop: portrait ? '177.78%' : '56.25%' }} />
       <Stage state={state} song={song} page={page} preview />
