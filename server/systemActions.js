@@ -27,3 +27,15 @@ export function runSystemAction(action) {
     });
   });
 }
+
+// Názov dosky pre ovládanie ("Reštartovať Raspberry Pi" / "Orange Pi")
+export function deviceName() {
+  try {
+    const model = fs.readFileSync('/proc/device-tree/model', 'utf8').replace(/\0/g, '');
+    if (/Raspberry Pi/i.test(model)) return { model, name: 'Raspberry Pi' };
+    if (/Orange Pi/i.test(model)) return { model, name: 'Orange Pi' };
+    return { model, name: 'zariadenie' };
+  } catch {
+    return { model: null, name: 'zariadenie' };
+  }
+}

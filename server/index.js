@@ -22,7 +22,7 @@ import { ACCEPTED_EXTENSIONS, PRESENTATION_EXTENSIONS, convertToPdf, countPdfPag
 import { createAdmin } from './admin.js';
 import { createChurchSync } from './churchSync.js';
 import { createNasStorage, nasMediaName } from './nasStorage.js';
-import { runSystemAction, systemActionsAvailable } from './systemActions.js';
+import { deviceName, runSystemAction, systemActionsAvailable } from './systemActions.js';
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const STATE_FILE = path.join(ROOT, 'state.json');
@@ -231,7 +231,7 @@ app.get('/health', (req, res) => {
     auth: { pinRequired: Boolean(CONTROL_PIN) },
     converter: { powerpoint: hasSoffice() },
     admin: Boolean(ADMIN_DATA_DIR),
-    system: { actions: systemActionsAvailable() },
+    system: { actions: systemActionsAvailable(), ...deviceName() },
     library: church
       ? { managed: true, adminUrl: church.adminUrl, lastSync: church.status.lastSync, lastError: church.status.lastError }
       : nas
