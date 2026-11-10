@@ -18,9 +18,9 @@ export const TABS = [
 export default function Header({ status, clients, tab, onTab, uiTheme, onCycleTheme, showSettings, onToggleSettings }) {
   const [dot, label] = STATUS[status] || STATUS.connecting;
   return (
-    <header className="sticky top-0 z-30 bg-surface/90 backdrop-blur border-b border-line">
+    <header className="sticky short:static top-0 z-30 bg-surface/90 backdrop-blur border-b border-line">
       <div className="max-w-7xl mx-auto px-3 sm:px-4 flex flex-wrap items-center gap-x-4">
-        <div className="flex items-center gap-2 h-14 mr-auto">
+        <div className="flex items-center gap-2 h-14 short:h-11 mr-auto">
           <span className="w-8 h-8 rounded-lg bg-accent text-on-accent grid place-items-center font-bold">♪</span>
           <span className="font-bold tracking-tight">Laudate</span>
         </div>
@@ -39,7 +39,7 @@ export default function Header({ status, clients, tab, onTab, uiTheme, onCycleTh
           ))}
         </nav>}
 
-        <div className="flex items-center gap-1 h-14">
+        <div className="flex items-center gap-1 h-14 short:h-11">
           <span className="flex items-center gap-2 px-2 text-sm text-muted" title={clients != null ? `${label} · pripojených zariadení: ${clients}` : label}>
             <span className={`w-2.5 h-2.5 rounded-full ${dot}`} />
             <span className="hidden lg:inline">{label}</span>

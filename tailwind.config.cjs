@@ -20,6 +20,10 @@ module.exports = {
         ok: token('ok'),
         warn: token('warn'),
       },
+      // Nízka obrazovka (mobil naležato): menšie ovládacie tlačidlá, hlavička neostáva pripnutá
+      screens: {
+        short: { raw: '(max-height: 560px)' },
+      },
       fontFamily: {
         sans: ['"Source Sans 3"', 'system-ui', 'sans-serif'],
       },

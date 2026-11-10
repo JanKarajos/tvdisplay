@@ -90,7 +90,7 @@ export default function ControlPage() {
   const shownSong = state.currentSongId ? song : null;
 
   return (
-    <div className="min-h-screen pb-48 sm:pb-36">
+    <div className="min-h-screen pb-48 sm:pb-36 short:pb-20">
       <Header status={status} clients={health?.clients} tab={tab} onTab={setTab} uiTheme={uiTheme} onCycleTheme={cycleUiTheme} showSettings={settingsOpen} onToggleSettings={() => { setSettingsOpen((o) => !o); setTab(settingsOpen ? 'mass' : 'screen'); }} />
       {authRequired && <PinDialog />}
       {lib.error && (

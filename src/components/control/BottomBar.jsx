@@ -17,7 +17,7 @@ export default function BottomBar({ state, song, nextItem, hasPrev }) {
 
   return (
     <div className="fixed bottom-0 left-0 right-0 z-30 bg-surface/95 backdrop-blur border-t border-line pb-safe">
-      <div className="max-w-7xl mx-auto px-3 sm:px-4 pt-2 sm:pt-3 flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4">
+      <div className="max-w-7xl mx-auto px-3 sm:px-4 pt-2 sm:pt-3 short:pt-1.5 flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4">
         <div className="min-w-0 sm:flex-1 flex items-center gap-3">
           <div className="min-w-0">
             <div className="text-sm font-semibold truncate">{song ? song.title : 'Na TV nie je nič'}</div>
@@ -38,18 +38,18 @@ export default function BottomBar({ state, song, nextItem, hasPrev }) {
         </div>
 
         <div className="grid grid-cols-[1fr_1fr_2fr] sm:flex gap-2">
-          <button onClick={() => actions.prev(song)} disabled={!canPrev} className="btn h-20 sm:h-24 sm:w-36 text-2xl" aria-label="Späť">
+          <button onClick={() => actions.prev(song)} disabled={!canPrev} className="btn h-20 sm:h-24 sm:w-36 short:!h-12 text-2xl short:text-lg" aria-label="Späť">
             ← <span className="hidden sm:inline">Späť</span>
           </button>
           <button
             onClick={actions.toggleHide}
             disabled={!song}
-            className={`btn h-20 sm:h-24 sm:w-40 text-lg ${state.isHidden ? '!bg-danger !text-white !border-danger' : ''}`}
+            className={`btn h-20 sm:h-24 sm:w-40 short:!h-12 text-lg short:text-base ${state.isHidden ? '!bg-danger !text-white !border-danger' : ''}`}
             title="Kláves H"
           >
             {state.isHidden ? 'Zobraziť' : 'Skryť'}
           </button>
-          <button onClick={() => actions.next(song)} disabled={!canNext} className="btn-primary h-20 sm:h-24 sm:w-80 text-2xl font-bold" title="Kláves → alebo PageDown">
+          <button onClick={() => actions.next(song)} disabled={!canNext} className="btn-primary h-20 sm:h-24 sm:w-80 short:!h-12 short:sm:w-64 text-2xl short:text-lg font-bold" title="Kláves → alebo PageDown">
             Ďalej →
           </button>
         </div>
