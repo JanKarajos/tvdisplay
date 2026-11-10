@@ -50,7 +50,17 @@ export default function SongRenderer({ lyrics, title, number, imageUrl, currentP
     if (!box) return undefined;
     const ro = new ResizeObserver(fit);
     ro.observe(box);
-    return () => ro.disconnect();
+    // Písmo sa môže načítať až po prvom meraní (širšie ako náhradné) – zmeraj znova, inak by sa
+    // slová lámali uprostred ("Blahoslaven / í")
+    const fonts = document.fonts;
+    let alive = true;
+    fonts?.ready?.then(() => alive && fit());
+    fonts?.addEventListener?.('loadingdone', fit);
+    return () => {
+      alive = false;
+      ro.disconnect();
+      fonts?.removeEventListener?.('loadingdone', fit);
+    };
   }, [fit]);
 
   if (imageUrl && !lyrics) {
@@ -71,7 +81,7 @@ export default function SongRenderer({ lyrics, title, number, imageUrl, currentP
   return (
     <div ref={boxRef} className="relative w-full h-full flex items-center justify-center overflow-hidden text-white">
       {/* Neviditeľný prvok na meranie textu */}
-      <div ref={measureRef} aria-hidden="true" className="song-text absolute invisible pointer-events-none left-0 top-0" style={{ ...textStyle, width: '94%' }} />
+      <div ref={measureRef} aria-hidden="true" className="song-text absolute invisible pointer-events-none left-0 top-0" style={{ ...textStyle, width: '93%' }} />
 
       {!hideTitle && title && (
         <div
@@ -85,7 +95,7 @@ export default function SongRenderer({ lyrics, title, number, imageUrl, currentP
       <div
         key={`${pageIndex}-${lyrics.length}`}
         className="song-text animate-fade-in w-[94%]"
-        style={{ ...textStyle, overflowWrap: 'anywhere', fontSize: fontSize ?? 0, visibility: fontSize ? 'visible' : 'hidden' }}
+        style={{ ...textStyle, overflowWrap: 'break-word', hyphens: 'manual', fontSize: fontSize ?? 0, visibility: fontSize ? 'visible' : 'hidden' }}
       >
         {pages[pageIndex].join('\n')}
       </div>
