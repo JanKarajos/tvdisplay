@@ -68,6 +68,31 @@ export default function ScreenSettings({ state, images, sampleSong, health }) {
         </div>
       </Card>
 
+      <Card title="Pozadie" subtitle="Zobrazí sa, keď na TV nie je text alebo je skrytý">
+        <div className="grid grid-cols-3 sm:grid-cols-4 gap-2">
+          {backgrounds.map((bg) => {
+            const active = (state.background || null) === bg.value;
+            return (
+              <button
+                key={`${bg.label}-${bg.value}`}
+                onClick={() => actions.setBackground(bg.value)}
+                title={bg.label}
+                className={`rounded-xl overflow-hidden border-2 text-left transition ${active ? 'border-accent' : 'border-transparent hover:border-line'}`}
+              >
+                <div
+                  className="aspect-video bg-cover bg-center"
+                  style={bg.image ? { backgroundImage: `url(${bg.image})` } : { background: bg.swatch || THEMES[season].background }}
+                />
+                <div className="px-2 py-1.5 text-xs bg-sunken truncate">{bg.label}</div>
+              </button>
+            );
+          })}
+        </div>
+        <div className="mt-4">
+          <div className="text-xs text-muted mb-1.5">Ukážka</div>
+          <Preview state={{ ...state, isHidden: false }} song={sampleSong} page={0} />
+        </div>
+      </Card>
       <Card title="Otočenie obrazovky" subtitle="Pre televízor zavesený na výšku. Ak je text naopak, zvoľte druhú možnosť na výšku.">
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-2" role="radiogroup" aria-label="Otočenie obrazovky">
           {ROTATIONS.map((r) => {
@@ -96,31 +121,6 @@ export default function ScreenSettings({ state, images, sampleSong, health }) {
         </div>
       </Card>
 
-      <Card title="Pozadie" subtitle="Zobrazí sa, keď na TV nie je text alebo je skrytý">
-        <div className="grid grid-cols-3 sm:grid-cols-4 gap-2">
-          {backgrounds.map((bg) => {
-            const active = (state.background || null) === bg.value;
-            return (
-              <button
-                key={`${bg.label}-${bg.value}`}
-                onClick={() => actions.setBackground(bg.value)}
-                title={bg.label}
-                className={`rounded-xl overflow-hidden border-2 text-left transition ${active ? 'border-accent' : 'border-transparent hover:border-line'}`}
-              >
-                <div
-                  className="aspect-video bg-cover bg-center"
-                  style={bg.image ? { backgroundImage: `url(${bg.image})` } : { background: bg.swatch || THEMES[season].background }}
-                />
-                <div className="px-2 py-1.5 text-xs bg-sunken truncate">{bg.label}</div>
-              </button>
-            );
-          })}
-        </div>
-        <div className="mt-4">
-          <div className="text-xs text-muted mb-1.5">Ukážka</div>
-          <Preview state={{ ...state, isHidden: false }} song={sampleSong} page={0} />
-        </div>
-      </Card>
       <DeviceCard health={health} />
     </div>
   );
