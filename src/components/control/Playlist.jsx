@@ -160,7 +160,7 @@ export default function Playlist({ items, currentId, nextId, playedIndex }) {
               </div>
               {isCurrent && <span className="hidden sm:inline px-2 py-0.5 rounded-md bg-accent text-on-accent text-[10px] font-bold">NA TV</span>}
               {isNext && <span className="hidden sm:inline px-2 py-0.5 rounded-md bg-warn/20 text-warn text-[10px] font-bold">ĎALEJ</span>}
-              <button onClick={() => actions.showId(item.id)} className="btn-icon" title="Zobraziť hneď" aria-label={`Zobraziť hneď: ${item.title}`}>▶</button>
+              <button onClick={() => actions.showId(item.id)} className="btn-icon !w-14 !h-14 text-2xl" title="Zobraziť hneď" aria-label={`Zobraziť hneď: ${item.title}`}>▶</button>
               <button onClick={() => actions.removeFromPlaylist(item.id)} className="btn-icon hover:!text-danger" title="Odobrať" aria-label={`Odobrať: ${item.title}`}>✕</button>
             </li>
           );

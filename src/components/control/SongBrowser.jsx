@@ -53,7 +53,7 @@ function PsalmList({ playlistIds }) {
           const inPlaylist = position >= 0;
           return (
             <div key={id} className={`flex items-center gap-1 rounded-xl transition-colors ${inPlaylist ? 'bg-accent/10' : 'hover:bg-sunken'}`}>
-              <button onClick={() => actions.addToPlaylist(id)} className="flex-1 min-w-0 min-h-[52px] flex items-center gap-3 px-2 text-left" title={inPlaylist ? 'Už je v poradí' : 'Pridať do poradia'}>
+              <button onClick={() => actions.addToPlaylist(id)} className="flex-1 min-w-0 min-h-[60px] flex items-center gap-3 px-2 text-left" title={inPlaylist ? 'Už je v poradí' : 'Pridať do poradia'}>
                 <span className={`w-16 shrink-0 text-right text-xs ${inPlaylist ? 'text-accent font-bold' : 'text-muted'}`}>{i === 0 ? dateLabel(iso) : ''}</span>
                 <span className="min-w-0">
                   {options.length > 1 && <span className="block text-[11px] font-semibold text-accent">{o.label || `Možnosť ${i + 1}`}</span>}
@@ -63,11 +63,11 @@ function PsalmList({ playlistIds }) {
                   {inPlaylist ? (
                     <span className="px-2 py-1 rounded-lg bg-accent text-on-accent text-xs font-bold">✓ {position + 1}.</span>
                   ) : (
-                    <span className="w-8 h-8 rounded-lg grid place-items-center text-accent text-lg">+</span>
+                    <span className="w-12 h-12 rounded-xl grid place-items-center bg-accent/10 text-accent text-3xl font-semibold">+</span>
                   )}
                 </span>
               </button>
-              <button onClick={() => actions.showId(id)} className="btn-icon shrink-0" title="Zobraziť hneď (mimo poradia)" aria-label={`Zobraziť hneď: žalm ${dateLabel(iso)}`}>
+              <button onClick={() => actions.showId(id)} className="btn-icon shrink-0 !w-14 !h-14 text-2xl" title="Zobraziť hneď (mimo poradia)" aria-label={`Zobraziť hneď: žalm ${dateLabel(iso)}`}>
                 ▶
               </button>
             </div>
@@ -149,7 +149,7 @@ export default function SongBrowser({ lib, playlistIds }) {
             <div key={s.id} className={`flex items-center gap-1 rounded-xl transition-colors ${inPlaylist ? 'bg-accent/10' : 'hover:bg-sunken'}`}>
               <button
                 onClick={() => actions.addToPlaylist(s.id)}
-                className="flex-1 min-w-0 min-h-[48px] flex items-center gap-3 px-2 text-left"
+                className="flex-1 min-w-0 min-h-[60px] flex items-center gap-3 px-2 text-left"
                 title={inPlaylist ? 'Už je v poradí' : 'Pridať do poradia'}
               >
                 <span className={`w-9 shrink-0 text-right tabular-nums text-sm ${inPlaylist ? 'text-accent font-bold' : 'text-muted'}`}>
@@ -163,11 +163,11 @@ export default function SongBrowser({ lib, playlistIds }) {
                   {inPlaylist ? (
                     <span className="px-2 py-1 rounded-lg bg-accent text-on-accent text-xs font-bold">✓ {position + 1}.</span>
                   ) : (
-                    <span className="w-8 h-8 rounded-lg grid place-items-center text-accent text-lg">+</span>
+                    <span className="w-12 h-12 rounded-xl grid place-items-center bg-accent/10 text-accent text-3xl font-semibold">+</span>
                   )}
                 </span>
               </button>
-              <button onClick={() => actions.show(s)} className="btn-icon shrink-0" title="Zobraziť hneď (mimo poradia)" aria-label={`Zobraziť hneď: ${s.title}`}>
+              <button onClick={() => actions.show(s)} className="btn-icon shrink-0 !w-14 !h-14 text-2xl" title="Zobraziť hneď (mimo poradia)" aria-label={`Zobraziť hneď: ${s.title}`}>
                 ▶
               </button>
             </div>
