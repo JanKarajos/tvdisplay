@@ -113,7 +113,11 @@ function categoryName(id) {
 function buildSnapshot() {
   // Kategórie z administrácie v jej poradí, inak v poradí spevníka JKS (vlastné na konci)
   const fromSongs = Array.from(new Set(songs.map((s) => s.category).filter(Boolean))).sort((a, b) => categoryOrder(a) - categoryOrder(b));
-  const ids = Array.from(new Set([...(managedCategories || []).map((c) => c.id), ...fromSongs, ...extraCategories]));
+  // Poradie z administrácie alebo z categories.json na NAS (napr. 1. JKS, 2. Žalmy …), potom ostatné
+  const ordered = managedCategories || fileCategories || [];
+  const ids = Array.from(new Set([...ordered.map((c) => c.id), ...fromSongs, ...extraCategories]))
+    // prázdne kategórie zo zoznamu nezobrazuj (iba z administrácie, kde sa dajú spravovať)
+    .filter((id) => managedCategories || fromSongs.includes(id) || extraCategories.includes(id));
   const names = new Map([...fileCategories, ...(managedCategories || [])].map((c) => [c.id, c.name]));
   snapshot = {
     songs,
