@@ -476,10 +476,13 @@ if [ "$WANT_BUTTONS" = yes ]; then
   # vnútorný pull-up drží pin v 1, stlačenie ho spojí so zemou (0).
   if [ ! -f /etc/default/laudate-buttons ]; then
     cat >/etc/default/laudate-buttons <<'EOF'
-# Fyzické tlačidlá Laudate (Orange Pi PC). Čísla liniek na čipe GPIO (PA0 = 0, PA1 = 1, PA6 = 6 ...)
-# Pin 11 (PA1): reštart aplikácie – podržať 1 s
-# Pin 13 (PA0): reštart Orange Pi – podržať 3 s
+# Fyzické tlačidlá a LED Laudate (Orange Pi PC). Čísla liniek na čipe GPIO:
+# PA0 = 0, PA1 = 1, PA3 = 3, PC4 = 2*32+4 = 68 ...
+# Pin 11 (PA1): tlačidlo reštart aplikácie – podržať 1 s
+# Pin 13 (PA0): tlačidlo reštart Orange Pi – podržať 3 s
 # Druhý kontakt oboch tlačidiel: GND (pin 9)
+# Pin 15 (PA3): LED reštartu aplikácie, pin 16 (PC4): LED reštartu Orange Pi
+# LED cez rezistor 220–330 Ω na GND (pin 14)
 # Po zmene: sudo systemctl restart tvdisplay-buttons
 BUTTON_APP_LINE=1
 BUTTON_REBOOT_LINE=0
@@ -489,35 +492,87 @@ BUTTON_REBOOT_HOLD=3
 BUTTON_CHIP=
 EOF
   fi
+  # Nové nastavenia doplň aj do staršieho súboru (ostatné sa nemenia)
+  add_default() { grep -q "^$1=" /etc/default/laudate-buttons || printf '%s=%s\n' "$1" "$2" >>/etc/default/laudate-buttons; }
+  add_default LED_APP_LINE 3
+  add_default LED_REBOOT_LINE 68
+  add_default LAUDATE_PORT "$APP_PORT"
   cat >/usr/local/sbin/laudate-buttons <<'EOF'
 #!/bin/bash
 # Laudate: sleduje fyzické tlačidlá a pri dostatočne dlhom stlačení spustí reštart.
+# LED pri tlačidle svieti od stlačenia, kým sa akcia nevykoná: pri reštarte aplikácie
+# zhasne, keď aplikácia znova odpovedá; pri reštarte Orange Pi zhasne s vypnutím zariadenia.
 . /etc/default/laudate-buttons
 CHIP=${BUTTON_CHIP:-$(gpiodetect 2>/dev/null | awk '/1c20800/ {print $1; exit}')}
 CHIP=${CHIP:-gpiochip0}
+HEALTH="http://localhost:${LAUDATE_PORT:-5173}/health"
 if gpioget --version 2>/dev/null | head -n1 | grep -q 'v2'; then
   read_lines() { gpioget -c "$CHIP" -b pull-up --numeric "$BUTTON_APP_LINE" "$BUTTON_REBOOT_LINE" 2>/dev/null; }
+  hold_line() { gpioset -c "$CHIP" "$1=$2" 2>/dev/null & }
 else
   read_lines() { gpioget -B pull-up "$CHIP" "$BUTTON_APP_LINE" "$BUTTON_REBOOT_LINE" 2>/dev/null; }
+  hold_line() { gpioset --mode=signal "$CHIP" "$1=$2" 2>/dev/null & }
 fi
 if ! read_lines >/dev/null; then
   echo "Piny GPIO sa nedajú čítať ($CHIP, linky $BUTTON_APP_LINE a $BUTTON_REBOOT_LINE)"
   exit 1
 fi
-echo "Tlačidlá: $CHIP, reštart aplikácie linka $BUTTON_APP_LINE, reštart zariadenia linka $BUTTON_REBOOT_LINE"
+
+# LED: hodnotu drží proces gpioset; pri zmene sa starý ukončí a spustí nový
+declare -A LED_PID LED_STATE
+led() { # led app|reboot 0|1
+  local line
+  if [ "$1" = app ]; then line=$LED_APP_LINE; else line=$LED_REBOOT_LINE; fi
+  [ -n "$line" ] || return 0
+  [ "${LED_STATE[$1]:-}" = "$2" ] && return 0
+  if [ -n "${LED_PID[$1]:-}" ]; then
+    kill "${LED_PID[$1]}" 2>/dev/null
+    wait "${LED_PID[$1]}" 2>/dev/null
+  fi
+  hold_line "$line" "$2"
+  LED_PID[$1]=$!
+  LED_STATE[$1]=$2
+}
+cleanup() { for pid in "${LED_PID[@]}"; do kill "$pid" 2>/dev/null; done; }
+trap cleanup EXIT
+trap 'exit 0' TERM INT
+led app 0
+led reboot 0
+
+# Po reštarte aplikácie počkaj, kým znova odpovedá (najviac 2 minúty)
+wait_for_app() {
+  sleep 3
+  for _ in $(seq 1 120); do
+    curl -fsS -o /dev/null --max-time 2 "$HEALTH" && return 0
+    sleep 1
+  done
+  echo "Aplikácia po reštarte neodpovedá"
+}
+
+echo "Tlačidlá: $CHIP, reštart aplikácie linka $BUTTON_APP_LINE (LED ${LED_APP_LINE:--}), reštart zariadenia linka $BUTTON_REBOOT_LINE (LED ${LED_REBOOT_LINE:--})"
 app=0
 reboot=0
+rebooting=0
 while sleep 0.1; do
   read -r a r < <(read_lines) || continue
   if [ "$a" = 0 ]; then app=$((app + 1)); else app=0; fi
   if [ "$r" = 0 ]; then reboot=$((reboot + 1)); else reboot=0; fi
+  [ "$rebooting" -eq 1 ] && continue
+  # LED svieti, kým je tlačidlo stlačené (aj krátko – vidno, že stlačenie zariadenie zaznamenalo)
+  if [ "$a" = 0 ] && [ "$app" -gt 0 ]; then led app 1; else led app 0; fi
+  if [ "$r" = 0 ]; then led reboot 1; else led reboot 0; fi
   # Akcia sa spustí raz, keď tlačidlo drží dosť dlho (pri ďalšom držaní sa neopakuje)
   if [ "$reboot" -eq $((BUTTON_REBOOT_HOLD * 10)) ]; then
     echo "Tlačidlo: reštart zariadenia"
+    rebooting=1 # LED ostane svietiť až do vypnutia
     /usr/local/sbin/laudate-system reboot
   elif [ "$app" -eq $((BUTTON_APP_HOLD * 10)) ]; then
     echo "Tlačidlo: reštart aplikácie"
     /usr/local/sbin/laudate-system restart-app
+    wait_for_app
+    echo "Aplikácia znova beží"
+    led app 0
+    app=-1000 # kým sa tlačidlo nepustí, akcia sa nezopakuje
   fi
 done
 EOF
@@ -589,6 +644,7 @@ echo "  Stav a záznamy:        systemctl status tvdisplay  /  journalctl -u tvd
 echo "  Nastavenia:            $APP_DIR/.env (po zmene: sudo systemctl restart tvdisplay)"
 if [ "$WANT_BUTTONS" = yes ]; then
   echo "  Tlačidlá:              pin 11 = reštart aplikácie (1 s), pin 13 = reštart Orange Pi (3 s), druhý kontakt GND pin 9"
+  echo "  LED:                   pin 15 = reštart aplikácie, pin 16 = reštart Orange Pi (cez rezistor 220–330 Ω na GND pin 14)"
 fi
 CURRENT_CHURCH_URL=$(sed -n 's/^CHURCH_DATA_URL=//p' "$APP_DIR/.env" | tail -n1)
 CURRENT_NAS_URL=$(sed -n 's/^NAS_URL=//p' "$APP_DIR/.env" | tail -n1)
