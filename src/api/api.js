@@ -10,13 +10,18 @@ import { CATEGORY_NAMES, categoryOrder } from '../../server/jksCategories.js';
 // Všetky Texty/Žalmy YYYY.json, ktoré existujú v čase buildu (chýbajúci rok build nezhodí)
 const bundledPsalms = import.meta.glob('../../Texty/Žalmy *.json', { eager: true, import: 'default' });
 
+// Refrén zo starších dát končí na "alebo" (druhá možnosť sa nestiahla) – to slovo nezobrazujeme
+const stripAlebo = (text) => text.replace(/\s+alebo\s*$/i, '').trim();
+
+// dátum -> [{ label, refrain }]; viac možností má napr. Vianoce (v noci, na úsvite, počas dňa)
 function buildPsalmMap(dataset) {
   const map = new Map();
   for (const item of Array.isArray(dataset?.content) ? dataset.content : []) {
-    const refrain = Array.isArray(item?.strophes) ? item.strophes[0] : null;
-    if (item?.number && typeof refrain === 'string' && refrain.trim()) {
-      map.set(item.number, refrain.trim());
-    }
+    if (!item?.number) continue;
+    const options = (Array.isArray(item.options) && item.options.length ? item.options : [{ label: '', refrain: Array.isArray(item.strophes) ? item.strophes[0] : '' }])
+      .map((o) => ({ label: typeof o?.label === 'string' ? o.label : '', refrain: normalizePsalmRefrain(typeof o?.refrain === 'string' ? stripAlebo(o.refrain) : '') }))
+      .filter((o) => o.refrain);
+    if (options.length) map.set(item.number, options);
   }
   return map;
 }
@@ -30,7 +35,7 @@ for (const [file, data] of Object.entries(bundledPsalms)) {
 async function ensurePsalmYear(year) {
   if (!/^\d{4}$/.test(year) || psalmMaps.has(year)) return;
   try {
-    const res = await fetch(`${SERVER_URL}/api/psalms/${year}`, { signal: timeoutSignal(4000) });
+    const res = await fetch(`${SERVER_URL}/api/psalms/${year}`, { signal: timeoutSignal(8000) });
     if (!res.ok) return;
     const map = buildPsalmMap(await res.json());
     if (map.size) psalmMaps.set(year, map);
@@ -55,16 +60,36 @@ function toLocalISODate(d = new Date()) {
   return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
 }
 
-async function buildPsalmSong(dateStr) {
-  const isoDate = typeof dateStr === 'string' && dateStr.trim() ? dateStr.trim() : toLocalISODate();
-  const year = isoDate.slice(0, 4);
-  await ensurePsalmYear(year);
-  const refrain = normalizePsalmRefrain(psalmMaps.get(year)?.get(isoDate));
+// "psalm-2026-12-25" = prvý refrén dňa, "psalm-2026-12-25~2" = tretí
+function parsePsalmKey(key) {
+  const [date, option] = String(key || '').split('~');
+  const iso = /^\d{4}-\d{2}-\d{2}$/.test(date) ? date : toLocalISODate();
+  return { iso, option: Math.max(0, parseInt(option, 10) || 0) };
+}
+
+const psalmOptionsSync = (iso) => psalmMaps.get(iso.slice(0, 4))?.get(iso) || [];
+
+// Všetky refrény na daný dátum (pri rokoch mimo aplikácie ich stiahne zo servera)
+export async function getPsalmOptions(iso) {
+  await ensurePsalmYear(iso.slice(0, 4));
+  return psalmOptionsSync(iso);
+}
+
+export { psalmOptionsSync };
+
+function psalmTitle(iso, label) {
+  return `Responzóriový žalm – ${formatDate(iso)}${label ? ` (${label})` : ''}`;
+}
+
+async function buildPsalmSong(key) {
+  const { iso, option } = parsePsalmKey(key);
+  const options = await getPsalmOptions(iso);
+  const chosen = options[option] || options[0];
   return {
-    id: `psalm-${isoDate}`,
-    title: `Responzóriový žalm – ${formatDate(isoDate)}`,
+    id: `psalm-${iso}${option ? `~${option}` : ''}`,
+    title: psalmTitle(iso, options.length > 1 ? chosen?.label : ''),
     category: 'Žalmy',
-    lyrics: refrain || `Žalm pre dátum ${isoDate} sa nenašiel.`,
+    lyrics: chosen?.refrain || `Žalm pre dátum ${iso} sa nenašiel.`,
     hideTitle: true,
   };
 }
@@ -486,13 +511,10 @@ function formatDate(iso) {
 // Synchrónny popis položky poradia (pre zoznam na omšu) – bez sťahovania
 export function describeItem(id) {
   if (typeof id === 'string' && id.startsWith('psalm-')) {
-    const iso = id.slice('psalm-'.length);
-    return {
-      id,
-      kind: 'psalm',
-      title: `Responzóriový žalm – ${formatDate(iso)}`,
-      subtitle: normalizePsalmRefrain(psalmMaps.get(iso.slice(0, 4))?.get(iso)) || '',
-    };
+    const { iso, option } = parsePsalmKey(id.slice('psalm-'.length));
+    const options = psalmOptionsSync(iso);
+    const chosen = options[option] || options[0];
+    return { id, kind: 'psalm', title: psalmTitle(iso, options.length > 1 ? chosen?.label : ''), subtitle: chosen?.refrain || '' };
   }
   const song = songs.find((s) => s.id === id);
   if (song) return { id, kind: song.type === 'pdf' ? 'pdf' : 'song', title: song.title, number: song.number, category: song.category };
@@ -501,8 +523,8 @@ export function describeItem(id) {
   return { id, kind: 'missing', title: 'Neznáma položka' };
 }
 
-export function psalmId(date) {
-  return `psalm-${date || toLocalISODate()}`;
+export function psalmId(date, option = 0) {
+  return `psalm-${date || toLocalISODate()}${option ? `~${option}` : ''}`;
 }
 
 export { toLocalISODate };

@@ -1,0 +1,3532 @@
+{
+  "name": "Žalmy 2027",
+  "content": [
+    {
+      "name": "2027-01-01 - Bože, buď nám milostivý a žehnaj nás.",
+      "number": "2027-01-01",
+      "strophes": [
+        "Bože, buď nám milostivý a žehnaj nás."
+      ]
+    },
+    {
+      "name": "2027-01-02 - Uzreli všetky končiny zeme spásu nášho Boha.",
+      "number": "2027-01-02",
+      "strophes": [
+        "Uzreli všetky končiny zeme spásu nášho Boha."
+      ]
+    },
+    {
+      "name": "2027-01-03 - Slovo sa telom stalo a prebývalo medzi nami.",
+      "number": "2027-01-03",
+      "strophes": [
+        "Slovo sa telom stalo a prebývalo medzi nami."
+      ],
+      "options": [
+        {
+          "label": "",
+          "refrain": "Slovo sa telom stalo a prebývalo medzi nami."
+        },
+        {
+          "label": "alebo",
+          "refrain": "Aleluja."
+        }
+      ]
+    },
+    {
+      "name": "2027-01-04 - Uzreli všetky končiny zeme spásu nášho Boha.",
+      "number": "2027-01-04",
+      "strophes": [
+        "Uzreli všetky končiny zeme spásu nášho Boha."
+      ]
+    },
+    {
+      "name": "2027-01-05 - Jasaj na chválu Pánovi, celá zem.",
+      "number": "2027-01-05",
+      "strophes": [
+        "Jasaj na chválu Pánovi, celá zem."
+      ]
+    },
+    {
+      "name": "2027-01-06 - Budú sa ti klaňať, Pane, všetky národy sveta.",
+      "number": "2027-01-06",
+      "strophes": [
+        "Budú sa ti klaňať, Pane, všetky národy sveta."
+      ]
+    },
+    {
+      "name": "2027-01-07 - Otec dal Synovi kráľovstvo všetkých národov.",
+      "number": "2027-01-07",
+      "strophes": [
+        "Otec dal Synovi kráľovstvo všetkých národov."
+      ]
+    },
+    {
+      "name": "2027-01-08 - Budú sa ti klaňať, Pane, všetky národy sveta.",
+      "number": "2027-01-08",
+      "strophes": [
+        "Budú sa ti klaňať, Pane, všetky národy sveta."
+      ]
+    },
+    {
+      "name": "2027-01-09 - Budú sa ti klaňať, Pane, všetky národy sveta.",
+      "number": "2027-01-09",
+      "strophes": [
+        "Budú sa ti klaňať, Pane, všetky národy sveta."
+      ]
+    },
+    {
+      "name": "2027-01-10 - Pán požehná svoj ľud pokojom.",
+      "number": "2027-01-10",
+      "strophes": [
+        "Pán požehná svoj ľud pokojom."
+      ],
+      "options": [
+        {
+          "label": "",
+          "refrain": "Pán požehná svoj ľud pokojom."
+        },
+        {
+          "label": "",
+          "refrain": "Čerpajme vodu s radosťou z prameňov spásy."
+        }
+      ]
+    },
+    {
+      "name": "2027-01-11 - Klaňajme sa Bohu spolu s jeho anjelmi.",
+      "number": "2027-01-11",
+      "strophes": [
+        "Klaňajme sa Bohu spolu s jeho anjelmi."
+      ]
+    },
+    {
+      "name": "2027-01-12 - Svojho Syna si ustanovil za vládcu nad dielami svojich rúk.",
+      "number": "2027-01-12",
+      "strophes": [
+        "Svojho Syna si ustanovil za vládcu nad dielami svojich rúk."
+      ]
+    },
+    {
+      "name": "2027-01-13 - Pán večne pamätá na svoju zmluvu.",
+      "number": "2027-01-13",
+      "strophes": [
+        "Pán večne pamätá na svoju zmluvu."
+      ],
+      "options": [
+        {
+          "label": "",
+          "refrain": "Pán večne pamätá na svoju zmluvu."
+        },
+        {
+          "label": "alebo",
+          "refrain": "Aleluja."
+        }
+      ]
+    },
+    {
+      "name": "2027-01-14 - Pane, daj, aby sme počúvali tvoj hlas a nezatvrdzovali si srdcia.",
+      "number": "2027-01-14",
+      "strophes": [
+        "Pane, daj, aby sme počúvali tvoj hlas a nezatvrdzovali si srdcia."
+      ]
+    },
+    {
+      "name": "2027-01-15 - Nezabúdajme na Božie diela.",
+      "number": "2027-01-15",
+      "strophes": [
+        "Nezabúdajme na Božie diela."
+      ]
+    },
+    {
+      "name": "2027-01-16 - Tvoje slová, Pane, sú Duch a život.",
+      "number": "2027-01-16",
+      "strophes": [
+        "Tvoje slová, Pane, sú Duch a život."
+      ]
+    },
+    {
+      "name": "2027-01-17 - Hľa, prichádzam, Pane, chcem plniť tvoju vôľu.",
+      "number": "2027-01-17",
+      "strophes": [
+        "Hľa, prichádzam, Pane, chcem plniť tvoju vôľu."
+      ]
+    },
+    {
+      "name": "2027-01-18 - Kriste, ty si kňaz naveky podľa radu Melchizedechovho.",
+      "number": "2027-01-18",
+      "strophes": [
+        "Kriste, ty si kňaz naveky podľa radu Melchizedechovho."
+      ]
+    },
+    {
+      "name": "2027-01-19 - Pán má svoju zmluvu stále na mysli.",
+      "number": "2027-01-19",
+      "strophes": [
+        "Pán má svoju zmluvu stále na mysli."
+      ],
+      "options": [
+        {
+          "label": "",
+          "refrain": "Pán má svoju zmluvu stále na mysli."
+        },
+        {
+          "label": "alebo",
+          "refrain": "Aleluja."
+        }
+      ]
+    },
+    {
+      "name": "2027-01-20 - Kriste, ty si kňaz naveky podľa radu Melchizedechovho.",
+      "number": "2027-01-20",
+      "strophes": [
+        "Kriste, ty si kňaz naveky podľa radu Melchizedechovho."
+      ]
+    },
+    {
+      "name": "2027-01-21 - Hľa, prichádzam, Pane, chcem plniť tvoju vôľu.",
+      "number": "2027-01-21",
+      "strophes": [
+        "Hľa, prichádzam, Pane, chcem plniť tvoju vôľu."
+      ]
+    },
+    {
+      "name": "2027-01-22 - Milosrdenstvo a vernosť sa stretnú navzájom.",
+      "number": "2027-01-22",
+      "strophes": [
+        "Milosrdenstvo a vernosť sa stretnú navzájom."
+      ]
+    },
+    {
+      "name": "2027-01-23 - Pán vystupuje do neba za hlaholu poľnice.",
+      "number": "2027-01-23",
+      "strophes": [
+        "Pán vystupuje do neba za hlaholu poľnice."
+      ],
+      "options": [
+        {
+          "label": "",
+          "refrain": "Pán vystupuje do neba za hlaholu poľnice."
+        },
+        {
+          "label": "alebo",
+          "refrain": "Aleluja."
+        }
+      ]
+    },
+    {
+      "name": "2027-01-24 - Ukáž mi, Pane, svoje cesty.",
+      "number": "2027-01-24",
+      "strophes": [
+        "Ukáž mi, Pane, svoje cesty."
+      ]
+    },
+    {
+      "name": "2027-01-25 - Choďte do celého sveta a hlásajte evanjelium.",
+      "number": "2027-01-25",
+      "strophes": [
+        "Choďte do celého sveta a hlásajte evanjelium."
+      ],
+      "options": [
+        {
+          "label": "",
+          "refrain": "Choďte do celého sveta a hlásajte evanjelium."
+        },
+        {
+          "label": "alebo",
+          "refrain": "Aleluja."
+        }
+      ]
+    },
+    {
+      "name": "2027-01-26 - Hľa, prichádzam, Pane, chcem plniť tvoju vôľu.",
+      "number": "2027-01-26",
+      "strophes": [
+        "Hľa, prichádzam, Pane, chcem plniť tvoju vôľu."
+      ]
+    },
+    {
+      "name": "2027-01-27 - Kriste, ty si kňaz naveky podľa radu Melchizedechovho.",
+      "number": "2027-01-27",
+      "strophes": [
+        "Kriste, ty si kňaz naveky podľa radu Melchizedechovho."
+      ]
+    },
+    {
+      "name": "2027-01-28 - S úprimným srdcom hľadáme tvoju tvár, Pane.",
+      "number": "2027-01-28",
+      "strophes": [
+        "S úprimným srdcom hľadáme tvoju tvár, Pane."
+      ]
+    },
+    {
+      "name": "2027-01-29 - Pane, spas ma; ochraňuj ma v čase súženia.",
+      "number": "2027-01-29",
+      "strophes": [
+        "Pane, spas ma; ochraňuj ma v čase súženia."
+      ]
+    },
+    {
+      "name": "2027-01-30 - Nech je zvelebený Pán, Boh Izraela, lebo navštívil svoj ľud.",
+      "number": "2027-01-30",
+      "strophes": [
+        "Nech je zvelebený Pán, Boh Izraela, lebo navštívil svoj ľud."
+      ]
+    },
+    {
+      "name": "2027-01-31 - Pane, daj, aby sme počúvali tvoj hlas a nezatvrdzovali si srdcia.",
+      "number": "2027-01-31",
+      "strophes": [
+        "Pane, daj, aby sme počúvali tvoj hlas a nezatvrdzovali si srdcia."
+      ]
+    },
+    {
+      "name": "2027-02-01 - Majte srdce statočné, vy všetci, čo dúfate v Pána.",
+      "number": "2027-02-01",
+      "strophes": [
+        "Majte srdce statočné, vy všetci, čo dúfate v Pána."
+      ]
+    },
+    {
+      "name": "2027-02-02 - Príď, Pane, do svojho svätého chrámu.",
+      "number": "2027-02-02",
+      "strophes": [
+        "Príď, Pane, do svojho svätého chrámu."
+      ]
+    },
+    {
+      "name": "2027-02-03 - Milosrdenstvo Pánovo je od večnosti voči tým, čo sa ho boja.",
+      "number": "2027-02-03",
+      "strophes": [
+        "Milosrdenstvo Pánovo je od večnosti voči tým, čo sa ho boja."
+      ]
+    },
+    {
+      "name": "2027-02-04 - Spomíname, Bože, na tvoje milosrdenstvo uprostred tvojho chrámu.",
+      "number": "2027-02-04",
+      "strophes": [
+        "Spomíname, Bože, na tvoje milosrdenstvo uprostred tvojho chrámu."
+      ]
+    },
+    {
+      "name": "2027-02-05 - Pán je moje svetlo a moja spása.",
+      "number": "2027-02-05",
+      "strophes": [
+        "Pán je moje svetlo a moja spása."
+      ]
+    },
+    {
+      "name": "2027-02-06 - Pán je môj pastier, nič mi nechýba.",
+      "number": "2027-02-06",
+      "strophes": [
+        "Pán je môj pastier, nič mi nechýba."
+      ]
+    },
+    {
+      "name": "2027-02-07 - Chváľme Pána, on uzdravuje skľúčených srdcom.",
+      "number": "2027-02-07",
+      "strophes": [
+        "Chváľme Pána, on uzdravuje skľúčených srdcom."
+      ]
+    },
+    {
+      "name": "2027-02-08 - Zo svojich diel nech sa teší Pán.",
+      "number": "2027-02-08",
+      "strophes": [
+        "Zo svojich diel nech sa teší Pán."
+      ]
+    },
+    {
+      "name": "2027-02-09 - Pane, náš Vládca, aké vznešené je tvoje meno na celej zemi!",
+      "number": "2027-02-09",
+      "strophes": [
+        "Pane, náš Vládca, aké vznešené je tvoje meno na celej zemi!"
+      ]
+    },
+    {
+      "name": "2027-02-10 - Zmiluj sa, Pane, lebo sme zhrešili.",
+      "number": "2027-02-10",
+      "strophes": [
+        "Zmiluj sa, Pane, lebo sme zhrešili."
+      ]
+    },
+    {
+      "name": "2027-02-11 - Blažený človek, čo v Pána skladá dôveru.",
+      "number": "2027-02-11",
+      "strophes": [
+        "Blažený človek, čo v Pána skladá dôveru."
+      ]
+    },
+    {
+      "name": "2027-02-12 - Bože, ty nepohŕdaš srdcom skrúšeným a poníženým.",
+      "number": "2027-02-12",
+      "strophes": [
+        "Bože, ty nepohŕdaš srdcom skrúšeným a poníženým."
+      ]
+    },
+    {
+      "name": "2027-02-13 - Ukáž mi, Pane, svoju cestu a budem kráčať v tvojej pravde.",
+      "number": "2027-02-13",
+      "strophes": [
+        "Ukáž mi, Pane, svoju cestu a budem kráčať v tvojej pravde."
+      ]
+    },
+    {
+      "name": "2027-02-14 - Cesty Pánove sú milosrdenstvo a vernosť.",
+      "number": "2027-02-14",
+      "strophes": [
+        "Cesty Pánove sú milosrdenstvo a vernosť."
+      ]
+    },
+    {
+      "name": "2027-02-15 - Tvoje slová, Pane, sú Duch a život.",
+      "number": "2027-02-15",
+      "strophes": [
+        "Tvoje slová, Pane, sú Duch a život."
+      ]
+    },
+    {
+      "name": "2027-02-16 - Pán vyslobodí spravodlivých zo všetkých tiesní.",
+      "number": "2027-02-16",
+      "strophes": [
+        "Pán vyslobodí spravodlivých zo všetkých tiesní."
+      ]
+    },
+    {
+      "name": "2027-02-17 - Bože, ty nepohŕdaš srdcom skrúšeným a poníženým.",
+      "number": "2027-02-17",
+      "strophes": [
+        "Bože, ty nepohŕdaš srdcom skrúšeným a poníženým."
+      ]
+    },
+    {
+      "name": "2027-02-18 - Vyslyš ma, Pane, keď ťa budem vzývať.",
+      "number": "2027-02-18",
+      "strophes": [
+        "Vyslyš ma, Pane, keď ťa budem vzývať."
+      ]
+    },
+    {
+      "name": "2027-02-19 - Pane, ty si milostivý a my ti chceme v bázni slúžiť.",
+      "number": "2027-02-19",
+      "strophes": [
+        "Pane, ty si milostivý a my ti chceme v bázni slúžiť."
+      ]
+    },
+    {
+      "name": "2027-02-20 - Blažení tí, čo kráčajú podľa zákona Pánovho.",
+      "number": "2027-02-20",
+      "strophes": [
+        "Blažení tí, čo kráčajú podľa zákona Pánovho."
+      ]
+    },
+    {
+      "name": "2027-02-21 - Pred tvárou Pána budem kráčať v krajine žijúcich.",
+      "number": "2027-02-21",
+      "strophes": [
+        "Pred tvárou Pána budem kráčať v krajine žijúcich."
+      ]
+    },
+    {
+      "name": "2027-02-22 - Pán je môj pastier, nič mi nechýba.",
+      "number": "2027-02-22",
+      "strophes": [
+        "Pán je môj pastier, nič mi nechýba."
+      ]
+    },
+    {
+      "name": "2027-02-23 - Kto kráča bez úhony, tomu ukážem Božiu spásu.",
+      "number": "2027-02-23",
+      "strophes": [
+        "Kto kráča bez úhony, tomu ukážem Božiu spásu."
+      ]
+    },
+    {
+      "name": "2027-02-24 - Zachráň ma, Pane, vo svojom milosrdenstve.",
+      "number": "2027-02-24",
+      "strophes": [
+        "Zachráň ma, Pane, vo svojom milosrdenstve."
+      ]
+    },
+    {
+      "name": "2027-02-25 - Blažený človek, čo v Pána skladá dôveru.",
+      "number": "2027-02-25",
+      "strophes": [
+        "Blažený človek, čo v Pána skladá dôveru."
+      ]
+    },
+    {
+      "name": "2027-02-26 - Pamätáme, Pane, na divy, čo si učinil.",
+      "number": "2027-02-26",
+      "strophes": [
+        "Pamätáme, Pane, na divy, čo si učinil."
+      ]
+    },
+    {
+      "name": "2027-02-27 - Milostivý a milosrdný je Pán.",
+      "number": "2027-02-27",
+      "strophes": [
+        "Milostivý a milosrdný je Pán."
+      ]
+    },
+    {
+      "name": "2027-02-28 - Pane, ty máš slová večného života.",
+      "number": "2027-02-28",
+      "strophes": [
+        "Pane, ty máš slová večného života."
+      ],
+      "options": [
+        {
+          "label": "Čítania pre rok B",
+          "refrain": "Pane, ty máš slová večného života."
+        },
+        {
+          "label": "Namiesto týchto perikop možno použiť všetky čítania z roku A",
+          "refrain": "Pane, daj, aby sme počúvali tvoj hlas a nezatvrdzovali si srdcia."
+        }
+      ]
+    },
+    {
+      "name": "2027-03-01 - Po Bohu žízni moja duša, po Bohu živom.",
+      "number": "2027-03-01",
+      "strophes": [
+        "Po Bohu žízni moja duša, po Bohu živom."
+      ]
+    },
+    {
+      "name": "2027-03-02 - Rozpomeň sa, Pane, na svoje zľutovanie.",
+      "number": "2027-03-02",
+      "strophes": [
+        "Rozpomeň sa, Pane, na svoje zľutovanie."
+      ]
+    },
+    {
+      "name": "2027-03-03 - Chváľ, Jeruzalem, Pána, oslavuj, Sion, svojho Boha.",
+      "number": "2027-03-03",
+      "strophes": [
+        "Chváľ, Jeruzalem, Pána, oslavuj, Sion, svojho Boha."
+      ]
+    },
+    {
+      "name": "2027-03-04 - Pane, daj, aby sme počúvali tvoj hlas a nezatvrdzovali si srdcia.",
+      "number": "2027-03-04",
+      "strophes": [
+        "Pane, daj, aby sme počúvali tvoj hlas a nezatvrdzovali si srdcia."
+      ]
+    },
+    {
+      "name": "2027-03-05 - Pane, ty máš slová večného života.",
+      "number": "2027-03-05",
+      "strophes": [
+        "Pane, ty máš slová večného života."
+      ]
+    },
+    {
+      "name": "2027-03-06 - Milosrdenstvo chcem, a nie obetu.",
+      "number": "2027-03-06",
+      "strophes": [
+        "Milosrdenstvo chcem, a nie obetu."
+      ]
+    },
+    {
+      "name": "2027-03-07 - Pane, chcem stále pamätať na teba.",
+      "number": "2027-03-07",
+      "strophes": [
+        "Pane, chcem stále pamätať na teba."
+      ],
+      "options": [
+        {
+          "label": "Čítania pre rok B",
+          "refrain": "Pane, chcem stále pamätať na teba."
+        },
+        {
+          "label": "Namiesto týchto perikop možno použiť všetky čítania z roku A",
+          "refrain": "Pán je môj pastier, nič mi nechýba."
+        }
+      ]
+    },
+    {
+      "name": "2027-03-08 - Budem ťa, Pane, oslavovať, že si ma vyslobodil.",
+      "number": "2027-03-08",
+      "strophes": [
+        "Budem ťa, Pane, oslavovať, že si ma vyslobodil."
+      ]
+    },
+    {
+      "name": "2027-03-09 - S nami je Pán zástupov, naším útočišťom je Pán, náš Boh.",
+      "number": "2027-03-09",
+      "strophes": [
+        "S nami je Pán zástupov, naším útočišťom je Pán, náš Boh."
+      ]
+    },
+    {
+      "name": "2027-03-10 - Milostivý a milosrdný je Pán.",
+      "number": "2027-03-10",
+      "strophes": [
+        "Milostivý a milosrdný je Pán."
+      ]
+    },
+    {
+      "name": "2027-03-11 - Pamätaj na nás, Pane, z lásky k svojmu ľudu.",
+      "number": "2027-03-11",
+      "strophes": [
+        "Pamätaj na nás, Pane, z lásky k svojmu ľudu."
+      ]
+    },
+    {
+      "name": "2027-03-12 - Pane, buď pri tých, čo majú srdce skrúšené.",
+      "number": "2027-03-12",
+      "strophes": [
+        "Pane, buď pri tých, čo majú srdce skrúšené."
+      ]
+    },
+    {
+      "name": "2027-03-13 - Pane, Bože môj, k tebe sa utiekam.",
+      "number": "2027-03-13",
+      "strophes": [
+        "Pane, Bože môj, k tebe sa utiekam."
+      ]
+    },
+    {
+      "name": "2027-03-14 - Bože, stvor vo mne srdce čisté.",
+      "number": "2027-03-14",
+      "strophes": [
+        "Bože, stvor vo mne srdce čisté."
+      ],
+      "options": [
+        {
+          "label": "Čítania pre rok B",
+          "refrain": "Bože, stvor vo mne srdce čisté."
+        },
+        {
+          "label": "Namiesto týchto perikop možno použiť všetky čítania z roku A",
+          "refrain": "U Pána je milosrdenstvo a hojné vykúpenie."
+        }
+      ]
+    },
+    {
+      "name": "2027-03-15 - Pane, nebudem sa báť zlého, lebo ty si so mnou.",
+      "number": "2027-03-15",
+      "strophes": [
+        "Pane, nebudem sa báť zlého, lebo ty si so mnou."
+      ]
+    },
+    {
+      "name": "2027-03-16 - Pane, vyslyš moju modlitbu a moje volanie nech dôjde ku tebe.",
+      "number": "2027-03-16",
+      "strophes": [
+        "Pane, vyslyš moju modlitbu a moje volanie nech dôjde ku tebe."
+      ]
+    },
+    {
+      "name": "2027-03-17 - Chvála ti a sláva naveky.",
+      "number": "2027-03-17",
+      "strophes": [
+        "Chvála ti a sláva naveky."
+      ]
+    },
+    {
+      "name": "2027-03-18 - Pán večne pamätá na svoju zmluvu.",
+      "number": "2027-03-18",
+      "strophes": [
+        "Pán večne pamätá na svoju zmluvu."
+      ]
+    },
+    {
+      "name": "2027-03-19 - Jeho rod bude trvať naveky.",
+      "number": "2027-03-19",
+      "strophes": [
+        "Jeho rod bude trvať naveky."
+      ]
+    },
+    {
+      "name": "2027-03-20 - Pán nás bude strážiť ako pastier svoje stádo.",
+      "number": "2027-03-20",
+      "strophes": [
+        "Pán nás bude strážiť ako pastier svoje stádo."
+      ]
+    },
+    {
+      "name": "2027-03-21 - Bože môj, Bože môj, prečo si ma opustil?",
+      "number": "2027-03-21",
+      "strophes": [
+        "Bože môj, Bože môj, prečo si ma opustil?"
+      ]
+    },
+    {
+      "name": "2027-03-22 - Pán je moje svetlo a moja spása.",
+      "number": "2027-03-22",
+      "strophes": [
+        "Pán je moje svetlo a moja spása."
+      ]
+    },
+    {
+      "name": "2027-03-23 - Moje ústa, Pane, budú hlásať tvoju spásu.",
+      "number": "2027-03-23",
+      "strophes": [
+        "Moje ústa, Pane, budú hlásať tvoju spásu."
+      ]
+    },
+    {
+      "name": "2027-03-24 - Vo svojej veľkej láske vyslyš ma, Pane.",
+      "number": "2027-03-24",
+      "strophes": [
+        "Vo svojej veľkej láske vyslyš ma, Pane."
+      ]
+    },
+    {
+      "name": "2027-03-25 - Tvoje milosrdenstvo, Pane, ospevovať budem naveky.",
+      "number": "2027-03-25",
+      "strophes": [
+        "Tvoje milosrdenstvo, Pane, ospevovať budem naveky."
+      ]
+    },
+    {
+      "name": "2027-03-26 - Otče, do tvojich rúk porúčam svojho ducha.",
+      "number": "2027-03-26",
+      "strophes": [
+        "Otče, do tvojich rúk porúčam svojho ducha."
+      ]
+    },
+    {
+      "name": "2027-03-27 - Pane, zošli svojho Ducha a obnov tvárnosť zeme.",
+      "number": "2027-03-27",
+      "strophes": [
+        "Pane, zošli svojho Ducha a obnov tvárnosť zeme."
+      ],
+      "options": [
+        {
+          "label": "Vigília – 1. žalm",
+          "refrain": "Pane, zošli svojho Ducha a obnov tvárnosť zeme."
+        },
+        {
+          "label": "Vigília – 2. žalm",
+          "refrain": "Milosti Pánovej plná je zem."
+        },
+        {
+          "label": "Vigília – 3. žalm",
+          "refrain": "Ochráň ma, Bože, k tebe sa utiekam."
+        },
+        {
+          "label": "Vigília – 4. žalm",
+          "refrain": "Spievajme Pánovi, lebo sa preslávil."
+        },
+        {
+          "label": "Vigília – 5. žalm",
+          "refrain": "Budem ťa, Pane, oslavovať, že si ma vyslobodil."
+        },
+        {
+          "label": "Vigília – 6. žalm",
+          "refrain": "Čerpajme vodu s radosťou z prameňov spásy."
+        },
+        {
+          "label": "Vigília – 7. žalm",
+          "refrain": "Pane, ty máš slová večného života."
+        },
+        {
+          "label": "Vigília – 8. žalm",
+          "refrain": "Ako jeleň dychtí za vodou z prameňa, tak moja duša, Bože, túži za tebou."
+        },
+        {
+          "label": "Vigília – 9. žalm",
+          "refrain": "Bože, stvor vo mne srdce čisté."
+        },
+        {
+          "label": "Vigília – 10. žalm",
+          "refrain": "Aleluja."
+        }
+      ]
+    },
+    {
+      "name": "2027-03-28 - Toto je deň Krista Pána, radujme sa, aleluja.",
+      "number": "2027-03-28",
+      "strophes": [
+        "Toto je deň Krista Pána, radujme sa, aleluja."
+      ],
+      "options": [
+        {
+          "label": "Omša cez deň",
+          "refrain": "Toto je deň Krista Pána, radujme sa, aleluja."
+        },
+        {
+          "label": "Omša cez deň – alebo",
+          "refrain": "Aleluja."
+        }
+      ]
+    },
+    {
+      "name": "2027-03-29 - Ochráň ma, Bože, k tebe sa utiekam.",
+      "number": "2027-03-29",
+      "strophes": [
+        "Ochráň ma, Bože, k tebe sa utiekam."
+      ],
+      "options": [
+        {
+          "label": "",
+          "refrain": "Ochráň ma, Bože, k tebe sa utiekam."
+        },
+        {
+          "label": "alebo",
+          "refrain": "Aleluja."
+        }
+      ]
+    },
+    {
+      "name": "2027-03-30 - Milosti Pánovej plná je zem.",
+      "number": "2027-03-30",
+      "strophes": [
+        "Milosti Pánovej plná je zem."
+      ],
+      "options": [
+        {
+          "label": "",
+          "refrain": "Milosti Pánovej plná je zem."
+        },
+        {
+          "label": "alebo",
+          "refrain": "Aleluja."
+        }
+      ]
+    },
+    {
+      "name": "2027-03-31 - Nech sa radujú srdcia tých, čo hľadajú Pána.",
+      "number": "2027-03-31",
+      "strophes": [
+        "Nech sa radujú srdcia tých, čo hľadajú Pána."
+      ],
+      "options": [
+        {
+          "label": "",
+          "refrain": "Nech sa radujú srdcia tých, čo hľadajú Pána."
+        },
+        {
+          "label": "alebo",
+          "refrain": "Aleluja."
+        }
+      ]
+    },
+    {
+      "name": "2027-04-01 - Pane, náš Vládca, aké vznešené je tvoje meno na celej zemi!",
+      "number": "2027-04-01",
+      "strophes": [
+        "Pane, náš Vládca, aké vznešené je tvoje meno na celej zemi!"
+      ],
+      "options": [
+        {
+          "label": "",
+          "refrain": "Pane, náš Vládca, aké vznešené je tvoje meno na celej zemi!"
+        },
+        {
+          "label": "alebo",
+          "refrain": "Aleluja."
+        }
+      ]
+    },
+    {
+      "name": "2027-04-02 - Kameň, čo stavitelia zavrhli, stal sa kameňom uholným.",
+      "number": "2027-04-02",
+      "strophes": [
+        "Kameň, čo stavitelia zavrhli, stal sa kameňom uholným."
+      ],
+      "options": [
+        {
+          "label": "",
+          "refrain": "Kameň, čo stavitelia zavrhli, stal sa kameňom uholným."
+        },
+        {
+          "label": "alebo",
+          "refrain": "Aleluja."
+        }
+      ]
+    },
+    {
+      "name": "2027-04-03 - Vzdávame ti vďaky, Pane, Bože milosrdný.",
+      "number": "2027-04-03",
+      "strophes": [
+        "Vzdávame ti vďaky, Pane, Bože milosrdný."
+      ],
+      "options": [
+        {
+          "label": "",
+          "refrain": "Vzdávame ti vďaky, Pane, Bože milosrdný."
+        },
+        {
+          "label": "alebo",
+          "refrain": "Aleluja."
+        }
+      ]
+    },
+    {
+      "name": "2027-04-04 - Oslavujme Pána, lebo je dobrý, lebo jeho milosrdenstvo trvá naveky.",
+      "number": "2027-04-04",
+      "strophes": [
+        "Oslavujme Pána, lebo je dobrý, lebo jeho milosrdenstvo trvá naveky."
+      ],
+      "options": [
+        {
+          "label": "",
+          "refrain": "Oslavujme Pána, lebo je dobrý, lebo jeho milosrdenstvo trvá naveky."
+        },
+        {
+          "label": "alebo",
+          "refrain": "Aleluja."
+        }
+      ]
+    },
+    {
+      "name": "2027-04-05 - Hľa, prichádzam, Pane, chcem plniť tvoju vôľu.",
+      "number": "2027-04-05",
+      "strophes": [
+        "Hľa, prichádzam, Pane, chcem plniť tvoju vôľu."
+      ]
+    },
+    {
+      "name": "2027-04-06 - Pán kraľuje, velebou sa zaodel.",
+      "number": "2027-04-06",
+      "strophes": [
+        "Pán kraľuje, velebou sa zaodel."
+      ],
+      "options": [
+        {
+          "label": "",
+          "refrain": "Pán kraľuje, velebou sa zaodel."
+        },
+        {
+          "label": "alebo",
+          "refrain": "Aleluja."
+        }
+      ]
+    },
+    {
+      "name": "2027-04-07 - Úbožiak zavolal a Pán ho vyslyšal.",
+      "number": "2027-04-07",
+      "strophes": [
+        "Úbožiak zavolal a Pán ho vyslyšal."
+      ],
+      "options": [
+        {
+          "label": "",
+          "refrain": "Úbožiak zavolal a Pán ho vyslyšal."
+        },
+        {
+          "label": "alebo",
+          "refrain": "Aleluja."
+        }
+      ]
+    },
+    {
+      "name": "2027-04-08 - Úbožiak zavolal a Pán ho vyslyšal.",
+      "number": "2027-04-08",
+      "strophes": [
+        "Úbožiak zavolal a Pán ho vyslyšal."
+      ],
+      "options": [
+        {
+          "label": "",
+          "refrain": "Úbožiak zavolal a Pán ho vyslyšal."
+        },
+        {
+          "label": "alebo",
+          "refrain": "Aleluja."
+        }
+      ]
+    },
+    {
+      "name": "2027-04-09 - Pán je moje svetlo a moja spása.",
+      "number": "2027-04-09",
+      "strophes": [
+        "Pán je moje svetlo a moja spása."
+      ],
+      "options": [
+        {
+          "label": "",
+          "refrain": "Pán je moje svetlo a moja spása."
+        },
+        {
+          "label": "alebo",
+          "refrain": "Aleluja."
+        }
+      ]
+    },
+    {
+      "name": "2027-04-10 - Tvoje milosrdenstvo, Pane, nech je nad nami, ako dúfame v teba.",
+      "number": "2027-04-10",
+      "strophes": [
+        "Tvoje milosrdenstvo, Pane, nech je nad nami, ako dúfame v teba."
+      ],
+      "options": [
+        {
+          "label": "",
+          "refrain": "Tvoje milosrdenstvo, Pane, nech je nad nami, ako dúfame v teba."
+        },
+        {
+          "label": "alebo",
+          "refrain": "Aleluja."
+        }
+      ]
+    },
+    {
+      "name": "2027-04-11 - Pane, ukáž nám svetlo svojej tváre ako znamenie.",
+      "number": "2027-04-11",
+      "strophes": [
+        "Pane, ukáž nám svetlo svojej tváre ako znamenie."
+      ],
+      "options": [
+        {
+          "label": "",
+          "refrain": "Pane, ukáž nám svetlo svojej tváre ako znamenie."
+        },
+        {
+          "label": "alebo",
+          "refrain": "Aleluja."
+        }
+      ]
+    },
+    {
+      "name": "2027-04-12 - Blažení tí, čo kráčajú podľa zákona Pánovho.",
+      "number": "2027-04-12",
+      "strophes": [
+        "Blažení tí, čo kráčajú podľa zákona Pánovho."
+      ],
+      "options": [
+        {
+          "label": "",
+          "refrain": "Blažení tí, čo kráčajú podľa zákona Pánovho."
+        },
+        {
+          "label": "alebo",
+          "refrain": "Aleluja."
+        }
+      ]
+    },
+    {
+      "name": "2027-04-13 - Do tvojich rúk, Pane, porúčam svojho ducha.",
+      "number": "2027-04-13",
+      "strophes": [
+        "Do tvojich rúk, Pane, porúčam svojho ducha."
+      ],
+      "options": [
+        {
+          "label": "",
+          "refrain": "Do tvojich rúk, Pane, porúčam svojho ducha."
+        },
+        {
+          "label": "alebo",
+          "refrain": "Aleluja."
+        }
+      ]
+    },
+    {
+      "name": "2027-04-14 - Jasaj Bohu, celá zem.",
+      "number": "2027-04-14",
+      "strophes": [
+        "Jasaj Bohu, celá zem."
+      ],
+      "options": [
+        {
+          "label": "",
+          "refrain": "Jasaj Bohu, celá zem."
+        },
+        {
+          "label": "alebo",
+          "refrain": "Aleluja."
+        }
+      ]
+    },
+    {
+      "name": "2027-04-15 - Jasaj Bohu, celá zem.",
+      "number": "2027-04-15",
+      "strophes": [
+        "Jasaj Bohu, celá zem."
+      ],
+      "options": [
+        {
+          "label": "",
+          "refrain": "Jasaj Bohu, celá zem."
+        },
+        {
+          "label": "alebo",
+          "refrain": "Aleluja."
+        }
+      ]
+    },
+    {
+      "name": "2027-04-16 - Choďte do celého sveta a hlásajte evanjelium.",
+      "number": "2027-04-16",
+      "strophes": [
+        "Choďte do celého sveta a hlásajte evanjelium."
+      ],
+      "options": [
+        {
+          "label": "",
+          "refrain": "Choďte do celého sveta a hlásajte evanjelium."
+        },
+        {
+          "label": "alebo",
+          "refrain": "Aleluja."
+        }
+      ]
+    },
+    {
+      "name": "2027-04-17 - Čím sa odvďačím Pánovi za všetko, čo mi dal?",
+      "number": "2027-04-17",
+      "strophes": [
+        "Čím sa odvďačím Pánovi za všetko, čo mi dal?"
+      ],
+      "options": [
+        {
+          "label": "",
+          "refrain": "Čím sa odvďačím Pánovi za všetko, čo mi dal?"
+        },
+        {
+          "label": "alebo",
+          "refrain": "Aleluja."
+        }
+      ]
+    },
+    {
+      "name": "2027-04-18 - Kameň, čo stavitelia zavrhli, stal sa kameňom uholným.",
+      "number": "2027-04-18",
+      "strophes": [
+        "Kameň, čo stavitelia zavrhli, stal sa kameňom uholným."
+      ],
+      "options": [
+        {
+          "label": "",
+          "refrain": "Kameň, čo stavitelia zavrhli, stal sa kameňom uholným."
+        },
+        {
+          "label": "alebo",
+          "refrain": "Aleluja."
+        }
+      ]
+    },
+    {
+      "name": "2027-04-19 - Po Bohu žízni moja duša, po Bohu živom.",
+      "number": "2027-04-19",
+      "strophes": [
+        "Po Bohu žízni moja duša, po Bohu živom."
+      ],
+      "options": [
+        {
+          "label": "",
+          "refrain": "Po Bohu žízni moja duša, po Bohu živom."
+        },
+        {
+          "label": "alebo",
+          "refrain": "Aleluja."
+        }
+      ]
+    },
+    {
+      "name": "2027-04-20 - Chváľte Pána, všetky národy.",
+      "number": "2027-04-20",
+      "strophes": [
+        "Chváľte Pána, všetky národy."
+      ],
+      "options": [
+        {
+          "label": "",
+          "refrain": "Chváľte Pána, všetky národy."
+        },
+        {
+          "label": "alebo",
+          "refrain": "Aleluja."
+        }
+      ]
+    },
+    {
+      "name": "2027-04-21 - Velebte Pána, všetky národy.",
+      "number": "2027-04-21",
+      "strophes": [
+        "Velebte Pána, všetky národy."
+      ],
+      "options": [
+        {
+          "label": "",
+          "refrain": "Velebte Pána, všetky národy."
+        },
+        {
+          "label": "alebo",
+          "refrain": "Aleluja."
+        }
+      ]
+    },
+    {
+      "name": "2027-04-22 - Tvoje milosrdenstvo, Pane, ospevovať budem naveky.",
+      "number": "2027-04-22",
+      "strophes": [
+        "Tvoje milosrdenstvo, Pane, ospevovať budem naveky."
+      ],
+      "options": [
+        {
+          "label": "",
+          "refrain": "Tvoje milosrdenstvo, Pane, ospevovať budem naveky."
+        },
+        {
+          "label": "alebo",
+          "refrain": "Aleluja."
+        }
+      ]
+    },
+    {
+      "name": "2027-04-23 - Oslávil si, Otče, svojho Syna.",
+      "number": "2027-04-23",
+      "strophes": [
+        "Oslávil si, Otče, svojho Syna."
+      ],
+      "options": [
+        {
+          "label": "",
+          "refrain": "Oslávil si, Otče, svojho Syna."
+        },
+        {
+          "label": "alebo",
+          "refrain": "Aleluja."
+        }
+      ]
+    },
+    {
+      "name": "2027-04-24 - Uzreli všetky končiny zeme spásu nášho Boha.",
+      "number": "2027-04-24",
+      "strophes": [
+        "Uzreli všetky končiny zeme spásu nášho Boha."
+      ],
+      "options": [
+        {
+          "label": "",
+          "refrain": "Uzreli všetky končiny zeme spásu nášho Boha."
+        },
+        {
+          "label": "alebo",
+          "refrain": "Aleluja."
+        }
+      ]
+    },
+    {
+      "name": "2027-04-25 - Tebe, Pane, patrí moja chvála vo veľkom zhromaždení.",
+      "number": "2027-04-25",
+      "strophes": [
+        "Tebe, Pane, patrí moja chvála vo veľkom zhromaždení."
+      ],
+      "options": [
+        {
+          "label": "",
+          "refrain": "Tebe, Pane, patrí moja chvála vo veľkom zhromaždení."
+        },
+        {
+          "label": "alebo",
+          "refrain": "Aleluja."
+        }
+      ]
+    },
+    {
+      "name": "2027-04-26 - Nie nás, Pane, ale svoje meno osláv.",
+      "number": "2027-04-26",
+      "strophes": [
+        "Nie nás, Pane, ale svoje meno osláv."
+      ],
+      "options": [
+        {
+          "label": "",
+          "refrain": "Nie nás, Pane, ale svoje meno osláv."
+        },
+        {
+          "label": "alebo",
+          "refrain": "Aleluja."
+        }
+      ]
+    },
+    {
+      "name": "2027-04-27 - Tvoji svätí, Pane, oznamujú slávu tvojho kráľovstva.",
+      "number": "2027-04-27",
+      "strophes": [
+        "Tvoji svätí, Pane, oznamujú slávu tvojho kráľovstva."
+      ],
+      "options": [
+        {
+          "label": "",
+          "refrain": "Tvoji svätí, Pane, oznamujú slávu tvojho kráľovstva."
+        },
+        {
+          "label": "alebo",
+          "refrain": "Aleluja."
+        }
+      ]
+    },
+    {
+      "name": "2027-04-28 - S radosťou pôjdeme do domu Pánovho.",
+      "number": "2027-04-28",
+      "strophes": [
+        "S radosťou pôjdeme do domu Pánovho."
+      ],
+      "options": [
+        {
+          "label": "",
+          "refrain": "S radosťou pôjdeme do domu Pánovho."
+        },
+        {
+          "label": "alebo",
+          "refrain": "Aleluja."
+        }
+      ]
+    },
+    {
+      "name": "2027-04-29 - Duša moja, dobroreč svojmu Bohu.",
+      "number": "2027-04-29",
+      "strophes": [
+        "Duša moja, dobroreč svojmu Bohu."
+      ],
+      "options": [
+        {
+          "label": "",
+          "refrain": "Duša moja, dobroreč svojmu Bohu."
+        },
+        {
+          "label": "alebo",
+          "refrain": "Aleluja."
+        }
+      ]
+    },
+    {
+      "name": "2027-04-30 - Budem ťa, Pane, velebiť medzi národmi.",
+      "number": "2027-04-30",
+      "strophes": [
+        "Budem ťa, Pane, velebiť medzi národmi."
+      ],
+      "options": [
+        {
+          "label": "",
+          "refrain": "Budem ťa, Pane, velebiť medzi národmi."
+        },
+        {
+          "label": "alebo",
+          "refrain": "Aleluja."
+        }
+      ]
+    },
+    {
+      "name": "2027-05-01 - Boh je náš Pán a my sme jeho ľud.",
+      "number": "2027-05-01",
+      "strophes": [
+        "Boh je náš Pán a my sme jeho ľud."
+      ],
+      "options": [
+        {
+          "label": "Féria",
+          "refrain": "Boh je náš Pán a my sme jeho ľud."
+        },
+        {
+          "label": "Féria – alebo",
+          "refrain": "Aleluja."
+        },
+        {
+          "label": "V omši o svätom Jozefovi",
+          "refrain": "Požehnaj, Pane, námahu našich rúk."
+        }
+      ]
+    },
+    {
+      "name": "2027-05-02 - Pred očami pohanov vyjavil Pán svoju spásu.",
+      "number": "2027-05-02",
+      "strophes": [
+        "Pred očami pohanov vyjavil Pán svoju spásu."
+      ],
+      "options": [
+        {
+          "label": "",
+          "refrain": "Pred očami pohanov vyjavil Pán svoju spásu."
+        },
+        {
+          "label": "alebo",
+          "refrain": "Aleluja."
+        }
+      ]
+    },
+    {
+      "name": "2027-05-03 - Po celej zemi rozlieha sa ich hlas.",
+      "number": "2027-05-03",
+      "strophes": [
+        "Po celej zemi rozlieha sa ich hlas."
+      ],
+      "options": [
+        {
+          "label": "",
+          "refrain": "Po celej zemi rozlieha sa ich hlas."
+        },
+        {
+          "label": "alebo",
+          "refrain": "Aleluja."
+        }
+      ]
+    },
+    {
+      "name": "2027-05-04 - Chráni ma tvoja pravica, Pane, Bože môj.",
+      "number": "2027-05-04",
+      "strophes": [
+        "Chráni ma tvoja pravica, Pane, Bože môj."
+      ],
+      "options": [
+        {
+          "label": "",
+          "refrain": "Chráni ma tvoja pravica, Pane, Bože môj."
+        },
+        {
+          "label": "alebo",
+          "refrain": "Aleluja."
+        }
+      ]
+    },
+    {
+      "name": "2027-05-05 - Plné sú nebo i zem tvojej slávy.",
+      "number": "2027-05-05",
+      "strophes": [
+        "Plné sú nebo i zem tvojej slávy."
+      ],
+      "options": [
+        {
+          "label": "",
+          "refrain": "Plné sú nebo i zem tvojej slávy."
+        },
+        {
+          "label": "alebo",
+          "refrain": "Aleluja."
+        }
+      ]
+    },
+    {
+      "name": "2027-05-06 - Pán vystupuje do neba za hlaholu poľnice.",
+      "number": "2027-05-06",
+      "strophes": [
+        "Pán vystupuje do neba za hlaholu poľnice."
+      ],
+      "options": [
+        {
+          "label": "",
+          "refrain": "Pán vystupuje do neba za hlaholu poľnice."
+        },
+        {
+          "label": "alebo",
+          "refrain": "Aleluja."
+        }
+      ]
+    },
+    {
+      "name": "2027-05-07 - Boh je kráľom celej zeme, spievajme mu chválospev.",
+      "number": "2027-05-07",
+      "strophes": [
+        "Boh je kráľom celej zeme, spievajme mu chválospev."
+      ],
+      "options": [
+        {
+          "label": "",
+          "refrain": "Boh je kráľom celej zeme, spievajme mu chválospev."
+        },
+        {
+          "label": "alebo",
+          "refrain": "Aleluja."
+        }
+      ]
+    },
+    {
+      "name": "2027-05-08 - Boh je kráľom celej zeme, spievajme mu chválospev.",
+      "number": "2027-05-08",
+      "strophes": [
+        "Boh je kráľom celej zeme, spievajme mu chválospev."
+      ],
+      "options": [
+        {
+          "label": "",
+          "refrain": "Boh je kráľom celej zeme, spievajme mu chválospev."
+        },
+        {
+          "label": "alebo",
+          "refrain": "Aleluja."
+        }
+      ]
+    },
+    {
+      "name": "2027-05-09 - Dobrorečte Pánovi, čo má trón v nebesiach.",
+      "number": "2027-05-09",
+      "strophes": [
+        "Dobrorečte Pánovi, čo má trón v nebesiach."
+      ],
+      "options": [
+        {
+          "label": "",
+          "refrain": "Dobrorečte Pánovi, čo má trón v nebesiach."
+        },
+        {
+          "label": "alebo",
+          "refrain": "Aleluja."
+        }
+      ]
+    },
+    {
+      "name": "2027-05-10 - Spievajme nášmu Pánovi hlasom radostným.",
+      "number": "2027-05-10",
+      "strophes": [
+        "Spievajme nášmu Pánovi hlasom radostným."
+      ],
+      "options": [
+        {
+          "label": "",
+          "refrain": "Spievajme nášmu Pánovi hlasom radostným."
+        },
+        {
+          "label": "alebo",
+          "refrain": "Aleluja."
+        }
+      ]
+    },
+    {
+      "name": "2027-05-11 - Spievajme nášmu Pánovi hlasom radostným.",
+      "number": "2027-05-11",
+      "strophes": [
+        "Spievajme nášmu Pánovi hlasom radostným."
+      ],
+      "options": [
+        {
+          "label": "",
+          "refrain": "Spievajme nášmu Pánovi hlasom radostným."
+        },
+        {
+          "label": "alebo",
+          "refrain": "Aleluja."
+        }
+      ]
+    },
+    {
+      "name": "2027-05-12 - Spievajme nášmu Pánovi hlasom radostným.",
+      "number": "2027-05-12",
+      "strophes": [
+        "Spievajme nášmu Pánovi hlasom radostným."
+      ],
+      "options": [
+        {
+          "label": "",
+          "refrain": "Spievajme nášmu Pánovi hlasom radostným."
+        },
+        {
+          "label": "alebo",
+          "refrain": "Aleluja."
+        }
+      ]
+    },
+    {
+      "name": "2027-05-13 - Ochráň ma, Bože, k tebe sa utiekam.",
+      "number": "2027-05-13",
+      "strophes": [
+        "Ochráň ma, Bože, k tebe sa utiekam."
+      ],
+      "options": [
+        {
+          "label": "",
+          "refrain": "Ochráň ma, Bože, k tebe sa utiekam."
+        },
+        {
+          "label": "alebo",
+          "refrain": "Aleluja."
+        }
+      ]
+    },
+    {
+      "name": "2027-05-14 - Pán si ma vybral spomedzi chudobných.",
+      "number": "2027-05-14",
+      "strophes": [
+        "Pán si ma vybral spomedzi chudobných."
+      ],
+      "options": [
+        {
+          "label": "",
+          "refrain": "Pán si ma vybral spomedzi chudobných."
+        },
+        {
+          "label": "alebo",
+          "refrain": "Aleluja."
+        }
+      ]
+    },
+    {
+      "name": "2027-05-15 - Pán tróni na nebesiach; statoční uvidia jeho tvár.",
+      "number": "2027-05-15",
+      "strophes": [
+        "Pán tróni na nebesiach; statoční uvidia jeho tvár."
+      ],
+      "options": [
+        {
+          "label": "",
+          "refrain": "Pán tróni na nebesiach; statoční uvidia jeho tvár."
+        },
+        {
+          "label": "alebo",
+          "refrain": "Aleluja."
+        }
+      ]
+    },
+    {
+      "name": "2027-05-16 - Pane, zošli svojho Ducha a obnov tvárnosť zeme.",
+      "number": "2027-05-16",
+      "strophes": [
+        "Pane, zošli svojho Ducha a obnov tvárnosť zeme."
+      ],
+      "options": [
+        {
+          "label": "Na omšu v deň slávnosti",
+          "refrain": "Pane, zošli svojho Ducha a obnov tvárnosť zeme."
+        },
+        {
+          "label": "Na omšu v deň slávnosti – alebo",
+          "refrain": "Aleluja."
+        }
+      ]
+    },
+    {
+      "name": "2027-05-17 - Slávne veci sa hovoria o tebe, mesto Božie.",
+      "number": "2027-05-17",
+      "strophes": [
+        "Slávne veci sa hovoria o tebe, mesto Božie."
+      ]
+    },
+    {
+      "name": "2027-05-18 - Pánovi zver svoje cesty, on sa už postará.",
+      "number": "2027-05-18",
+      "strophes": [
+        "Pánovi zver svoje cesty, on sa už postará."
+      ]
+    },
+    {
+      "name": "2027-05-19 - Trvalý pokoj požívajú tí, čo milujú tvoj zákon, Pane.",
+      "number": "2027-05-19",
+      "strophes": [
+        "Trvalý pokoj požívajú tí, čo milujú tvoj zákon, Pane."
+      ]
+    },
+    {
+      "name": "2027-05-20 - Ty si kňaz naveky podľa radu Melchizedechovho.",
+      "number": "2027-05-20",
+      "strophes": [
+        "Ty si kňaz naveky podľa radu Melchizedechovho."
+      ]
+    },
+    {
+      "name": "2027-05-21 - Priveď ma, Pane, na chodník svojich príkazov.",
+      "number": "2027-05-21",
+      "strophes": [
+        "Priveď ma, Pane, na chodník svojich príkazov."
+      ]
+    },
+    {
+      "name": "2027-05-22 - Milosrdenstvo Pánovo je od večnosti voči tým, čo sa ho boja.",
+      "number": "2027-05-22",
+      "strophes": [
+        "Milosrdenstvo Pánovo je od večnosti voči tým, čo sa ho boja."
+      ]
+    },
+    {
+      "name": "2027-05-23 - Blažený ľud, ktorý patrí Pánovi.",
+      "number": "2027-05-23",
+      "strophes": [
+        "Blažený ľud, ktorý patrí Pánovi."
+      ]
+    },
+    {
+      "name": "2027-05-24 - Radujte sa, spravodliví, a plesajte v Pánovi.",
+      "number": "2027-05-24",
+      "strophes": [
+        "Radujte sa, spravodliví, a plesajte v Pánovi."
+      ]
+    },
+    {
+      "name": "2027-05-25 - Obetuj Bohu obetu chvály.",
+      "number": "2027-05-25",
+      "strophes": [
+        "Obetuj Bohu obetu chvály."
+      ]
+    },
+    {
+      "name": "2027-05-26 - Ukáž nám, Pane, svetlo svojho milosrdenstva.",
+      "number": "2027-05-26",
+      "strophes": [
+        "Ukáž nám, Pane, svetlo svojho milosrdenstva."
+      ]
+    },
+    {
+      "name": "2027-05-27 - Vezmem kalich spásy a budem vzývať meno Pánovo.",
+      "number": "2027-05-27",
+      "strophes": [
+        "Vezmem kalich spásy a budem vzývať meno Pánovo."
+      ],
+      "options": [
+        {
+          "label": "",
+          "refrain": "Vezmem kalich spásy a budem vzývať meno Pánovo."
+        },
+        {
+          "label": "alebo",
+          "refrain": "Aleluja."
+        }
+      ]
+    },
+    {
+      "name": "2027-05-28 - Pán, Boh, miluje svoj ľud.",
+      "number": "2027-05-28",
+      "strophes": [
+        "Pán, Boh, miluje svoj ľud."
+      ]
+    },
+    {
+      "name": "2027-05-29 - Rozhodnutia Pánove sú správne, potešujú srdce.",
+      "number": "2027-05-29",
+      "strophes": [
+        "Rozhodnutia Pánove sú správne, potešujú srdce."
+      ]
+    },
+    {
+      "name": "2027-05-30 - Plesajte Bohu, ktorý nám pomáha.",
+      "number": "2027-05-30",
+      "strophes": [
+        "Plesajte Bohu, ktorý nám pomáha."
+      ]
+    },
+    {
+      "name": "2027-05-31 - Blažený muž, ktorý sa bojí Pána.",
+      "number": "2027-05-31",
+      "strophes": [
+        "Blažený muž, ktorý sa bojí Pána."
+      ],
+      "options": [
+        {
+          "label": "",
+          "refrain": "Blažený muž, ktorý sa bojí Pána."
+        },
+        {
+          "label": "alebo",
+          "refrain": "Aleluja."
+        }
+      ]
+    },
+    {
+      "name": "2027-06-01 - Srdce spravodlivého je pevné, dôveruje v Pána.",
+      "number": "2027-06-01",
+      "strophes": [
+        "Srdce spravodlivého je pevné, dôveruje v Pána."
+      ]
+    },
+    {
+      "name": "2027-06-02 - K tebe, Pane, dvíham svoju dušu.",
+      "number": "2027-06-02",
+      "strophes": [
+        "K tebe, Pane, dvíham svoju dušu."
+      ]
+    },
+    {
+      "name": "2027-06-03 - Blažení sú všetci, čo sa boja Pána.",
+      "number": "2027-06-03",
+      "strophes": [
+        "Blažení sú všetci, čo sa boja Pána."
+      ]
+    },
+    {
+      "name": "2027-06-04 - Čerpajme vodu s radosťou z prameňov spásy.",
+      "number": "2027-06-04",
+      "strophes": [
+        "Čerpajme vodu s radosťou z prameňov spásy."
+      ]
+    },
+    {
+      "name": "2027-06-05 - Srdce mi plesá v mojom Bohu.",
+      "number": "2027-06-05",
+      "strophes": [
+        "Srdce mi plesá v mojom Bohu."
+      ]
+    },
+    {
+      "name": "2027-06-06 - U Pána je milosrdenstvo a hojné vykúpenie.",
+      "number": "2027-06-06",
+      "strophes": [
+        "U Pána je milosrdenstvo a hojné vykúpenie."
+      ]
+    },
+    {
+      "name": "2027-06-07 - Skúste a presvedčte sa, aký dobrý je Pán.",
+      "number": "2027-06-07",
+      "strophes": [
+        "Skúste a presvedčte sa, aký dobrý je Pán."
+      ]
+    },
+    {
+      "name": "2027-06-08 - Vyjasni tvár, Pane, nad svojím služobníkom.",
+      "number": "2027-06-08",
+      "strophes": [
+        "Vyjasni tvár, Pane, nad svojím služobníkom."
+      ]
+    },
+    {
+      "name": "2027-06-09 - Len ty si svätý, Pane, Bože náš.",
+      "number": "2027-06-09",
+      "strophes": [
+        "Len ty si svätý, Pane, Bože náš."
+      ]
+    },
+    {
+      "name": "2027-06-10 - Pánova sláva bude prebývať v našej krajine.",
+      "number": "2027-06-10",
+      "strophes": [
+        "Pánova sláva bude prebývať v našej krajine."
+      ]
+    },
+    {
+      "name": "2027-06-11 - Pred očami pohanov vyjavil Pán svoju spásu.",
+      "number": "2027-06-11",
+      "strophes": [
+        "Pred očami pohanov vyjavil Pán svoju spásu."
+      ]
+    },
+    {
+      "name": "2027-06-12 - Milostivý a milosrdný je Pán.",
+      "number": "2027-06-12",
+      "strophes": [
+        "Milostivý a milosrdný je Pán."
+      ]
+    },
+    {
+      "name": "2027-06-13 - Ako je dobre oslavovať teba, Pane!",
+      "number": "2027-06-13",
+      "strophes": [
+        "Ako je dobre oslavovať teba, Pane!"
+      ]
+    },
+    {
+      "name": "2027-06-14 - Pred očami pohanov vyjavil Pán svoju spásu.",
+      "number": "2027-06-14",
+      "strophes": [
+        "Pred očami pohanov vyjavil Pán svoju spásu."
+      ]
+    },
+    {
+      "name": "2027-06-15 - Chváľ, duša moja, Pána cez celý môj život.",
+      "number": "2027-06-15",
+      "strophes": [
+        "Chváľ, duša moja, Pána cez celý môj život."
+      ],
+      "options": [
+        {
+          "label": "",
+          "refrain": "Chváľ, duša moja, Pána cez celý môj život."
+        },
+        {
+          "label": "alebo",
+          "refrain": "Aleluja."
+        }
+      ]
+    },
+    {
+      "name": "2027-06-16 - Spravodlivý rozdeľuje a dáva.",
+      "number": "2027-06-16",
+      "strophes": [
+        "Spravodlivý rozdeľuje a dáva."
+      ]
+    },
+    {
+      "name": "2027-06-17 - Pravdivé a spravodlivé sú diela tvojich rúk, Pane.",
+      "number": "2027-06-17",
+      "strophes": [
+        "Pravdivé a spravodlivé sú diela tvojich rúk, Pane."
+      ],
+      "options": [
+        {
+          "label": "",
+          "refrain": "Pravdivé a spravodlivé sú diela tvojich rúk, Pane."
+        },
+        {
+          "label": "alebo",
+          "refrain": "Aleluja."
+        }
+      ]
+    },
+    {
+      "name": "2027-06-18 - Pán vyslobodí spravodlivých zo všetkých tiesní.",
+      "number": "2027-06-18",
+      "strophes": [
+        "Pán vyslobodí spravodlivých zo všetkých tiesní."
+      ]
+    },
+    {
+      "name": "2027-06-19 - Skúste a presvedčte sa, aký dobrý je Pán.",
+      "number": "2027-06-19",
+      "strophes": [
+        "Skúste a presvedčte sa, aký dobrý je Pán."
+      ]
+    },
+    {
+      "name": "2027-06-20 - Oslavujte Pána, lebo jeho milosrdenstvo trvá naveky.",
+      "number": "2027-06-20",
+      "strophes": [
+        "Oslavujte Pána, lebo jeho milosrdenstvo trvá naveky."
+      ],
+      "options": [
+        {
+          "label": "",
+          "refrain": "Oslavujte Pána, lebo jeho milosrdenstvo trvá naveky."
+        },
+        {
+          "label": "alebo",
+          "refrain": "Aleluja."
+        }
+      ]
+    },
+    {
+      "name": "2027-06-21 - Blažený ľud, ktorý si Pán vyvolil za dedičstvo.",
+      "number": "2027-06-21",
+      "strophes": [
+        "Blažený ľud, ktorý si Pán vyvolil za dedičstvo."
+      ]
+    },
+    {
+      "name": "2027-06-22 - Pane, kto smie bývať v tvojom svätom stánku?",
+      "number": "2027-06-22",
+      "strophes": [
+        "Pane, kto smie bývať v tvojom svätom stánku?"
+      ]
+    },
+    {
+      "name": "2027-06-23 - Pán večne pamätá na svoju zmluvu.",
+      "number": "2027-06-23",
+      "strophes": [
+        "Pán večne pamätá na svoju zmluvu."
+      ],
+      "options": [
+        {
+          "label": "",
+          "refrain": "Pán večne pamätá na svoju zmluvu."
+        },
+        {
+          "label": "alebo",
+          "refrain": "Aleluja."
+        }
+      ]
+    },
+    {
+      "name": "2027-06-24 - Chválim ťa, Pane, že som vznikol tak zázračne.",
+      "number": "2027-06-24",
+      "strophes": [
+        "Chválim ťa, Pane, že som vznikol tak zázračne."
+      ]
+    },
+    {
+      "name": "2027-06-25 - Požehnaný bude muž, ktorý sa bojí Pána.",
+      "number": "2027-06-25",
+      "strophes": [
+        "Požehnaný bude muž, ktorý sa bojí Pána."
+      ]
+    },
+    {
+      "name": "2027-06-26 - Pán Boh pamätal na svoje milosrdenstvo.",
+      "number": "2027-06-26",
+      "strophes": [
+        "Pán Boh pamätal na svoje milosrdenstvo."
+      ]
+    },
+    {
+      "name": "2027-06-27 - Budem ťa, Pane, oslavovať, že si ma vyslobodil.",
+      "number": "2027-06-27",
+      "strophes": [
+        "Budem ťa, Pane, oslavovať, že si ma vyslobodil."
+      ]
+    },
+    {
+      "name": "2027-06-28 - Milostivý a milosrdný je Pán.",
+      "number": "2027-06-28",
+      "strophes": [
+        "Milostivý a milosrdný je Pán."
+      ]
+    },
+    {
+      "name": "2027-06-29 - Pán ma vyslobodil zo všetkej hrôzy.",
+      "number": "2027-06-29",
+      "strophes": [
+        "Pán ma vyslobodil zo všetkej hrôzy."
+      ]
+    },
+    {
+      "name": "2027-06-30 - Úbožiak zavolal a Pán ho vyslyšal.",
+      "number": "2027-06-30",
+      "strophes": [
+        "Úbožiak zavolal a Pán ho vyslyšal."
+      ]
+    },
+    {
+      "name": "2027-07-01 - Pred tvárou Pána budem kráčať v krajine žijúcich.",
+      "number": "2027-07-01",
+      "strophes": [
+        "Pred tvárou Pána budem kráčať v krajine žijúcich."
+      ],
+      "options": [
+        {
+          "label": "",
+          "refrain": "Pred tvárou Pána budem kráčať v krajine žijúcich."
+        },
+        {
+          "label": "alebo",
+          "refrain": "Aleluja."
+        }
+      ]
+    },
+    {
+      "name": "2027-07-02 - Plesajme a jasajme, lebo uprostred nás je Svätý, Boh.",
+      "number": "2027-07-02",
+      "strophes": [
+        "Plesajme a jasajme, lebo uprostred nás je Svätý, Boh."
+      ]
+    },
+    {
+      "name": "2027-07-03 - Choďte do celého sveta a hlásajte evanjelium.",
+      "number": "2027-07-03",
+      "strophes": [
+        "Choďte do celého sveta a hlásajte evanjelium."
+      ],
+      "options": [
+        {
+          "label": "",
+          "refrain": "Choďte do celého sveta a hlásajte evanjelium."
+        },
+        {
+          "label": "alebo",
+          "refrain": "Aleluja."
+        }
+      ]
+    },
+    {
+      "name": "2027-07-04 - Naše oči hľadia na Pána, kým sa nezmiluje nad nami.",
+      "number": "2027-07-04",
+      "strophes": [
+        "Naše oči hľadia na Pána, kým sa nezmiluje nad nami."
+      ]
+    },
+    {
+      "name": "2027-07-05 - Choďte do celého sveta a hlásajte evanjelium.",
+      "number": "2027-07-05",
+      "strophes": [
+        "Choďte do celého sveta a hlásajte evanjelium."
+      ]
+    },
+    {
+      "name": "2027-07-06 - Ja v spravodlivosti uzriem tvoju tvár, Pane.",
+      "number": "2027-07-06",
+      "strophes": [
+        "Ja v spravodlivosti uzriem tvoju tvár, Pane."
+      ]
+    },
+    {
+      "name": "2027-07-07 - Tvoje milosrdenstvo, Pane, nech je nad nami, ako dúfame v teba.",
+      "number": "2027-07-07",
+      "strophes": [
+        "Tvoje milosrdenstvo, Pane, nech je nad nami, ako dúfame v teba."
+      ]
+    },
+    {
+      "name": "2027-07-08 - Pamätáme, Pane, na divy, čo si učinil.",
+      "number": "2027-07-08",
+      "strophes": [
+        "Pamätáme, Pane, na divy, čo si učinil."
+      ],
+      "options": [
+        {
+          "label": "",
+          "refrain": "Pamätáme, Pane, na divy, čo si učinil."
+        },
+        {
+          "label": "alebo",
+          "refrain": "Aleluja."
+        }
+      ]
+    },
+    {
+      "name": "2027-07-09 - Pane, spas ma; ochraňuj ma v čase súženia.",
+      "number": "2027-07-09",
+      "strophes": [
+        "Pane, spas ma; ochraňuj ma v čase súženia."
+      ]
+    },
+    {
+      "name": "2027-07-10 - Hľadajte, pokorní, Pána a srdce vám oživne.",
+      "number": "2027-07-10",
+      "strophes": [
+        "Hľadajte, pokorní, Pána a srdce vám oživne."
+      ]
+    },
+    {
+      "name": "2027-07-11 - Ukáž nám, Pane, svoje milosrdenstvo a daj nám svoju spásu.",
+      "number": "2027-07-11",
+      "strophes": [
+        "Ukáž nám, Pane, svoje milosrdenstvo a daj nám svoju spásu."
+      ]
+    },
+    {
+      "name": "2027-07-12 - Naša pomoc v mene Pánovom, ktorý stvoril nebo i zem.",
+      "number": "2027-07-12",
+      "strophes": [
+        "Naša pomoc v mene Pánovom, ktorý stvoril nebo i zem."
+      ]
+    },
+    {
+      "name": "2027-07-13 - Hľadajte, pokorní, Pána a srdce vám oživne.",
+      "number": "2027-07-13",
+      "strophes": [
+        "Hľadajte, pokorní, Pána a srdce vám oživne."
+      ]
+    },
+    {
+      "name": "2027-07-14 - Milostivý a milosrdný je Pán.",
+      "number": "2027-07-14",
+      "strophes": [
+        "Milostivý a milosrdný je Pán."
+      ]
+    },
+    {
+      "name": "2027-07-15 - Pán večne pamätá na svoju zmluvu.",
+      "number": "2027-07-15",
+      "strophes": [
+        "Pán večne pamätá na svoju zmluvu."
+      ],
+      "options": [
+        {
+          "label": "",
+          "refrain": "Pán večne pamätá na svoju zmluvu."
+        },
+        {
+          "label": "alebo",
+          "refrain": "Aleluja."
+        }
+      ]
+    },
+    {
+      "name": "2027-07-16 - Vezmem kalich spásy a budem vzývať meno Pánovo.",
+      "number": "2027-07-16",
+      "strophes": [
+        "Vezmem kalich spásy a budem vzývať meno Pánovo."
+      ],
+      "options": [
+        {
+          "label": "",
+          "refrain": "Vezmem kalich spásy a budem vzývať meno Pánovo."
+        },
+        {
+          "label": "alebo",
+          "refrain": "Aleluja."
+        }
+      ]
+    },
+    {
+      "name": "2027-07-17 - Lebo jeho milosrdenstvo je večné.",
+      "number": "2027-07-17",
+      "strophes": [
+        "Lebo jeho milosrdenstvo je večné."
+      ],
+      "options": [
+        {
+          "label": "",
+          "refrain": "Lebo jeho milosrdenstvo je večné."
+        },
+        {
+          "label": "alebo",
+          "refrain": "Aleluja."
+        }
+      ]
+    },
+    {
+      "name": "2027-07-18 - Pán je môj pastier, nič mi nechýba.",
+      "number": "2027-07-18",
+      "strophes": [
+        "Pán je môj pastier, nič mi nechýba."
+      ]
+    },
+    {
+      "name": "2027-07-19 - Spievajme Pánovi, lebo sa preslávil.",
+      "number": "2027-07-19",
+      "strophes": [
+        "Spievajme Pánovi, lebo sa preslávil."
+      ]
+    },
+    {
+      "name": "2027-07-20 - Spievajme Pánovi, lebo sa preslávil.",
+      "number": "2027-07-20",
+      "strophes": [
+        "Spievajme Pánovi, lebo sa preslávil."
+      ]
+    },
+    {
+      "name": "2027-07-21 - Pane, daj nám chlieb z neba.",
+      "number": "2027-07-21",
+      "strophes": [
+        "Pane, daj nám chlieb z neba."
+      ]
+    },
+    {
+      "name": "2027-07-22 - Za tebou prahne moja duša, Pane, Bože môj.",
+      "number": "2027-07-22",
+      "strophes": [
+        "Za tebou prahne moja duša, Pane, Bože môj."
+      ]
+    },
+    {
+      "name": "2027-07-23 - Velebiť budem Pána v každom čase.",
+      "number": "2027-07-23",
+      "strophes": [
+        "Velebiť budem Pána v každom čase."
+      ]
+    },
+    {
+      "name": "2027-07-24 - Prijmi od nás, Pane, obetu chvály.",
+      "number": "2027-07-24",
+      "strophes": [
+        "Prijmi od nás, Pane, obetu chvály."
+      ]
+    },
+    {
+      "name": "2027-07-25 - Otvor svoju ruku, Pane, a nasýť nás.",
+      "number": "2027-07-25",
+      "strophes": [
+        "Otvor svoju ruku, Pane, a nasýť nás."
+      ]
+    },
+    {
+      "name": "2027-07-26 - Oslavujte Pána, lebo je dobrý.",
+      "number": "2027-07-26",
+      "strophes": [
+        "Oslavujte Pána, lebo je dobrý."
+      ],
+      "options": [
+        {
+          "label": "",
+          "refrain": "Oslavujte Pána, lebo je dobrý."
+        },
+        {
+          "label": "alebo",
+          "refrain": "Aleluja."
+        }
+      ]
+    },
+    {
+      "name": "2027-07-27 - Milostivý a milosrdný je Pán.",
+      "number": "2027-07-27",
+      "strophes": [
+        "Milostivý a milosrdný je Pán."
+      ]
+    },
+    {
+      "name": "2027-07-28 - Len ty si svätý, Pane, Bože náš.",
+      "number": "2027-07-28",
+      "strophes": [
+        "Len ty si svätý, Pane, Bože náš."
+      ]
+    },
+    {
+      "name": "2027-07-29 - Skúste a presvedčte sa, aký dobrý je Pán.",
+      "number": "2027-07-29",
+      "strophes": [
+        "Skúste a presvedčte sa, aký dobrý je Pán."
+      ]
+    },
+    {
+      "name": "2027-07-30 - Plesajte Bohu, ktorý nám pomáha.",
+      "number": "2027-07-30",
+      "strophes": [
+        "Plesajte Bohu, ktorý nám pomáha."
+      ]
+    },
+    {
+      "name": "2027-07-31 - Velebte Pána, všetky národy.",
+      "number": "2027-07-31",
+      "strophes": [
+        "Velebte Pána, všetky národy."
+      ]
+    },
+    {
+      "name": "2027-08-01 - Pane, daj nám chlieb z neba!",
+      "number": "2027-08-01",
+      "strophes": [
+        "Pane, daj nám chlieb z neba!"
+      ]
+    },
+    {
+      "name": "2027-08-02 - Plesajte Bohu, ktorý nám pomáha.",
+      "number": "2027-08-02",
+      "strophes": [
+        "Plesajte Bohu, ktorý nám pomáha."
+      ]
+    },
+    {
+      "name": "2027-08-03 - Zmiluj sa, Pane, lebo sme zhrešili.",
+      "number": "2027-08-03",
+      "strophes": [
+        "Zmiluj sa, Pane, lebo sme zhrešili."
+      ]
+    },
+    {
+      "name": "2027-08-04 - Pamätaj na nás, Pane, z lásky k svojmu ľudu.",
+      "number": "2027-08-04",
+      "strophes": [
+        "Pamätaj na nás, Pane, z lásky k svojmu ľudu."
+      ],
+      "options": [
+        {
+          "label": "",
+          "refrain": "Pamätaj na nás, Pane, z lásky k svojmu ľudu."
+        },
+        {
+          "label": "alebo",
+          "refrain": "Aleluja."
+        }
+      ]
+    },
+    {
+      "name": "2027-08-05 - Pane, daj, aby sme počúvali tvoj hlas a nezatvrdzovali si srdcia.",
+      "number": "2027-08-05",
+      "strophes": [
+        "Pane, daj, aby sme počúvali tvoj hlas a nezatvrdzovali si srdcia."
+      ]
+    },
+    {
+      "name": "2027-08-06 - Pánovu slávu uvidia všetky národy.",
+      "number": "2027-08-06",
+      "strophes": [
+        "Pánovu slávu uvidia všetky národy."
+      ]
+    },
+    {
+      "name": "2027-08-07 - Milujem ťa, Pane, ty moja sila.",
+      "number": "2027-08-07",
+      "strophes": [
+        "Milujem ťa, Pane, ty moja sila."
+      ]
+    },
+    {
+      "name": "2027-08-08 - Skúste a presvedčte sa, aký dobrý je Pán.",
+      "number": "2027-08-08",
+      "strophes": [
+        "Skúste a presvedčte sa, aký dobrý je Pán."
+      ]
+    },
+    {
+      "name": "2027-08-09 - Čuj, dcéra, a pozoruj, nakloň svoj sluch.",
+      "number": "2027-08-09",
+      "strophes": [
+        "Čuj, dcéra, a pozoruj, nakloň svoj sluch."
+      ],
+      "options": [
+        {
+          "label": "",
+          "refrain": "Čuj, dcéra, a pozoruj, nakloň svoj sluch."
+        },
+        {
+          "label": "alebo",
+          "refrain": "Ženích prichádza, vyjdite v ústrety Kristu Pánovi!"
+        }
+      ]
+    },
+    {
+      "name": "2027-08-10 - V obľube je človek, čo sa zľutúva a rád pomáha.",
+      "number": "2027-08-10",
+      "strophes": [
+        "V obľube je človek, čo sa zľutúva a rád pomáha."
+      ]
+    },
+    {
+      "name": "2027-08-11 - Nech je zvelebený Boh; on dal život mojej duši.",
+      "number": "2027-08-11",
+      "strophes": [
+        "Nech je zvelebený Boh; on dal život mojej duši."
+      ]
+    },
+    {
+      "name": "2027-08-12 - Aleluja, aleluja, aleluja.",
+      "number": "2027-08-12",
+      "strophes": [
+        "Aleluja, aleluja, aleluja."
+      ]
+    },
+    {
+      "name": "2027-08-13 - Lebo jeho milosrdenstvo je večné.",
+      "number": "2027-08-13",
+      "strophes": [
+        "Lebo jeho milosrdenstvo je večné."
+      ],
+      "options": [
+        {
+          "label": "",
+          "refrain": "Lebo jeho milosrdenstvo je večné."
+        },
+        {
+          "label": "alebo",
+          "refrain": "Aleluja."
+        }
+      ]
+    },
+    {
+      "name": "2027-08-14 - Ty, Pane, si moje jediné dobro.",
+      "number": "2027-08-14",
+      "strophes": [
+        "Ty, Pane, si moje jediné dobro."
+      ]
+    },
+    {
+      "name": "2027-08-15 - Po tvojej pravici, Pane, stojí kráľovná ozdobená zlatom.",
+      "number": "2027-08-15",
+      "strophes": [
+        "Po tvojej pravici, Pane, stojí kráľovná ozdobená zlatom."
+      ]
+    },
+    {
+      "name": "2027-08-16 - Pamätaj na nás, Pane, z lásky k svojmu ľudu.",
+      "number": "2027-08-16",
+      "strophes": [
+        "Pamätaj na nás, Pane, z lásky k svojmu ľudu."
+      ]
+    },
+    {
+      "name": "2027-08-17 - Pán, Boh, ohlási pokoj svojmu ľudu a svojim svätým.",
+      "number": "2027-08-17",
+      "strophes": [
+        "Pán, Boh, ohlási pokoj svojmu ľudu a svojim svätým."
+      ]
+    },
+    {
+      "name": "2027-08-18 - Pane, z tvojej sily sa kráľ raduje.",
+      "number": "2027-08-18",
+      "strophes": [
+        "Pane, z tvojej sily sa kráľ raduje."
+      ]
+    },
+    {
+      "name": "2027-08-19 - Hľa, prichádzam, Pane, chcem plniť tvoju vôľu.",
+      "number": "2027-08-19",
+      "strophes": [
+        "Hľa, prichádzam, Pane, chcem plniť tvoju vôľu."
+      ]
+    },
+    {
+      "name": "2027-08-20 - Chváľ, duša moja, Pána cez celý môj život.",
+      "number": "2027-08-20",
+      "strophes": [
+        "Chváľ, duša moja, Pána cez celý môj život."
+      ],
+      "options": [
+        {
+          "label": "",
+          "refrain": "Chváľ, duša moja, Pána cez celý môj život."
+        },
+        {
+          "label": "alebo",
+          "refrain": "Aleluja."
+        }
+      ]
+    },
+    {
+      "name": "2027-08-21 - Tak bude požehnaný muž, ktorý sa bojí Pána.",
+      "number": "2027-08-21",
+      "strophes": [
+        "Tak bude požehnaný muž, ktorý sa bojí Pána."
+      ]
+    },
+    {
+      "name": "2027-08-22 - Skúste a presvedčte sa, aký dobrý je Pán.",
+      "number": "2027-08-22",
+      "strophes": [
+        "Skúste a presvedčte sa, aký dobrý je Pán."
+      ]
+    },
+    {
+      "name": "2027-08-23 - Pán, Boh, miluje svoj ľud.",
+      "number": "2027-08-23",
+      "strophes": [
+        "Pán, Boh, miluje svoj ľud."
+      ],
+      "options": [
+        {
+          "label": "",
+          "refrain": "Pán, Boh, miluje svoj ľud."
+        },
+        {
+          "label": "alebo",
+          "refrain": "Aleluja."
+        }
+      ]
+    },
+    {
+      "name": "2027-08-24 - Tvoji svätí, Pane, oznamujú slávu tvojho kráľovstva.",
+      "number": "2027-08-24",
+      "strophes": [
+        "Tvoji svätí, Pane, oznamujú slávu tvojho kráľovstva."
+      ]
+    },
+    {
+      "name": "2027-08-25 - Pane, ty ma skúmaš a vieš o mne všetko.",
+      "number": "2027-08-25",
+      "strophes": [
+        "Pane, ty ma skúmaš a vieš o mne všetko."
+      ]
+    },
+    {
+      "name": "2027-08-26 - Naplň nás, Pane, svojou milosťou a budeme jasať.",
+      "number": "2027-08-26",
+      "strophes": [
+        "Naplň nás, Pane, svojou milosťou a budeme jasať."
+      ]
+    },
+    {
+      "name": "2027-08-27 - Radujte sa, spravodliví, tešte sa v Pánovi.",
+      "number": "2027-08-27",
+      "strophes": [
+        "Radujte sa, spravodliví, tešte sa v Pánovi."
+      ]
+    },
+    {
+      "name": "2027-08-28 - Pán príde súdiť živých i mŕtvych.",
+      "number": "2027-08-28",
+      "strophes": [
+        "Pán príde súdiť živých i mŕtvych."
+      ]
+    },
+    {
+      "name": "2027-08-29 - Pane, kto smie bývať v tvojom svätom stánku?",
+      "number": "2027-08-29",
+      "strophes": [
+        "Pane, kto smie bývať v tvojom svätom stánku?"
+      ]
+    },
+    {
+      "name": "2027-08-30 - Pán príde súdiť všetky národy.",
+      "number": "2027-08-30",
+      "strophes": [
+        "Pán príde súdiť všetky národy."
+      ]
+    },
+    {
+      "name": "2027-08-31 - Verím, že uvidím dobrodenia Pánove v krajine žijúcich.",
+      "number": "2027-08-31",
+      "strophes": [
+        "Verím, že uvidím dobrodenia Pánove v krajine žijúcich."
+      ]
+    },
+    {
+      "name": "2027-09-01 - V tvoje milosrdenstvo, Pane, úfam naveky.",
+      "number": "2027-09-01",
+      "strophes": [
+        "V tvoje milosrdenstvo, Pane, úfam naveky."
+      ]
+    },
+    {
+      "name": "2027-09-02 - Uzreli všetky končiny zeme spásu nášho Boha.",
+      "number": "2027-09-02",
+      "strophes": [
+        "Uzreli všetky končiny zeme spásu nášho Boha."
+      ]
+    },
+    {
+      "name": "2027-09-03 - S plesaním vstupujte pred tvár nášho Pána.",
+      "number": "2027-09-03",
+      "strophes": [
+        "S plesaním vstupujte pred tvár nášho Pána."
+      ]
+    },
+    {
+      "name": "2027-09-04 - Pán mi pomáha a udržiava môj život.",
+      "number": "2027-09-04",
+      "strophes": [
+        "Pán mi pomáha a udržiava môj život."
+      ]
+    },
+    {
+      "name": "2027-09-05 - Chváľ, duša moja, Pána cez celý môj život.",
+      "number": "2027-09-05",
+      "strophes": [
+        "Chváľ, duša moja, Pána cez celý môj život."
+      ],
+      "options": [
+        {
+          "label": "",
+          "refrain": "Chváľ, duša moja, Pána cez celý môj život."
+        },
+        {
+          "label": "alebo",
+          "refrain": "Aleluja."
+        }
+      ]
+    },
+    {
+      "name": "2027-09-06 - V Bohu je moja spása i moja sláva.",
+      "number": "2027-09-06",
+      "strophes": [
+        "V Bohu je moja spása i moja sláva."
+      ]
+    },
+    {
+      "name": "2027-09-07 - Milostivý a milosrdný je Pán.",
+      "number": "2027-09-07",
+      "strophes": [
+        "Milostivý a milosrdný je Pán."
+      ]
+    },
+    {
+      "name": "2027-09-08 - Duša mi jasá v mojom Bohu.",
+      "number": "2027-09-08",
+      "strophes": [
+        "Duša mi jasá v mojom Bohu."
+      ]
+    },
+    {
+      "name": "2027-09-09 - Všetko, čo dýcha, nech chváli Pána.",
+      "number": "2027-09-09",
+      "strophes": [
+        "Všetko, čo dýcha, nech chváli Pána."
+      ],
+      "options": [
+        {
+          "label": "",
+          "refrain": "Všetko, čo dýcha, nech chváli Pána."
+        },
+        {
+          "label": "alebo",
+          "refrain": "Aleluja."
+        }
+      ]
+    },
+    {
+      "name": "2027-09-10 - Ty, Pane, si moje jediné dobro.",
+      "number": "2027-09-10",
+      "strophes": [
+        "Ty, Pane, si moje jediné dobro."
+      ]
+    },
+    {
+      "name": "2027-09-11 - Nech je velebené meno Pánovo odteraz až naveky.",
+      "number": "2027-09-11",
+      "strophes": [
+        "Nech je velebené meno Pánovo odteraz až naveky."
+      ],
+      "options": [
+        {
+          "label": "",
+          "refrain": "Nech je velebené meno Pánovo odteraz až naveky."
+        },
+        {
+          "label": "alebo",
+          "refrain": "Aleluja."
+        }
+      ]
+    },
+    {
+      "name": "2027-09-12 - Pred tvárou Pána budem kráčať v krajine žijúcich.",
+      "number": "2027-09-12",
+      "strophes": [
+        "Pred tvárou Pána budem kráčať v krajine žijúcich."
+      ],
+      "options": [
+        {
+          "label": "",
+          "refrain": "Pred tvárou Pána budem kráčať v krajine žijúcich."
+        },
+        {
+          "label": "alebo",
+          "refrain": "Aleluja."
+        }
+      ]
+    },
+    {
+      "name": "2027-09-13 - Nech je velebený Pán, že vyslyšal moju prosbu.",
+      "number": "2027-09-13",
+      "strophes": [
+        "Nech je velebený Pán, že vyslyšal moju prosbu."
+      ]
+    },
+    {
+      "name": "2027-09-14 - Pane, ty buď našou spásou.",
+      "number": "2027-09-14",
+      "strophes": [
+        "Pane, ty buď našou spásou."
+      ]
+    },
+    {
+      "name": "2027-09-15 - Ty si sláva nášho národa, ty si radosť nášho ľudu.",
+      "number": "2027-09-15",
+      "strophes": [
+        "Ty si sláva nášho národa, ty si radosť nášho ľudu."
+      ]
+    },
+    {
+      "name": "2027-09-16 - Veľké je tajomstvo tvojej lásky, Pane.",
+      "number": "2027-09-16",
+      "strophes": [
+        "Veľké je tajomstvo tvojej lásky, Pane."
+      ],
+      "options": [
+        {
+          "label": "",
+          "refrain": "Veľké je tajomstvo tvojej lásky, Pane."
+        },
+        {
+          "label": "alebo",
+          "refrain": "Aleluja."
+        }
+      ]
+    },
+    {
+      "name": "2027-09-17 - Blahoslavení chudobní v duchu, lebo ich je nebeské kráľovstvo.",
+      "number": "2027-09-17",
+      "strophes": [
+        "Blahoslavení chudobní v duchu, lebo ich je nebeské kráľovstvo."
+      ]
+    },
+    {
+      "name": "2027-09-18 - S plesaním vstupujte pred tvár nášho Pána.",
+      "number": "2027-09-18",
+      "strophes": [
+        "S plesaním vstupujte pred tvár nášho Pána."
+      ]
+    },
+    {
+      "name": "2027-09-19 - Pán udržiava môj život.",
+      "number": "2027-09-19",
+      "strophes": [
+        "Pán udržiava môj život."
+      ]
+    },
+    {
+      "name": "2027-09-20 - Veľké veci urobil s nami Pán a máme z toho radosť.",
+      "number": "2027-09-20",
+      "strophes": [
+        "Veľké veci urobil s nami Pán a máme z toho radosť."
+      ]
+    },
+    {
+      "name": "2027-09-21 - Po celej zemi rozlieha sa ich hlas.",
+      "number": "2027-09-21",
+      "strophes": [
+        "Po celej zemi rozlieha sa ich hlas."
+      ]
+    },
+    {
+      "name": "2027-09-22 - Nech je zvelebený Boh, ktorý žije naveky.",
+      "number": "2027-09-22",
+      "strophes": [
+        "Nech je zvelebený Boh, ktorý žije naveky."
+      ]
+    },
+    {
+      "name": "2027-09-23 - Pán Boh miluje svoj ľud.",
+      "number": "2027-09-23",
+      "strophes": [
+        "Pán Boh miluje svoj ľud."
+      ],
+      "options": [
+        {
+          "label": "",
+          "refrain": "Pán Boh miluje svoj ľud."
+        },
+        {
+          "label": "alebo",
+          "refrain": "Aleluja."
+        }
+      ]
+    },
+    {
+      "name": "2027-09-24 - Dúfam v Pána, môjho Boha, v spásu mojej tváre.",
+      "number": "2027-09-24",
+      "strophes": [
+        "Dúfam v Pána, môjho Boha, v spásu mojej tváre."
+      ]
+    },
+    {
+      "name": "2027-09-25 - Pán nás bude strážiť ako pastier svoje stádo.",
+      "number": "2027-09-25",
+      "strophes": [
+        "Pán nás bude strážiť ako pastier svoje stádo."
+      ]
+    },
+    {
+      "name": "2027-09-26 - Rozhodnutia Pánove sú správne, potešujú srdce.",
+      "number": "2027-09-26",
+      "strophes": [
+        "Rozhodnutia Pánove sú správne, potešujú srdce."
+      ]
+    },
+    {
+      "name": "2027-09-27 - Pán vystavil Sion a zjavil sa vo svojej sláve.",
+      "number": "2027-09-27",
+      "strophes": [
+        "Pán vystavil Sion a zjavil sa vo svojej sláve."
+      ]
+    },
+    {
+      "name": "2027-09-28 - S nami Boh, Pán, Boh náš.",
+      "number": "2027-09-28",
+      "strophes": [
+        "S nami Boh, Pán, Boh náš."
+      ]
+    },
+    {
+      "name": "2027-09-29 - Pred tvárou anjelov budem hrať a spievať tebe, Pane.",
+      "number": "2027-09-29",
+      "strophes": [
+        "Pred tvárou anjelov budem hrať a spievať tebe, Pane."
+      ]
+    },
+    {
+      "name": "2027-09-30 - Rozhodnutia Pánove sú správne, potešujú srdce.",
+      "number": "2027-09-30",
+      "strophes": [
+        "Rozhodnutia Pánove sú správne, potešujú srdce."
+      ]
+    },
+    {
+      "name": "2027-10-01 - Pre slávu svojho mena vysloboď nás, Pane.",
+      "number": "2027-10-01",
+      "strophes": [
+        "Pre slávu svojho mena vysloboď nás, Pane."
+      ]
+    },
+    {
+      "name": "2027-10-02 - Svojim anjelom dá príkaz o tebe, aby ťa strážili na tvojich cestách.",
+      "number": "2027-10-02",
+      "strophes": [
+        "Svojim anjelom dá príkaz o tebe, aby ťa strážili na tvojich cestách."
+      ]
+    },
+    {
+      "name": "2027-10-03 - Nech nás žehná Pán po všetky dni nášho života.",
+      "number": "2027-10-03",
+      "strophes": [
+        "Nech nás žehná Pán po všetky dni nášho života."
+      ]
+    },
+    {
+      "name": "2027-10-04 - Vytrhol si ma zo struhy, Pane, Bože môj.",
+      "number": "2027-10-04",
+      "strophes": [
+        "Vytrhol si ma zo struhy, Pane, Bože môj."
+      ]
+    },
+    {
+      "name": "2027-10-05 - U Pána je milosrdenstvo a hojné vykúpenie.",
+      "number": "2027-10-05",
+      "strophes": [
+        "U Pána je milosrdenstvo a hojné vykúpenie."
+      ]
+    },
+    {
+      "name": "2027-10-06 - Ty, Pane, si zhovievavý a veľmi milosrdný.",
+      "number": "2027-10-06",
+      "strophes": [
+        "Ty, Pane, si zhovievavý a veľmi milosrdný."
+      ]
+    },
+    {
+      "name": "2027-10-07 - Blažený človek, čo v Pána skladá dôveru.",
+      "number": "2027-10-07",
+      "strophes": [
+        "Blažený človek, čo v Pána skladá dôveru."
+      ]
+    },
+    {
+      "name": "2027-10-08 - Pán bude spravodlivo súdiť celý svet.",
+      "number": "2027-10-08",
+      "strophes": [
+        "Pán bude spravodlivo súdiť celý svet."
+      ]
+    },
+    {
+      "name": "2027-10-09 - Radujte sa, spravodliví, tešte sa v Pánovi.",
+      "number": "2027-10-09",
+      "strophes": [
+        "Radujte sa, spravodliví, tešte sa v Pánovi."
+      ]
+    },
+    {
+      "name": "2027-10-10 - Obdaruj nás, Pane, múdrosťou srdca.",
+      "number": "2027-10-10",
+      "strophes": [
+        "Obdaruj nás, Pane, múdrosťou srdca."
+      ]
+    },
+    {
+      "name": "2027-10-11 - Tvoja spása, Pane, objíma celý svet.",
+      "number": "2027-10-11",
+      "strophes": [
+        "Tvoja spása, Pane, objíma celý svet."
+      ]
+    },
+    {
+      "name": "2027-10-12 - Nebesia rozprávajú o sláve Boha.",
+      "number": "2027-10-12",
+      "strophes": [
+        "Nebesia rozprávajú o sláve Boha."
+      ]
+    },
+    {
+      "name": "2027-10-13 - Ty, Pane, každému odplácaš podľa jeho skutkov.",
+      "number": "2027-10-13",
+      "strophes": [
+        "Ty, Pane, každému odplácaš podľa jeho skutkov."
+      ]
+    },
+    {
+      "name": "2027-10-14 - U Pána je milosrdenstvo a hojné vykúpenie.",
+      "number": "2027-10-14",
+      "strophes": [
+        "U Pána je milosrdenstvo a hojné vykúpenie."
+      ]
+    },
+    {
+      "name": "2027-10-15 - Ty, Pane, si moje útočište; zahŕňaš ma radosťou zo spásy.",
+      "number": "2027-10-15",
+      "strophes": [
+        "Ty, Pane, si moje útočište; zahŕňaš ma radosťou zo spásy."
+      ]
+    },
+    {
+      "name": "2027-10-16 - Pán večne pamätá na svoju zmluvu.",
+      "number": "2027-10-16",
+      "strophes": [
+        "Pán večne pamätá na svoju zmluvu."
+      ],
+      "options": [
+        {
+          "label": "",
+          "refrain": "Pán večne pamätá na svoju zmluvu."
+        },
+        {
+          "label": "alebo",
+          "refrain": "Aleluja."
+        }
+      ]
+    },
+    {
+      "name": "2027-10-17 - Tvoje milosrdenstvo, Pane, nech je nad nami, ako dúfame v teba.",
+      "number": "2027-10-17",
+      "strophes": [
+        "Tvoje milosrdenstvo, Pane, nech je nad nami, ako dúfame v teba."
+      ]
+    },
+    {
+      "name": "2027-10-18 - Tvoji svätí, Pane, oznamujú slávu tvojho kráľovstva.",
+      "number": "2027-10-18",
+      "strophes": [
+        "Tvoji svätí, Pane, oznamujú slávu tvojho kráľovstva."
+      ]
+    },
+    {
+      "name": "2027-10-19 - Hľa, prichádzam, Pane, chcem plniť tvoju vôľu.",
+      "number": "2027-10-19",
+      "strophes": [
+        "Hľa, prichádzam, Pane, chcem plniť tvoju vôľu."
+      ]
+    },
+    {
+      "name": "2027-10-20 - Naša pomoc v mene Pánovom, ktorý stvoril nebo i zem.",
+      "number": "2027-10-20",
+      "strophes": [
+        "Naša pomoc v mene Pánovom, ktorý stvoril nebo i zem."
+      ]
+    },
+    {
+      "name": "2027-10-21 - Blažený človek, čo v Pána skladá dôveru.",
+      "number": "2027-10-21",
+      "strophes": [
+        "Blažený človek, čo v Pána skladá dôveru."
+      ]
+    },
+    {
+      "name": "2027-10-22 - Daj mi poznať, Pane, tvoju spravodlivosť.",
+      "number": "2027-10-22",
+      "strophes": [
+        "Daj mi poznať, Pane, tvoju spravodlivosť."
+      ]
+    },
+    {
+      "name": "2027-10-23 - S úprimným srdcom hľadáme tvoju tvár, Pane.",
+      "number": "2027-10-23",
+      "strophes": [
+        "S úprimným srdcom hľadáme tvoju tvár, Pane."
+      ]
+    },
+    {
+      "name": "2027-10-24 - Veľké veci urobil s nami Pán a máme z toho radosť.",
+      "number": "2027-10-24",
+      "strophes": [
+        "Veľké veci urobil s nami Pán a máme z toho radosť."
+      ]
+    },
+    {
+      "name": "2027-10-25 - Náš Boh je Boh spásy, on je náš Pán.",
+      "number": "2027-10-25",
+      "strophes": [
+        "Náš Boh je Boh spásy, on je náš Pán."
+      ]
+    },
+    {
+      "name": "2027-10-26 - Veľké veci urobil s nami Pán a máme z toho radosť.",
+      "number": "2027-10-26",
+      "strophes": [
+        "Veľké veci urobil s nami Pán a máme z toho radosť."
+      ]
+    },
+    {
+      "name": "2027-10-27 - Pane, ja dúfam v tvoje milosrdenstvo.",
+      "number": "2027-10-27",
+      "strophes": [
+        "Pane, ja dúfam v tvoje milosrdenstvo."
+      ]
+    },
+    {
+      "name": "2027-10-28 - Po celej zemi rozlieha sa ich hlas.",
+      "number": "2027-10-28",
+      "strophes": [
+        "Po celej zemi rozlieha sa ich hlas."
+      ]
+    },
+    {
+      "name": "2027-10-29 - Chváľ, Jeruzalem, Pána, oslavuj, Sion, svojho Boha.",
+      "number": "2027-10-29",
+      "strophes": [
+        "Chváľ, Jeruzalem, Pána, oslavuj, Sion, svojho Boha."
+      ]
+    },
+    {
+      "name": "2027-10-30 - Pán neodvrhne a neopustí svoj ľud.",
+      "number": "2027-10-30",
+      "strophes": [
+        "Pán neodvrhne a neopustí svoj ľud."
+      ]
+    },
+    {
+      "name": "2027-10-31 - Milujem ťa, Pane, ty moja sila.",
+      "number": "2027-10-31",
+      "strophes": [
+        "Milujem ťa, Pane, ty moja sila."
+      ]
+    },
+    {
+      "name": "2027-11-01 - Blahoslavení čistého srdca, lebo oni uvidia Boha.",
+      "number": "2027-11-01",
+      "strophes": [
+        "Blahoslavení čistého srdca, lebo oni uvidia Boha."
+      ]
+    },
+    {
+      "name": "2027-11-02 - Pán je moje svetlo a moja spása.",
+      "number": "2027-11-02",
+      "strophes": [
+        "Pán je moje svetlo a moja spása."
+      ],
+      "options": [
+        {
+          "label": "V prvej omši",
+          "refrain": "Pán je moje svetlo a moja spása."
+        },
+        {
+          "label": "V prvej omši – alebo",
+          "refrain": "Verím, že uvidím dobrodenia Pánove v krajine žijúcich."
+        },
+        {
+          "label": "V druhej omši",
+          "refrain": "Pred tvárou Pána budem kráčať v krajine žijúcich."
+        },
+        {
+          "label": "V druhej omši – alebo",
+          "refrain": "Aleluja."
+        },
+        {
+          "label": "V tretej omši",
+          "refrain": "Po Bohu žízni moja duša, po Bohu živom."
+        }
+      ]
+    },
+    {
+      "name": "2027-11-03 - V obľube je človek, čo sa zľutúva a rád pomáha.",
+      "number": "2027-11-03",
+      "strophes": [
+        "V obľube je človek, čo sa zľutúva a rád pomáha."
+      ],
+      "options": [
+        {
+          "label": "",
+          "refrain": "V obľube je človek, čo sa zľutúva a rád pomáha."
+        },
+        {
+          "label": "alebo",
+          "refrain": "Aleluja."
+        }
+      ]
+    },
+    {
+      "name": "2027-11-04 - Verím, že uvidím dobrodenia Pánove v krajine žijúcich.",
+      "number": "2027-11-04",
+      "strophes": [
+        "Verím, že uvidím dobrodenia Pánove v krajine žijúcich."
+      ]
+    },
+    {
+      "name": "2027-11-05 - Pred očami pohanov vyjavil Pán svoju spásu.",
+      "number": "2027-11-05",
+      "strophes": [
+        "Pred očami pohanov vyjavil Pán svoju spásu."
+      ]
+    },
+    {
+      "name": "2027-11-06 - Oslavovať ťa chcem naveky, Bože, môj kráľ.",
+      "number": "2027-11-06",
+      "strophes": [
+        "Oslavovať ťa chcem naveky, Bože, môj kráľ."
+      ]
+    },
+    {
+      "name": "2027-11-07 - Chváľ, duša moja, Pána.",
+      "number": "2027-11-07",
+      "strophes": [
+        "Chváľ, duša moja, Pána."
+      ],
+      "options": [
+        {
+          "label": "",
+          "refrain": "Chváľ, duša moja, Pána."
+        },
+        {
+          "label": "alebo",
+          "refrain": "Aleluja."
+        }
+      ]
+    },
+    {
+      "name": "2027-11-08 - Veď ma, Pane, po ceste k večnosti.",
+      "number": "2027-11-08",
+      "strophes": [
+        "Veď ma, Pane, po ceste k večnosti."
+      ]
+    },
+    {
+      "name": "2027-11-09 - Riečne ramená obveseľujú Božie mesto, posvätný stánok Najvyššieho.",
+      "number": "2027-11-09",
+      "strophes": [
+        "Riečne ramená obveseľujú Božie mesto, posvätný stánok Najvyššieho."
+      ]
+    },
+    {
+      "name": "2027-11-10 - Boh bude súdiť malých i mocných.",
+      "number": "2027-11-10",
+      "strophes": [
+        "Boh bude súdiť malých i mocných."
+      ]
+    },
+    {
+      "name": "2027-11-11 - Pane, tvoje slovo trvá naveky.",
+      "number": "2027-11-11",
+      "strophes": [
+        "Pane, tvoje slovo trvá naveky."
+      ]
+    },
+    {
+      "name": "2027-11-12 - Nebesia rozprávajú o sláve Boha.",
+      "number": "2027-11-12",
+      "strophes": [
+        "Nebesia rozprávajú o sláve Boha."
+      ]
+    },
+    {
+      "name": "2027-11-13 - Pamätáme, Pane, na divy, čo si učinil.",
+      "number": "2027-11-13",
+      "strophes": [
+        "Pamätáme, Pane, na divy, čo si učinil."
+      ],
+      "options": [
+        {
+          "label": "",
+          "refrain": "Pamätáme, Pane, na divy, čo si učinil."
+        },
+        {
+          "label": "alebo",
+          "refrain": "Aleluja."
+        }
+      ]
+    },
+    {
+      "name": "2027-11-14 - Ochráň ma, Bože, k tebe sa utiekam.",
+      "number": "2027-11-14",
+      "strophes": [
+        "Ochráň ma, Bože, k tebe sa utiekam."
+      ]
+    },
+    {
+      "name": "2027-11-15 - Pane, dožič mi života a budem sa pridŕžať tvojej náuky.",
+      "number": "2027-11-15",
+      "strophes": [
+        "Pane, dožič mi života a budem sa pridŕžať tvojej náuky."
+      ]
+    },
+    {
+      "name": "2027-11-16 - Pán je môj ochranca, on ma udržuje.",
+      "number": "2027-11-16",
+      "strophes": [
+        "Pán je môj ochranca, on ma udržuje."
+      ]
+    },
+    {
+      "name": "2027-11-17 - Až raz vstanem zo sna, uzriem tvoju tvár, Pane.",
+      "number": "2027-11-17",
+      "strophes": [
+        "Až raz vstanem zo sna, uzriem tvoju tvár, Pane."
+      ]
+    },
+    {
+      "name": "2027-11-18 - Ukáž nám, Pane, cestu spásy.",
+      "number": "2027-11-18",
+      "strophes": [
+        "Ukáž nám, Pane, cestu spásy."
+      ],
+      "options": [
+        {
+          "label": "Féria",
+          "refrain": "Ukáž nám, Pane, cestu spásy."
+        },
+        {
+          "label": "Omša na Výročie posviacky bazilík",
+          "refrain": "Pred očami pohanov vyjavil Pán svoju spásu."
+        }
+      ]
+    },
+    {
+      "name": "2027-11-19 - Velebíme slávu tvojho mena, Pane, Bože náš.",
+      "number": "2027-11-19",
+      "strophes": [
+        "Velebíme slávu tvojho mena, Pane, Bože náš."
+      ]
+    },
+    {
+      "name": "2027-11-20 - Pán, Boh, súdi spravodlivo národy.",
+      "number": "2027-11-20",
+      "strophes": [
+        "Pán, Boh, súdi spravodlivo národy."
+      ]
+    },
+    {
+      "name": "2027-11-21 - Pán kraľuje, oslavujme ho.",
+      "number": "2027-11-21",
+      "strophes": [
+        "Pán kraľuje, oslavujme ho."
+      ]
+    },
+    {
+      "name": "2027-11-22 - Hoden chvály a vyvýšený naveky.",
+      "number": "2027-11-22",
+      "strophes": [
+        "Hoden chvály a vyvýšený naveky."
+      ]
+    },
+    {
+      "name": "2027-11-23 - Chváľte a vyvyšujte ho naveky.",
+      "number": "2027-11-23",
+      "strophes": [
+        "Chváľte a vyvyšujte ho naveky."
+      ]
+    },
+    {
+      "name": "2027-11-24 - Chváľte a vyvyšujte ho naveky.",
+      "number": "2027-11-24",
+      "strophes": [
+        "Chváľte a vyvyšujte ho naveky."
+      ]
+    },
+    {
+      "name": "2027-11-25 - Chváľte a vyvyšujte ho naveky.",
+      "number": "2027-11-25",
+      "strophes": [
+        "Chváľte a vyvyšujte ho naveky."
+      ]
+    },
+    {
+      "name": "2027-11-26 - Chváľte a vyvyšujte ho naveky.",
+      "number": "2027-11-26",
+      "strophes": [
+        "Chváľte a vyvyšujte ho naveky."
+      ]
+    },
+    {
+      "name": "2027-11-27 - Chváľte a vyvyšujte ho naveky.",
+      "number": "2027-11-27",
+      "strophes": [
+        "Chváľte a vyvyšujte ho naveky."
+      ]
+    },
+    {
+      "name": "2027-11-28 - K tebe, Pane, dvíham svoju dušu.",
+      "number": "2027-11-28",
+      "strophes": [
+        "K tebe, Pane, dvíham svoju dušu."
+      ]
+    },
+    {
+      "name": "2027-11-29 - S radosťou pôjdeme do domu Pánovho.",
+      "number": "2027-11-29",
+      "strophes": [
+        "S radosťou pôjdeme do domu Pánovho."
+      ]
+    },
+    {
+      "name": "2027-11-30 - Po celej zemi rozlieha sa ich hlas.",
+      "number": "2027-11-30",
+      "strophes": [
+        "Po celej zemi rozlieha sa ich hlas."
+      ]
+    },
+    {
+      "name": "2027-12-01 - Budem bývať v dome Pánovom mnoho a mnoho dní.",
+      "number": "2027-12-01",
+      "strophes": [
+        "Budem bývať v dome Pánovom mnoho a mnoho dní."
+      ]
+    },
+    {
+      "name": "2027-12-02 - Požehnaný, ktorý prichádza v mene Pánovom.",
+      "number": "2027-12-02",
+      "strophes": [
+        "Požehnaný, ktorý prichádza v mene Pánovom."
+      ],
+      "options": [
+        {
+          "label": "",
+          "refrain": "Požehnaný, ktorý prichádza v mene Pánovom."
+        },
+        {
+          "label": "alebo",
+          "refrain": "Aleluja."
+        }
+      ]
+    },
+    {
+      "name": "2027-12-03 - Pán je moje svetlo a moja spása.",
+      "number": "2027-12-03",
+      "strophes": [
+        "Pán je moje svetlo a moja spása."
+      ]
+    },
+    {
+      "name": "2027-12-04 - Blahoslavení všetci, čo očakávajú Pána.",
+      "number": "2027-12-04",
+      "strophes": [
+        "Blahoslavení všetci, čo očakávajú Pána."
+      ]
+    },
+    {
+      "name": "2027-12-05 - Veľké veci urobil s nami Pán a máme z toho radosť.",
+      "number": "2027-12-05",
+      "strophes": [
+        "Veľké veci urobil s nami Pán a máme z toho radosť."
+      ]
+    },
+    {
+      "name": "2027-12-06 - Hľa, náš Boh príde a spasí nás.",
+      "number": "2027-12-06",
+      "strophes": [
+        "Hľa, náš Boh príde a spasí nás."
+      ]
+    },
+    {
+      "name": "2027-12-07 - Hľa, Pán, Boh, prichádza so všetkou mocou.",
+      "number": "2027-12-07",
+      "strophes": [
+        "Hľa, Pán, Boh, prichádza so všetkou mocou."
+      ]
+    },
+    {
+      "name": "2027-12-08 - Spievajte Pánovi pieseň novú, lebo vykonal veci zázračné.",
+      "number": "2027-12-08",
+      "strophes": [
+        "Spievajte Pánovi pieseň novú, lebo vykonal veci zázračné."
+      ]
+    },
+    {
+      "name": "2027-12-09 - Milostivý a milosrdný je Pán, zhovievavý a veľmi láskavý.",
+      "number": "2027-12-09",
+      "strophes": [
+        "Milostivý a milosrdný je Pán, zhovievavý a veľmi láskavý."
+      ]
+    },
+    {
+      "name": "2027-12-10 - Pane, kto nasleduje teba, bude mať svetlo života.",
+      "number": "2027-12-10",
+      "strophes": [
+        "Pane, kto nasleduje teba, bude mať svetlo života."
+      ]
+    },
+    {
+      "name": "2027-12-11 - Bože, obnov nás, rozjasni svoju tvár a budeme spasení.",
+      "number": "2027-12-11",
+      "strophes": [
+        "Bože, obnov nás, rozjasni svoju tvár a budeme spasení."
+      ]
+    },
+    {
+      "name": "2027-12-12 - Plesajme a jasajme, lebo uprostred nás je Svätý, Boh.",
+      "number": "2027-12-12",
+      "strophes": [
+        "Plesajme a jasajme, lebo uprostred nás je Svätý, Boh."
+      ]
+    },
+    {
+      "name": "2027-12-13 - Pouč ma, Pane, o svojich chodníkoch.",
+      "number": "2027-12-13",
+      "strophes": [
+        "Pouč ma, Pane, o svojich chodníkoch."
+      ]
+    },
+    {
+      "name": "2027-12-14 - Úbožiak zavolal a Pán ho vyslyšal.",
+      "number": "2027-12-14",
+      "strophes": [
+        "Úbožiak zavolal a Pán ho vyslyšal."
+      ]
+    },
+    {
+      "name": "2027-12-15 - Roste, nebesia, z výsosti, z oblakov nech prší spravodlivosť.",
+      "number": "2027-12-15",
+      "strophes": [
+        "Roste, nebesia, z výsosti, z oblakov nech prší spravodlivosť."
+      ]
+    },
+    {
+      "name": "2027-12-16 - Budem ťa, Pane, oslavovať, že si ma vyslobodil.",
+      "number": "2027-12-16",
+      "strophes": [
+        "Budem ťa, Pane, oslavovať, že si ma vyslobodil."
+      ]
+    },
+    {
+      "name": "2027-12-17 - V jeho dňoch bude prekvitať spravodlivosť a plnosť pokoja naveky.",
+      "number": "2027-12-17",
+      "strophes": [
+        "V jeho dňoch bude prekvitať spravodlivosť a plnosť pokoja naveky."
+      ]
+    },
+    {
+      "name": "2027-12-18 - V jeho dňoch bude prekvitať spravodlivosť a plnosť pokoja naveky.",
+      "number": "2027-12-18",
+      "strophes": [
+        "V jeho dňoch bude prekvitať spravodlivosť a plnosť pokoja naveky."
+      ]
+    },
+    {
+      "name": "2027-12-19 - Bože, obnov nás, rozjasni svoju tvár a budeme spasení.",
+      "number": "2027-12-19",
+      "strophes": [
+        "Bože, obnov nás, rozjasni svoju tvár a budeme spasení."
+      ]
+    },
+    {
+      "name": "2027-12-20 - Hľa, prichádza Pán, on je Kráľ slávy.",
+      "number": "2027-12-20",
+      "strophes": [
+        "Hľa, prichádza Pán, on je Kráľ slávy."
+      ]
+    },
+    {
+      "name": "2027-12-21 - Plesajte, spravodliví, v Pánovi, spievajte mu novú pieseň.",
+      "number": "2027-12-21",
+      "strophes": [
+        "Plesajte, spravodliví, v Pánovi, spievajte mu novú pieseň."
+      ]
+    },
+    {
+      "name": "2027-12-22 - Srdce mi plesá v mojom Bohu.",
+      "number": "2027-12-22",
+      "strophes": [
+        "Srdce mi plesá v mojom Bohu."
+      ]
+    },
+    {
+      "name": "2027-12-23 - Zodvihnite hlavu, lebo sa blíži vaše vykúpenie.",
+      "number": "2027-12-23",
+      "strophes": [
+        "Zodvihnite hlavu, lebo sa blíži vaše vykúpenie."
+      ]
+    },
+    {
+      "name": "2027-12-24 - Tvoje milosrdenstvo, Pane, ospevovať budem naveky.",
+      "number": "2027-12-24",
+      "strophes": [
+        "Tvoje milosrdenstvo, Pane, ospevovať budem naveky."
+      ]
+    },
+    {
+      "name": "2027-12-25 - Dnes sa nám narodil Spasiteľ, Kristus Pán.",
+      "number": "2027-12-25",
+      "strophes": [
+        "Dnes sa nám narodil Spasiteľ, Kristus Pán."
+      ],
+      "options": [
+        {
+          "label": "Vo svätej noci",
+          "refrain": "Dnes sa nám narodil Spasiteľ, Kristus Pán."
+        },
+        {
+          "label": "Na úsvite",
+          "refrain": "Dnes zažiari nad nami svetlo, lebo sa nám narodil Pán."
+        },
+        {
+          "label": "Počas dňa",
+          "refrain": "Uzreli všetky končiny zeme spásu nášho Boha."
+        }
+      ]
+    },
+    {
+      "name": "2027-12-26 - Blažení sú všetci, čo sa boja Pána a kráčajú po jeho cestách.",
+      "number": "2027-12-26",
+      "strophes": [
+        "Blažení sú všetci, čo sa boja Pána a kráčajú po jeho cestách."
+      ],
+      "options": [
+        {
+          "label": "",
+          "refrain": "Blažení sú všetci, čo sa boja Pána a kráčajú po jeho cestách."
+        },
+        {
+          "label": "",
+          "refrain": "Blažení tí, čo bývajú v tvojom dome, Pane."
+        }
+      ]
+    },
+    {
+      "name": "2027-12-27 - Radujte sa, spravodliví, tešte sa v Pánovi.",
+      "number": "2027-12-27",
+      "strophes": [
+        "Radujte sa, spravodliví, tešte sa v Pánovi."
+      ]
+    },
+    {
+      "name": "2027-12-28 - Naša duša unikla ako vtáča zo siete poľovníkov.",
+      "number": "2027-12-28",
+      "strophes": [
+        "Naša duša unikla ako vtáča zo siete poľovníkov."
+      ]
+    },
+    {
+      "name": "2027-12-29 - Tešte sa, nebesia, a plesaj, zem.",
+      "number": "2027-12-29",
+      "strophes": [
+        "Tešte sa, nebesia, a plesaj, zem."
+      ]
+    },
+    {
+      "name": "2027-12-30 - Tešte sa, nebesia, a plesaj, zem.",
+      "number": "2027-12-30",
+      "strophes": [
+        "Tešte sa, nebesia, a plesaj, zem."
+      ]
+    },
+    {
+      "name": "2027-12-31 - Tešte sa, nebesia, a plesaj, zem.",
+      "number": "2027-12-31",
+      "strophes": [
+        "Tešte sa, nebesia, a plesaj, zem."
+      ]
+    }
+  ]
+}

@@ -1,7 +1,7 @@
-import React, { useRef, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import Card from '../Card';
 import { actions } from '../../lib/actions';
-import { psalmId, toLocalISODate } from '../../api/api';
+import { getPsalmOptions, psalmId, psalmOptionsSync, toLocalISODate } from '../../api/api';
 
 const KIND_ICON = { song: '♪', psalm: 'Ž', pdf: '▤', image: '▧', missing: '?' };
 
@@ -50,11 +50,25 @@ function useDragReorder(onMove) {
 function PsalmButton() {
   const [open, setOpen] = useState(false);
   const [date, setDate] = useState(nextSunday);
+  const [options, setOptions] = useState(() => psalmOptionsSync(date));
+  useEffect(() => {
+    let cancelled = false;
+    setOptions(psalmOptionsSync(date));
+    getPsalmOptions(date).then((o) => !cancelled && setOptions(o));
+    return () => { cancelled = true; };
+  }, [date]);
+
+  // Na koniec, ako keď sa poradie skladá postupne; presunúť sa dá ťahaním
+  const add = (option) => {
+    actions.addToPlaylist(psalmId(date, option));
+    setOpen(false);
+  };
+
   return (
     <div className="relative">
       <button onClick={() => setOpen((o) => !o)} className="btn !min-h-[36px] !px-3 text-xs whitespace-nowrap" aria-expanded={open}>+ Žalm</button>
       {open && (
-        <div className="absolute right-0 top-full mt-2 z-20 w-64 bg-surface border border-line rounded-2xl shadow-xl p-3 space-y-2">
+        <div className="absolute right-0 top-full mt-2 z-40 w-72 max-h-[55vh] overflow-auto bg-surface border border-line rounded-2xl shadow-xl p-3 space-y-2">
           <label className="block text-xs text-muted">
             Žalm na dátum
             <input type="date" value={date} onChange={(e) => setDate(e.target.value)} className="field mt-1" />
@@ -63,16 +77,22 @@ function PsalmButton() {
             <button onClick={() => setDate(toLocalISODate())} className="btn flex-1 !min-h-[36px] text-xs">Dnes</button>
             <button onClick={() => setDate(nextSunday())} className="btn flex-1 !min-h-[36px] text-xs">Nedeľa</button>
           </div>
-          <button
-            className="btn-primary w-full"
-            onClick={() => {
-              // Na koniec, ako keď sa poradie skladá postupne; presunúť sa dá ťahaním
-              actions.addToPlaylist(psalmId(date));
-              setOpen(false);
-            }}
-          >
-            Pridať do poradia
-          </button>
+          {options.length > 1 ? (
+            <div className="space-y-1.5">
+              <div className="text-xs text-muted">Na tento deň je {options.length} žalmov na výber:</div>
+              {options.map((o, i) => (
+                <button key={i} onClick={() => add(i)} className="w-full text-left rounded-xl border border-line hover:border-accent p-2">
+                  {o.label && <span className="block text-[11px] font-semibold text-accent">{o.label}</span>}
+                  <span className="block text-xs">{o.refrain}</span>
+                </button>
+              ))}
+            </div>
+          ) : (
+            <>
+              {options[0] && <div className="text-xs text-muted">{options[0].refrain}</div>}
+              <button className="btn-primary w-full" onClick={() => add(0)}>Pridať do poradia</button>
+            </>
+          )}
         </div>
       )}
     </div>
