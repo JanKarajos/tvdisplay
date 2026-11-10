@@ -90,7 +90,7 @@ export default function ControlPage() {
   const shownSong = state.currentSongId ? song : null;
 
   return (
-    <div className="min-h-screen pb-[calc(min(19vh,160px)+7rem)] lg:pb-36 short:!pb-[calc(min(42vh,150px)+3rem)]">
+    <div className="min-h-screen pb-32 sm:pb-24 lg:pb-36 short:!pb-16">
       <Header status={status} clients={health?.clients} tab={tab} onTab={setTab} uiTheme={uiTheme} onCycleTheme={cycleUiTheme} showSettings={settingsOpen} onToggleSettings={() => { setSettingsOpen((o) => !o); setTab(settingsOpen ? 'mass' : 'screen'); }} />
       {authRequired && <PinDialog />}
       {lib.error && (
@@ -120,7 +120,7 @@ export default function ControlPage() {
       </main>
 
       <Toaster />
-      <BottomBar state={state} song={shownSong} nextItem={nextId ? describeItem(nextId) : null} nextSong={nextId ? nextSong : null} hasPrev={Boolean(prevInPlaylist(state))} />
+      <BottomBar state={state} song={shownSong} nextItem={nextId ? describeItem(nextId) : null} hasPrev={Boolean(prevInPlaylist(state))} />
     </div>
   );
 }
