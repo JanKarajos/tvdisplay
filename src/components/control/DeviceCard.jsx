@@ -4,7 +4,7 @@ import { SERVER_URL } from '../../config';
 import { markAuthRequired, writeHeaders } from '../../api/stateClient';
 import { toast } from '../../lib/toast';
 
-const ACTIONS = {
+const actionsFor = (device) => ({
   'restart-app': {
     label: 'Reštartovať aplikáciu',
     hint: 'Server aj obrazovka na TV sa spustia znova (asi 20 s).',
@@ -12,17 +12,18 @@ const ACTIONS = {
     done: 'Aplikácia sa reštartuje, o chvíľu sa znova pripojí.',
   },
   reboot: {
-    label: 'Reštartovať Orange Pi',
+    label: device === 'zariadenie' ? 'Reštartovať zariadenie' : `Reštartovať ${device}`,
     hint: 'Celé zariadenie sa vypne a znova zapne (1–2 minúty).',
     confirm: 'Reštartovať celé zariadenie v kostole? TV bude 1–2 minúty prázdna.',
     done: 'Zariadenie sa reštartuje. Ovládanie sa pripojí samo, keď nabehne.',
   },
-};
+});
 
-// Reštart aplikácie a zariadenia na diaľku (to isté robia fyzické tlačidlá pri Orange Pi)
+// Reštart aplikácie a zariadenia na diaľku (to isté robia fyzické tlačidlá pri Orange Pi / Raspberry Pi)
 export default function DeviceCard({ health }) {
   const [busy, setBusy] = useState(null);
   const available = Boolean(health?.system?.actions);
+  const ACTIONS = actionsFor(health?.system?.name || 'zariadenie');
 
   const run = async (action) => {
     const a = ACTIONS[action];
@@ -44,7 +45,7 @@ export default function DeviceCard({ health }) {
   };
 
   return (
-    <Card title="Zariadenie v kostole" subtitle="Keď sa niečo zasekne: reštart aplikácie alebo celého Orange Pi">
+    <Card title="Zariadenie v kostole" subtitle={`Keď sa niečo zasekne: reštart aplikácie alebo celého zariadenia${health?.system?.model ? ` (${health.system.model})` : ''}`}>
       {!available && (
         <div className="text-sm text-muted mb-3">
           Na tomto zariadení reštart z ovládania nie je zapnutý. Zapne ho nový inštalátor Laudate.

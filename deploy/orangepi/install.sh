@@ -1,5 +1,5 @@
 #!/bin/bash
-# Laudate – inštalátor pre Orange Pi PC (Armbian / Debian / Ubuntu).
+# Laudate – inštalátor pre Orange Pi PC a Raspberry Pi 5 / 4 (Armbian, Raspberry Pi OS, Debian, Ubuntu).
 # Súbor obsahuje hotovú aplikáciu, na zariadení sa nič nekompiluje.
 #
 # Spustenie:   sudo bash tvdisplay-orangepi-install.sh
@@ -17,6 +17,8 @@
 #              --no-tailscale   nepýtať sa na Tailscale
 #              --church-url=URL piesne kostola z administrácie (Docker na NAS, adresa zo záložky Kostoly)
 #              --no-buttons     neobsluhovať fyzické tlačidlá na pinoch GPIO (reštart aplikácie / zariadenia)
+#              --wifi-ssid=NÁZOV --wifi-password=HESLO   pripojenie na Wi-Fi v kostole (Raspberry Pi má Wi-Fi
+#                               v sebe, Orange Pi PC potrebuje USB Wi-Fi adaptér); sieť nemusí byť teraz v dosahu
 #
 # Opätovné spustenie aplikáciu aktualizuje. Nastavenia, piesne ani prezentácie nezmení.
 set -euo pipefail
@@ -42,6 +44,8 @@ NAS_IGNORE_CERT=0
 WANT_TAILSCALE=ask
 TAILSCALE_AUTHKEY=""
 WANT_BUTTONS=yes
+WIFI_SSID=""
+WIFI_PASSWORD=""
 for arg in "$@"; do
   case "$arg" in
     --yes) ASSUME_YES=1 ;;
@@ -56,6 +60,8 @@ for arg in "$@"; do
     --tailscale-authkey=*) WANT_TAILSCALE=yes; TAILSCALE_AUTHKEY="${arg#--tailscale-authkey=}" ;;
     --no-tailscale) WANT_TAILSCALE=no ;;
     --no-buttons) WANT_BUTTONS=no ;;
+    --wifi-ssid=*) WIFI_SSID="${arg#--wifi-ssid=}" ;;
+    --wifi-password=*) WIFI_PASSWORD="${arg#--wifi-password=}" ;;
     *) echo "Neznáma voľba: $arg"; exit 2 ;;
   esac
 done
@@ -142,12 +148,20 @@ PAYLOAD_LINE=$(grep -anm1 '^__PAYLOAD_BELOW__$' "$SELF" | cut -d: -f1)
 FREE_MB=$(df -Pm / | awk 'NR==2 {print $4}')
 [ "$FREE_MB" -ge 1000 ] || die "Na karte je voľných iba $FREE_MB MB, treba aspoň 1 GB."
 
+# Doska: Raspberry Pi má iné čísla pinov GPIO ako Orange Pi (fyzické piny na konektore sú tie isté)
+BOARD_MODEL=$(tr -d '\0' 2>/dev/null </proc/device-tree/model || true)
+case "$BOARD_MODEL" in
+  *"Raspberry Pi"*) BOARD=rpi; BOARD_NAME="Raspberry Pi" ;;
+  *"Orange Pi"*) BOARD=orangepi; BOARD_NAME="Orange Pi" ;;
+  *) BOARD=other; BOARD_NAME="zariadenie" ;;
+esac
+
 # Orange Pi PC nemá hodiny s batériou: bez správneho času zlyhá HTTPS aj liturgická téma
 timedatectl set-ntp true 2>/dev/null || true
 
 # --- Otázky (všetky naraz, potom už inštalácia beží sama) ----------------
 
-echo "Laudate – inštalácia na $(uname -m)"
+echo "Laudate – inštalácia na ${BOARD_MODEL:-$(uname -m)}"
 
 ENV_EXISTS=0
 [ -f "$APP_DIR/.env" ] && ENV_EXISTS=1
@@ -216,6 +230,30 @@ fi
 step "Aktualizujem zoznam balíkov"
 apt-get update || warn "Zoznam balíkov sa nepodarilo celý obnoviť, pokračujem."
 apt_install ca-certificates curl tar xz-utils sudo
+
+# --- Wi-Fi ---------------------------------------------------------------
+
+if [ -n "$WIFI_SSID" ]; then
+  step "Nastavujem Wi-Fi \"$WIFI_SSID\""
+  if command -v nmcli >/dev/null && systemctl is-active --quiet NetworkManager; then
+    WIFI_IF=$(nmcli -t -f DEVICE,TYPE device 2>/dev/null | awk -F: '$2 == "wifi" {print $1; exit}')
+    if [ -z "$WIFI_IF" ]; then
+      warn "Zariadenie nemá Wi-Fi (Orange Pi PC potrebuje USB Wi-Fi adaptér)."
+    else
+      nmcli connection delete laudate-wifi >/dev/null 2>&1 || true
+      if [ -n "$WIFI_PASSWORD" ]; then
+        nmcli connection add type wifi con-name laudate-wifi ifname "$WIFI_IF" ssid "$WIFI_SSID" \
+          wifi-sec.key-mgmt wpa-psk wifi-sec.psk "$WIFI_PASSWORD" connection.autoconnect yes >/dev/null
+      else
+        nmcli connection add type wifi con-name laudate-wifi ifname "$WIFI_IF" ssid "$WIFI_SSID" connection.autoconnect yes >/dev/null
+      fi && echo "Wi-Fi je uložená, zariadenie sa na ňu pripojí samo, keď bude v dosahu." \
+        || warn "Wi-Fi sa nepodarilo uložiť."
+      nmcli connection up laudate-wifi >/dev/null 2>&1 || true
+    fi
+  else
+    warn "Wi-Fi sa dá nastaviť len so systémom s NetworkManager (Raspberry Pi OS Bookworm, Armbian). Inak ju nastav cez Raspberry Pi Imager."
+  fi
+fi
 
 # --- Tailscale (spojenie s NAS v inej sieti) -----------------------------
 
@@ -476,7 +514,8 @@ if [ "$WANT_BUTTONS" = yes ]; then
   # vnútorný pull-up drží pin v 1, stlačenie ho spojí so zemou (0).
   if [ ! -f /etc/default/laudate-buttons ]; then
     cat >/etc/default/laudate-buttons <<'EOF'
-# Fyzické tlačidlá a LED Laudate (Orange Pi PC). Čísla liniek na čipe GPIO:
+# Fyzické tlačidlá a LED Laudate. Na Raspberry Pi sú čísla liniek GPIO iné (pozri nižšie),
+# fyzické piny na konektore sú rovnaké. Orange Pi PC – čísla liniek na čipe GPIO:
 # PA0 = 0, PA1 = 1, PA3 = 3, PC4 = 2*32+4 = 68 ...
 # Pin 11 (PA1): tlačidlo reštart aplikácie – podržať 1 s
 # Pin 13 (PA0): tlačidlo reštart Orange Pi – podržať 3 s
@@ -484,13 +523,18 @@ if [ "$WANT_BUTTONS" = yes ]; then
 # Pin 15 (PA3): LED reštartu aplikácie, pin 16 (PC4): LED reštartu Orange Pi
 # LED cez rezistor 220–330 Ω na GND (pin 14)
 # Po zmene: sudo systemctl restart tvdisplay-buttons
+# Raspberry Pi: pin 11 = GPIO17, pin 13 = GPIO27, pin 15 = GPIO22, pin 16 = GPIO23
 BUTTON_APP_LINE=1
 BUTTON_REBOOT_LINE=0
 BUTTON_APP_HOLD=1
 BUTTON_REBOOT_HOLD=3
-# Prázdne = nájde sa automaticky (hlavný radič 1c20800.pinctrl)
+# Prázdne = nájde sa automaticky (Orange Pi 1c20800.pinctrl, Raspberry Pi 5 pinctrl-rp1, Pi 4 pinctrl-bcm2711)
 BUTTON_CHIP=
 EOF
+    if [ "$BOARD" = rpi ]; then
+      sed -i 's/^BUTTON_APP_LINE=.*/BUTTON_APP_LINE=17/; s/^BUTTON_REBOOT_LINE=.*/BUTTON_REBOOT_LINE=27/' /etc/default/laudate-buttons
+      printf 'LED_APP_LINE=22\nLED_REBOOT_LINE=23\n' >>/etc/default/laudate-buttons
+    fi
   fi
   # Nové nastavenia doplň aj do staršieho súboru (ostatné sa nemenia)
   add_default() { grep -q "^$1=" /etc/default/laudate-buttons || printf '%s=%s\n' "$1" "$2" >>/etc/default/laudate-buttons; }
@@ -501,9 +545,9 @@ EOF
 #!/bin/bash
 # Laudate: sleduje fyzické tlačidlá a pri dostatočne dlhom stlačení spustí reštart.
 # LED pri tlačidle svieti od stlačenia, kým sa akcia nevykoná: pri reštarte aplikácie
-# zhasne, keď aplikácia znova odpovedá; pri reštarte Orange Pi zhasne s vypnutím zariadenia.
+# zhasne, keď aplikácia znova odpovedá; pri reštarte zariadenia zhasne s jeho vypnutím.
 . /etc/default/laudate-buttons
-CHIP=${BUTTON_CHIP:-$(gpiodetect 2>/dev/null | awk '/1c20800/ {print $1; exit}')}
+CHIP=${BUTTON_CHIP:-$(gpiodetect 2>/dev/null | awk '/1c20800|pinctrl-rp1|pinctrl-bcm2711|pinctrl-bcm2835/ {print $1; exit}')}
 CHIP=${CHIP:-gpiochip0}
 HEALTH="http://localhost:${LAUDATE_PORT:-5173}/health"
 if gpioget --version 2>/dev/null | head -n1 | grep -q 'v2'; then
@@ -643,8 +687,8 @@ echo "  Obrazovka:             http://$IP_ADDRESS:$APP_PORT/#display"
 echo "  Stav a záznamy:        systemctl status tvdisplay  /  journalctl -u tvdisplay -f"
 echo "  Nastavenia:            $APP_DIR/.env (po zmene: sudo systemctl restart tvdisplay)"
 if [ "$WANT_BUTTONS" = yes ]; then
-  echo "  Tlačidlá:              pin 11 = reštart aplikácie (1 s), pin 13 = reštart Orange Pi (3 s), druhý kontakt GND pin 9"
-  echo "  LED:                   pin 15 = reštart aplikácie, pin 16 = reštart Orange Pi (cez rezistor 220–330 Ω na GND pin 14)"
+  echo "  Tlačidlá:              pin 11 = reštart aplikácie (1 s), pin 13 = reštart $BOARD_NAME (3 s), druhý kontakt GND pin 9"
+  echo "  LED:                   pin 15 = reštart aplikácie, pin 16 = reštart $BOARD_NAME (cez rezistor 220–330 Ω na GND)"
 fi
 CURRENT_CHURCH_URL=$(sed -n 's/^CHURCH_DATA_URL=//p' "$APP_DIR/.env" | tail -n1)
 CURRENT_NAS_URL=$(sed -n 's/^NAS_URL=//p' "$APP_DIR/.env" | tail -n1)

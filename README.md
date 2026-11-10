@@ -229,9 +229,27 @@ Mobil / PC (ovládanie) ──PATCH /api/state──►  server (port 3002)  ─
 - **PIN**: ak je v `.env` nastavený `CONTROL_PIN`, ovládanie si ho vypýta. Displej PIN nepotrebuje.
 - **Administrácia kostolov** (`ADMIN_DATA_DIR`) a **napojenie na ňu** (`CHURCH_DATA_URL`): pozri vyššie.
 
-## Reštart aplikácie a Orange Pi (tlačidlá)
+## Raspberry Pi 5 namiesto Orange Pi
 
-**V ovládaní:** ⚙ → Obrazovka → *Zariadenie v kostole* → „Reštartovať aplikáciu“ alebo „Reštartovať Orange Pi“
+Ten istý inštalátor (`dist-orangepi/tvdisplay-orangepi-install.sh`) funguje aj na **Raspberry Pi 5** (aj Pi 4) –
+dosku rozpozná sám. Raspberry Pi má v sebe **Wi-Fi**, takže nemusí mať kábel do siete.
+
+1. Kartu priprav cez **Raspberry Pi Imager**: *Raspberry Pi OS Lite (64-bit)*, v nastaveniach (ozubené koliesko)
+   zapni SSH, zadaj používateľa a **Wi-Fi kostola**.
+2. Prihlás sa cez SSH a spusti inštalátor ako pri Orange Pi. Wi-Fi sa dá zadať aj inštalátorom – sieť nemusí byť
+   práve v dosahu (napr. inštalácia doma, zapojenie v kostole):
+   ```bash
+   sudo bash tvdisplay-orangepi-install.sh --wifi-ssid="Farnosť" --wifi-password="heslo"
+   ```
+3. Tlačidlá a LED sa zapájajú na **tie isté fyzické piny** ako pri Orange Pi (pin 9, 11, 13, 14, 15, 16).
+
+Čo treba navyše: kábel **micro-HDMI → HDMI** (Pi 5 nemá veľké HDMI), oficiálny zdroj **USB-C 27 W (5 V / 5 A)**
+a chladič (Active Cooler). Orange Pi PC Wi-Fi nemá – pripojí sa káblom alebo cez USB Wi-Fi adaptér
+(potom funguje aj `--wifi-ssid`).
+
+## Reštart aplikácie a zariadenia (tlačidlá)
+
+**V ovládaní:** ⚙ → Obrazovka → *Zariadenie v kostole* → „Reštartovať aplikáciu“ alebo „Reštartovať Orange Pi / Raspberry Pi“
 (ak je nastavený PIN, chráni aj tieto tlačidlá).
 
 **Fyzické tlačidlá a LED** (inštalátor ich zapne sám, vypnúť: `--no-buttons`). Dve obyčajné tlačidlá (spínacie, bez aretácie)
@@ -240,8 +258,10 @@ každá LED cez rezistor 220–330 Ω (dlhšia nožička LED = + smerom k pinu).
 
 | | Tlačidlo (druhý kontakt GND pin 9) | LED (cez rezistor na GND pin 14) | Podržať |
 |---|---|---|---|
-| Reštart aplikácie (spustí ju aj keď nebeží) | pin 11 (PA1) | pin 15 (PA3) | 1 s |
-| Reštart Orange Pi | pin 13 (PA0) | pin 16 (PC4) | 3 s |
+| Reštart aplikácie (spustí ju aj keď nebeží) | pin 11 (Orange Pi PA1 / Raspberry Pi GPIO17) | pin 15 (PA3 / GPIO22) | 1 s |
+| Reštart zariadenia | pin 13 (PA0 / GPIO27) | pin 16 (PC4 / GPIO23) | 3 s |
+
+![Zapojenie tlačidiel a LED](docs/zapojenie-tlacidiel.png)
 
 LED sa rozsvieti hneď po stlačení (aj krátkom – vidno, že stlačenie zariadenie zaznamenalo). Po podržaní ostane
 svietiť, kým sa akcia nevykoná: pri reštarte aplikácie zhasne, keď aplikácia znova beží; pri reštarte Orange Pi
