@@ -138,7 +138,7 @@ export default function SongBrowser({ lib, playlistIds }) {
 
       {query && <div className="mt-2 text-xs text-muted">Nájdených: {results.length} {pluralSongs(results.length)}</div>}
 
-      <div className="mt-2 h-[calc(100vh-26rem)] min-h-[18rem] overflow-auto -mx-2 px-1">
+      <div className="mt-2 h-[65vh] min-h-[18rem] overflow-auto -mx-2 px-1">
         {!lib.loaded && <div className="text-sm text-muted p-3">Načítavam piesne…</div>}
         {!query && category === PSALMS && <PsalmList playlistIds={playlistIds} />}
         {lib.loaded && category !== PSALMS && !results.length && <div className="text-sm text-muted p-3">Nič sa nenašlo.</div>}

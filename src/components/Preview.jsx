@@ -12,7 +12,7 @@ export default function Preview({ state, song, page, empty = 'Prázdna obrazovka
       type={onClick ? 'button' : undefined}
       onClick={onClick}
       aria-label={label}
-      className={`relative block bg-black rounded-xl overflow-hidden ring-1 ring-line ${portrait ? 'w-[56.25%] mx-auto' : 'w-full'} ${onClick ? 'hover:ring-2 hover:ring-accent transition' : ''}`}
+      className={`relative block bg-black rounded-xl overflow-hidden ring-1 ring-line ${portrait ? 'w-[56.25%] mx-auto' : 'w-full'} ${onClick ? 'ring-2 !ring-accent hover:opacity-90 active:scale-[0.99] transition' : ''}`}
     >
       <div style={{ paddingTop: portrait ? '177.78%' : '56.25%' }} />
       <Stage state={state} song={song} page={page} preview />

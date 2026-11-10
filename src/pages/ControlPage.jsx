@@ -101,14 +101,17 @@ export default function ControlPage() {
 
       <main className="max-w-7xl mx-auto p-3 sm:p-4">
         {tab === 'mass' && (
-          // Vľavo zoznam piesní, vpravo čo je na TV a poradie (na mobile najprv TV a poradie)
-          <div className="grid grid-cols-1 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.1fr)] gap-4">
+          // Hore vľavo poradie, vpravo čo je na TV; pod nimi piesne na celú šírku
+          // (na mobile najprv TV, potom poradie a piesne)
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
             <div className="order-2 lg:order-1 min-w-0">
-              <SongBrowser lib={lib} playlistIds={playlistIds} />
-            </div>
-            <div className="order-1 lg:order-2 space-y-4 min-w-0">
-              <NowPlaying state={state} song={shownSong} nextSong={nextId ? nextSong : null} categories={lib.categories} />
               <Playlist items={playlist} currentId={state.currentSongId} nextId={nextId} playedIndex={playedIndex} />
+            </div>
+            <div className="order-1 lg:order-2 min-w-0">
+              <NowPlaying state={state} song={shownSong} nextSong={nextId ? nextSong : null} categories={lib.categories} />
+            </div>
+            <div className="order-3 lg:col-span-2 min-w-0">
+              <SongBrowser lib={lib} playlistIds={playlistIds} />
             </div>
           </div>
         )}
