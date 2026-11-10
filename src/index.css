@@ -98,3 +98,14 @@ body {
   bottom: 0;
   left: 0;
 }
+
+/* Náhľady TV v ovládaní: čo najväčšie, ale celé viditeľné aj na mobile naležato
+   (výška okna mínus nadpis karty, popis a spodné tlačidlá). dvh = skutočne viditeľná výška v Safari. */
+.preview-portrait {
+  width: min(56.25%, calc((100vh - 10.5rem) * 0.5625));
+  width: min(56.25%, calc((100dvh - 10.5rem) * 0.5625));
+}
+.preview-landscape {
+  width: min(100%, calc((100vh - 10.5rem) * 1.7778));
+  width: min(100%, calc((100dvh - 10.5rem) * 1.7778));
+}
