@@ -12,11 +12,7 @@ export default function Preview({ state, song, page, empty = 'Prázdna obrazovka
       type={onClick ? 'button' : undefined}
       onClick={onClick}
       aria-label={label}
-      style={{
-        // Celý náhľad sa zmestí na obrazovku aj na mobile naležato (výška okna mínus hlavička a tlačidlá)
-        width: portrait ? 'min(56.25%, calc((100vh - 13.5rem) * 0.5625))' : 'min(100%, calc((100vh - 13.5rem) * 1.7778))',
-      }}
-      className={`relative block mx-auto bg-black rounded-xl overflow-hidden ring-1 ring-line ${onClick ? 'ring-2 !ring-accent hover:opacity-90 active:scale-[0.99] transition' : ''}`}
+      className={`${portrait ? 'preview-portrait' : 'preview-landscape'} relative block mx-auto bg-black rounded-xl overflow-hidden ring-1 ring-line ${onClick ? 'ring-2 !ring-accent hover:opacity-90 active:scale-[0.99] transition' : ''}`}
     >
       <div style={{ paddingTop: portrait ? '177.78%' : '56.25%' }} />
       <Stage state={state} song={song} page={page} preview />
