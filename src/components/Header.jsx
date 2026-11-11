@@ -15,7 +15,7 @@ export const TABS = [
   ['content', 'Obsah'],
 ];
 
-export default function Header({ status, clients, tab, onTab, uiTheme, onCycleTheme, showSettings, onToggleSettings }) {
+export default function Header({ status, clients, tab, onTab, uiTheme, onCycleTheme, showSettings, onToggleSettings, onInstall }) {
   const [dot, label] = STATUS[status] || STATUS.connecting;
   return (
     <header className="sticky short:static top-0 z-30 bg-surface/90 backdrop-blur border-b border-line">
@@ -44,6 +44,11 @@ export default function Header({ status, clients, tab, onTab, uiTheme, onCycleTh
             <span className={`w-2.5 h-2.5 rounded-full ${dot}`} />
             <span className="hidden lg:inline">{label}</span>
           </span>
+          {onInstall && (
+            <button onClick={onInstall} className="btn-icon text-lg" title="Aplikácia do telefónu a tabletu" aria-label="Aplikácia do telefónu a tabletu">
+              📲
+            </button>
+          )}
           <button
             onClick={onToggleSettings}
             className={`btn-icon text-lg ${showSettings ? 'text-accent' : ''}`}

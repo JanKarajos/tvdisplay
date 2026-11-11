@@ -8,6 +8,7 @@ import SongBrowser from '../components/control/SongBrowser';
 import Playlist from '../components/control/Playlist';
 import ScreenSettings from '../components/control/ScreenSettings';
 import ContentManager from '../components/control/ContentManager';
+import InstallDialog from '../components/control/InstallDialog';
 import { useAppState } from '../hooks/useAppState';
 import { useLibrary } from '../hooks/useLibrary';
 import { useSong } from '../hooks/useSong';
@@ -46,6 +47,7 @@ export default function ControlPage() {
   const health = useServerHealth(status);
   const { mode: uiTheme, cycle: cycleUiTheme } = useUiTheme();
   const [settingsOpen, setSettingsOpen] = useState(readSettingsOpen);
+  const [installOpen, setInstallOpen] = useState(false);
   const [chosenTab, setTab] = useState(readTab);
   // Bez otvorených nastavení je aktívna iba omša
   const tab = settingsOpen ? chosenTab : 'mass';
@@ -91,8 +93,9 @@ export default function ControlPage() {
 
   return (
     <div className="min-h-screen pb-32 sm:pb-24 lg:pb-36 short:!pb-16">
-      <Header status={status} clients={health?.clients} tab={tab} onTab={setTab} uiTheme={uiTheme} onCycleTheme={cycleUiTheme} showSettings={settingsOpen} onToggleSettings={() => { setSettingsOpen((o) => !o); setTab(settingsOpen ? 'mass' : 'screen'); }} />
+      <Header status={status} clients={health?.clients} tab={tab} onTab={setTab} uiTheme={uiTheme} onCycleTheme={cycleUiTheme} onInstall={() => setInstallOpen(true)} showSettings={settingsOpen} onToggleSettings={() => { setSettingsOpen((o) => !o); setTab(settingsOpen ? 'mass' : 'screen'); }} />
       {authRequired && <PinDialog />}
+      {installOpen && <InstallDialog health={health} onClose={() => setInstallOpen(false)} />}
       {lib.error && (
         <div className="max-w-7xl mx-auto px-3 sm:px-4 pt-4">
           <div className="p-3 rounded-xl bg-danger/10 border border-danger/30 text-sm text-danger">{lib.error}</div>

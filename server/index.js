@@ -14,6 +14,7 @@ import express from 'express';
 import cors from 'cors';
 import http from 'node:http';
 import crypto from 'node:crypto';
+import os from 'node:os';
 import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -246,6 +247,8 @@ app.get('/health', (req, res) => {
     converter: { powerpoint: hasSoffice() },
     admin: Boolean(ADMIN_DATA_DIR),
     system: { actions: systemActionsAvailable(), sdProtected: sdProtected(), ...deviceName() },
+    // IP adresy zariadenia v sieti (QR kód na inštaláciu do telefónu, keď je ovládanie otvorené cez localhost)
+    lan: Object.values(os.networkInterfaces()).flat().filter((a) => a && a.family === 'IPv4' && !a.internal).map((a) => a.address),
     library: church
       ? { managed: true, adminUrl: church.adminUrl, lastSync: church.status.lastSync, lastError: church.status.lastError }
       : nas

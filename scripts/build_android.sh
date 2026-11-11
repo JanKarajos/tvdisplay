@@ -6,4 +6,6 @@ cd "$(dirname "$0")/../android"
 ./gradlew assembleRelease
 mkdir -p ../dist-android
 cp app/build/outputs/apk/release/app-release.apk ../dist-android/Laudate.apk
+# na stiahnutie zo stránky ovládania (📲 Aplikácia do telefónu)
+cp ../dist-android/Laudate.apk ../public/laudate.apk
 echo "Hotovo: dist-android/Laudate.apk"
