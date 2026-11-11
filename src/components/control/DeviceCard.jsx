@@ -51,6 +51,13 @@ export default function DeviceCard({ health }) {
           Na tomto zariadení reštart z ovládania nie je zapnutý. Zapne ho nový inštalátor Laudate.
         </div>
       )}
+      {available && (
+        <div className="text-sm text-muted mb-3">
+          Ochrana SD karty: {health?.system?.sdProtected
+            ? <span className="text-ok font-semibold">zapnutá</span>
+            : <span>vypnutá (zapnete na zariadení: sudo laudate-ochrana zapnut)</span>}
+        </div>
+      )}
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
         {Object.entries(ACTIONS).map(([id, a]) => (
           <button key={id} onClick={() => run(id)} disabled={!available || Boolean(busy)} className={`btn h-auto py-3 flex-col items-start text-left ${id === 'reboot' ? '!border-danger/40' : ''}`}>

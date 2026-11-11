@@ -22,7 +22,8 @@ import { ACCEPTED_EXTENSIONS, PRESENTATION_EXTENSIONS, convertToPdf, countPdfPag
 import { createAdmin } from './admin.js';
 import { createChurchSync } from './churchSync.js';
 import { createNasStorage, nasMediaName } from './nasStorage.js';
-import { deviceName, runSystemAction, systemActionsAvailable } from './systemActions.js';
+import { deviceName, runSystemAction, sdProtected, systemActionsAvailable } from './systemActions.js';
+import { writeFileAtomic } from './safeWrite.js';
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const STATE_FILE = path.join(ROOT, 'state.json');
@@ -73,14 +74,27 @@ let state = loadState();
 let version = 0;
 let saveTimer = null;
 
-function persistState() {
-  // Zápis na disk s malým oneskorením, aby rýchle klikanie nezaťažovalo SD kartu
+function saveStateNow() {
   clearTimeout(saveTimer);
-  saveTimer = setTimeout(() => {
-    fs.writeFile(STATE_FILE, JSON.stringify(state, null, 2), (err) => {
-      if (err) console.error('[state] Nepodarilo sa uložiť state.json:', err.message);
-    });
-  }, 300);
+  saveTimer = null;
+  try {
+    writeFileAtomic(STATE_FILE, JSON.stringify(state, null, 2));
+  } catch (err) {
+    console.error('[state] Nepodarilo sa uložiť state.json:', err.message);
+  }
+}
+
+function persistState() {
+  // Stav slúži len na obnovenie po reštarte – ukladá sa najviac raz za 5 s, aby každé "Ďalej"
+  // nezapisovalo na SD kartu; pri vypnutí služby sa uloží hneď
+  if (!saveTimer) saveTimer = setTimeout(saveStateNow, 5000);
+}
+
+for (const signal of ['SIGTERM', 'SIGINT']) {
+  process.once(signal, () => {
+    if (saveTimer) saveStateNow();
+    process.exit(0);
+  });
 }
 
 const ALLOWED_KEYS = new Set(Object.keys(DEFAULT_STATE));
@@ -231,7 +245,7 @@ app.get('/health', (req, res) => {
     auth: { pinRequired: Boolean(CONTROL_PIN) },
     converter: { powerpoint: hasSoffice() },
     admin: Boolean(ADMIN_DATA_DIR),
-    system: { actions: systemActionsAvailable(), ...deviceName() },
+    system: { actions: systemActionsAvailable(), sdProtected: sdProtected(), ...deviceName() },
     library: church
       ? { managed: true, adminUrl: church.adminUrl, lastSync: church.status.lastSync, lastError: church.status.lastError }
       : nas
@@ -409,7 +423,7 @@ app.put('/api/github/:file', requirePin, rejectWhenManaged, async (req, res) => 
 
   const text = JSON.stringify(content, null, 2);
   try {
-    fs.writeFileSync(path.join(ROOT, file), text, 'utf8');
+    writeFileAtomic(path.join(ROOT, file), text);
     // Ostatné zariadenia si knižnicu hneď načítajú znova (napr. upravená pieseň na TV)
     broadcast({ type: 'library', file });
   } catch (e) {

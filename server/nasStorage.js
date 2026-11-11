@@ -10,6 +10,7 @@
 // Server na Orange Pi si drží ich kópiu (nas-cache/), takže displej aj ovládanie fungujú, aj keď NAS
 // alebo internet nie je dostupný. Zmeny urobené bez spojenia sa na NAS nahrajú, keď sa spojenie obnoví.
 // Každú minútu kontroluje zmeny na NAS (napr. z iného Orange Pi v tom istom kostole).
+import { writeFileAtomic } from './safeWrite.js';
 import fs from 'node:fs';
 import path from 'node:path';
 import http from 'node:http';
@@ -86,11 +87,7 @@ export function createNasStorage({ url, username, password, ignoreCert = false, 
   }
   status.pending = pending.files.length + pending.media.length + pending.deletes.length;
 
-  function writeAtomic(file, data) {
-    const tmp = `${file}.${process.pid}.tmp`;
-    fs.writeFileSync(tmp, data);
-    fs.renameSync(tmp, file);
-  }
+  const writeAtomic = writeFileAtomic;
 
   // WebDAV požiadavka (http/https bez ďalších knižníc; pri ignoreCert prijme aj certifikát vystavený samotným NAS)
   function dav(method, rel, { body, headers = {}, timeout = 30000 } = {}) {
