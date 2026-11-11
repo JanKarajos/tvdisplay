@@ -28,6 +28,18 @@ export function runSystemAction(action) {
   });
 }
 
+// Je zapnutá ochrana SD karty (koreňový systém súborov len na čítanie cez overlay)?
+export function sdProtected() {
+  try {
+    return fs.readFileSync('/proc/mounts', 'utf8').split('\n').some((l) => {
+      const [, mount, type] = l.split(' ');
+      return mount === '/' && type === 'overlay';
+    });
+  } catch {
+    return false;
+  }
+}
+
 // Názov dosky pre ovládanie ("Reštartovať Raspberry Pi" / "Orange Pi")
 export function deviceName() {
   try {

@@ -5,6 +5,7 @@
 // S ADMIN_CHURCHES_DIR sú priečinky kostolov priamo v zdieľanom priečinku na NAS (napr. tvdisplay/),
 // ktorý Orange Pi čítajú cez WebDAV (NAS_URL). Každý podpriečinok je jeden kostol.
 // Orange Pi v kostoloch čítajú dáta svojho kostola z /api/public/churches/<id>/... (iba čítanie).
+import { writeFileAtomic } from './safeWrite.js';
 import express from 'express';
 import fs from 'node:fs';
 import path from 'node:path';
@@ -39,10 +40,7 @@ function readJsonFile(file, fallback) {
 
 // Zápis cez dočasný súbor, aby výpadok prúdu nepoškodil pôvodný súbor
 function writeJsonFile(file, data) {
-  fs.mkdirSync(path.dirname(file), { recursive: true });
-  const tmp = `${file}.${process.pid}.tmp`;
-  fs.writeFileSync(tmp, JSON.stringify(data, null, 2));
-  fs.renameSync(tmp, file);
+  writeFileAtomic(file, JSON.stringify(data, null, 2));
 }
 
 function randomId(prefix) {

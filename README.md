@@ -247,6 +247,28 @@ dosku rozpozná sám. Raspberry Pi má v sebe **Wi-Fi**, takže nemusí mať ká
 a chladič (Active Cooler). Orange Pi PC Wi-Fi nemá – pripojí sa káblom alebo cez USB Wi-Fi adaptér
 (potom funguje aj `--wifi-ssid`).
 
+## Ochrana SD karty pri výpadku prúdu
+
+V kostole sa prúd často vypína vypínačom. Inštalátor preto vždy:
+
+- ukladá dáta aplikácie bezpečne (dočasný súbor, zápis na kartu, premenovanie) – pri výpadku ostane starý
+  alebo nový celý súbor; stav TV sa ukladá najviac raz za 5 s a pri vypnutí služby,
+- odkladá do komprimovanej pamäte (zram) namiesto odkladacieho súboru na karte,
+- drží záznamy systému (`journalctl`) a profil prehliadača na TV len v pamäti, `/tmp` v pamäti.
+
+**Režim len na čítanie** (voliteľný, najbezpečnejší): karta sa vôbec nezapisuje, všetky zmeny sú v pamäti
+a po reštarte sa zahodia (piesne z NAS sa po štarte stiahnu znova).
+
+```bash
+sudo laudate-ochrana zapnut   # potom sudo reboot
+sudo laudate-ochrana stav
+sudo laudate-ochrana vypnut   # pred aktualizáciou alebo zmenou nastavení, potom sudo reboot
+```
+
+Funguje na Raspberry Pi OS (cez `raspi-config`) a na systémoch s balíkom `overlayroot` (Armbian/Ubuntu).
+Dá sa zapnúť aj rovno inštalátorom: `--ochrana-sd`. Pri zapnutej ochrane inštalátor odmietne aktualizáciu
+(po reštarte by sa stratila). Stav ochrany je vidno v ovládaní: ⚙ → Obrazovka → Zariadenie v kostole.
+
 ## Reštart aplikácie a zariadenia (tlačidlá)
 
 **V ovládaní:** ⚙ → Obrazovka → *Zariadenie v kostole* → „Reštartovať aplikáciu“ alebo „Reštartovať Orange Pi / Raspberry Pi“

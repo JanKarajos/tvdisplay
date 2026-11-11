@@ -1,6 +1,7 @@
 // Orange Pi napojené na administráciu (CHURCH_DATA_URL): server si pravidelne sťahuje piesne,
 // obrázky, kategórie a súbory svojho kostola a drží ich kópiu na disku. Displej tak funguje
 // aj keď NAS alebo internet nie je dostupný. Pri zmene v administrácii dá vedieť všetkým zariadeniam.
+import { writeFileAtomic } from './safeWrite.js';
 import fs from 'node:fs';
 import path from 'node:path';
 
@@ -30,11 +31,7 @@ export function createChurchSync({ dataUrl, cacheDir, intervalMs = 60000, onChan
   }
   const status = { lastSync: null, lastError: null };
 
-  function writeAtomic(file, data) {
-    const tmp = `${file}.${process.pid}.tmp`;
-    fs.writeFileSync(tmp, data);
-    fs.renameSync(tmp, file);
-  }
+  const writeAtomic = writeFileAtomic;
 
   async function downloadMedia(name) {
     const target = path.join(mediaDir, name);

@@ -17,6 +17,8 @@
 #              --no-tailscale   nepýtať sa na Tailscale
 #              --church-url=URL piesne kostola z administrácie (Docker na NAS, adresa zo záložky Kostoly)
 #              --no-buttons     neobsluhovať fyzické tlačidlá na pinoch GPIO (reštart aplikácie / zariadenia)
+#              --ochrana-sd     po inštalácii zapnúť systém len na čítanie (karta sa nepoškodí ani pri
+#                               vypnutí prúdu; zmeny v systéme sa po reštarte zahodia), vypnúť: sudo laudate-ochrana vypnut
 #              --wifi-ssid=NÁZOV --wifi-password=HESLO   pripojenie na Wi-Fi v kostole (Raspberry Pi má Wi-Fi
 #                               v sebe, Orange Pi PC potrebuje USB Wi-Fi adaptér); sieť nemusí byť teraz v dosahu
 #
@@ -46,6 +48,7 @@ TAILSCALE_AUTHKEY=""
 WANT_BUTTONS=yes
 WIFI_SSID=""
 WIFI_PASSWORD=""
+WANT_SD_PROTECT=no
 for arg in "$@"; do
   case "$arg" in
     --yes) ASSUME_YES=1 ;;
@@ -62,6 +65,7 @@ for arg in "$@"; do
     --no-buttons) WANT_BUTTONS=no ;;
     --wifi-ssid=*) WIFI_SSID="${arg#--wifi-ssid=}" ;;
     --wifi-password=*) WIFI_PASSWORD="${arg#--wifi-password=}" ;;
+    --ochrana-sd) WANT_SD_PROTECT=yes ;;
     *) echo "Neznáma voľba: $arg"; exit 2 ;;
   esac
 done
@@ -144,6 +148,11 @@ command -v apt-get >/dev/null || die "Inštalátor potrebuje systém s apt (Armb
 
 PAYLOAD_LINE=$(grep -anm1 '^__PAYLOAD_BELOW__$' "$SELF" | cut -d: -f1)
 [ -n "$PAYLOAD_LINE" ] || die "Súbor je poškodený, chýba v ňom aplikácia."
+
+# Pri systéme len na čítanie by sa aktualizácia po reštarte stratila
+if [ "$(findmnt -n -o FSTYPE / 2>/dev/null)" = overlay ]; then
+  die "Ochrana SD karty je zapnutá. Najprv: sudo laudate-ochrana vypnut, reštart, potom spusti inštalátor znova (a ochranu zapni: sudo laudate-ochrana zapnut)."
+fi
 
 FREE_MB=$(df -Pm / | awk 'NR==2 {print $4}')
 [ "$FREE_MB" -ge 1000 ] || die "Na karte je voľných iba $FREE_MB MB, treba aspoň 1 GB."
@@ -304,18 +313,93 @@ fi
 
 # --- Odkladací priestor --------------------------------------------------
 
-# 1 GB RAM nestačí na prehliadač a prevod PowerPointu naraz
-SWAP_MB=$(free -m | awk '/^Swap:/ {print $2}')
-if [ "${SWAP_MB:-0}" -lt 512 ] && [ ! -f /var/swap.tvdisplay ] && [ "$FREE_MB" -ge 4000 ]; then
-  step "Vytváram odkladací súbor 1 GB"
-  if dd if=/dev/zero of=/var/swap.tvdisplay bs=1M count=1024 status=none \
-    && chmod 600 /var/swap.tvdisplay && mkswap /var/swap.tvdisplay >/dev/null && swapon /var/swap.tvdisplay; then
-    grep -q '/var/swap.tvdisplay' /etc/fstab || echo '/var/swap.tvdisplay none swap sw 0 0' >>/etc/fstab
-  else
-    rm -f /var/swap.tvdisplay
-    warn "Odkladací súbor sa nepodarilo vytvoriť."
+# 1 GB RAM nestačí na prehliadač a prevod PowerPointu naraz. Odkladá sa do komprimovanej pamäte
+# (zram), nie na SD kartu – súbor na karte sa opotrebúva a pri výpadku prúdu býva poškodený.
+has_zram() { swapon --show=NAME --noheadings 2>/dev/null | grep -q zram; }
+if ! has_zram; then
+  step "Nastavujem odkladací priestor v pamäti (zram)"
+  if apt_install zram-tools >/dev/null 2>&1; then
+    printf 'ALGO=lz4\nPERCENT=50\n' >/etc/default/zramswap
+    systemctl enable zramswap >/dev/null 2>&1 || true
+    systemctl restart zramswap 2>/dev/null || true
   fi
 fi
+if has_zram; then
+  # odkladací súbor na karte už netreba
+  if [ -f /var/swap.tvdisplay ]; then
+    swapoff /var/swap.tvdisplay 2>/dev/null || true
+    sed -i '\|/var/swap.tvdisplay|d' /etc/fstab
+    rm -f /var/swap.tvdisplay
+  fi
+  if command -v dphys-swapfile >/dev/null; then  # Raspberry Pi OS
+    dphys-swapfile swapoff 2>/dev/null || true
+    systemctl disable --now dphys-swapfile >/dev/null 2>&1 || true
+  fi
+else
+  SWAP_MB=$(free -m | awk '/^Swap:/ {print $2}')
+  if [ "${SWAP_MB:-0}" -lt 512 ] && [ ! -f /var/swap.tvdisplay ] && [ "$FREE_MB" -ge 4000 ]; then
+    step "Vytváram odkladací súbor 1 GB"
+    if dd if=/dev/zero of=/var/swap.tvdisplay bs=1M count=1024 status=none \
+      && chmod 600 /var/swap.tvdisplay && mkswap /var/swap.tvdisplay >/dev/null && swapon /var/swap.tvdisplay; then
+      grep -q '/var/swap.tvdisplay' /etc/fstab || echo '/var/swap.tvdisplay none swap sw 0 0' >>/etc/fstab
+    else
+      rm -f /var/swap.tvdisplay
+      warn "Odkladací súbor sa nepodarilo vytvoriť."
+    fi
+  fi
+fi
+
+# --- Šetrenie SD karty ----------------------------------------------------
+
+step "Šetrím SD kartu (záznamy a dočasné súbory v pamäti)"
+# Záznamy systému (journalctl) iba v pamäti – po reštarte sa zmažú
+mkdir -p /etc/systemd/journald.conf.d
+printf '[Journal]\nStorage=volatile\nRuntimeMaxUse=30M\n' >/etc/systemd/journald.conf.d/laudate.conf
+systemctl restart systemd-journald 2>/dev/null || true
+# /tmp v pamäti (prejaví sa po reštarte)
+if [ "$(findmnt -n -o FSTYPE /tmp 2>/dev/null)" != tmpfs ] && [ -f /usr/share/systemd/tmp.mount ]; then
+  systemctl enable /usr/share/systemd/tmp.mount >/dev/null 2>&1 || true
+fi
+
+# Režim len na čítanie (voliteľný): sudo laudate-ochrana zapnut | vypnut | stav
+cat >/usr/local/sbin/laudate-ochrana <<'EOF'
+#!/bin/bash
+# Laudate: ochrana SD karty – systém len na čítanie (overlay v pamäti).
+# Všetky zmeny (aj piesne stiahnuté z NAS, stav TV) sa po reštarte zahodia a systém sa vráti do stavu
+# z chvíle zapnutia ochrany; pri NAS sa piesne po štarte stiahnu znova. Pred aktualizáciou ochranu vypni.
+set -e
+[ "$(id -u)" -eq 0 ] || exec sudo "$0" "$@"
+active() { [ "$(findmnt -n -o FSTYPE / 2>/dev/null)" = overlay ]; }
+case "${1:-stav}" in
+  stav)
+    if active; then echo "Ochrana SD karty je ZAPNUTÁ (systém len na čítanie)."; else echo "Ochrana SD karty je vypnutá."; fi ;;
+  zapnut)
+    if command -v raspi-config >/dev/null; then
+      raspi-config nonint do_overlayfs 0
+    elif dpkg -s overlayroot >/dev/null 2>&1 || apt-get install -y overlayroot >/dev/null 2>&1; then
+      if active; then overlayroot-chroot sed -i 's/^overlayroot=.*/overlayroot="tmpfs:recurse=0"/' /etc/overlayroot.conf
+      else sed -i 's/^overlayroot=.*/overlayroot="tmpfs:recurse=0"/' /etc/overlayroot.conf; fi
+      grep -q '^overlayroot="tmpfs' /etc/overlayroot.conf || echo 'overlayroot="tmpfs:recurse=0"' >>/etc/overlayroot.conf
+    else
+      echo "Na tomto systéme sa režim len na čítanie nedá zapnúť (potrebuje Raspberry Pi OS alebo balík overlayroot – Armbian/Ubuntu)."
+      exit 1
+    fi
+    echo "Ochrana sa zapne po reštarte: sudo reboot" ;;
+  vypnut)
+    if command -v raspi-config >/dev/null; then
+      raspi-config nonint do_overlayfs 1
+    elif [ -f /etc/overlayroot.conf ]; then
+      if active; then overlayroot-chroot sed -i 's/^overlayroot=.*/overlayroot=""/' /etc/overlayroot.conf
+      else sed -i 's/^overlayroot=.*/overlayroot=""/' /etc/overlayroot.conf; fi
+    else
+      echo "Ochrana nie je nastavená."
+      exit 0
+    fi
+    echo "Ochrana sa vypne po reštarte: sudo reboot" ;;
+  *) echo "Použitie: sudo laudate-ochrana zapnut | vypnut | stav"; exit 2 ;;
+esac
+EOF
+chmod 755 /usr/local/sbin/laudate-ochrana
 
 # --- Aplikácia -----------------------------------------------------------
 
@@ -447,7 +531,7 @@ fi
 exec $BROWSER --kiosk --incognito --no-first-run --noerrdialogs --disable-infobars \\
   --disable-session-crashed-bubble --disable-translate --disable-gpu --password-store=basic \\
   --check-for-update-interval=31536000 --renderer-process-limit=2 --disk-cache-size=33554432 \\
-  --user-data-dir=$HOME_DIR/browser "\$URL"
+  --user-data-dir=/run/tvdisplay-kiosk/browser --disk-cache-dir=/run/tvdisplay-kiosk/cache "\$URL"
 EOF
   chmod 755 "$APP_DIR/kiosk.sh"
   chown "$APP_USER:$APP_USER" "$APP_DIR/kiosk.sh"
@@ -462,6 +546,8 @@ Conflicts=getty@tty7.service
 [Service]
 User=$APP_USER
 Environment=HOME=$HOME_DIR
+# profil prehliadača v pamäti (nezapisuje na SD kartu)
+RuntimeDirectory=tvdisplay-kiosk
 PAMName=login
 TTYPath=/dev/tty7
 StandardInput=tty
@@ -717,8 +803,12 @@ elif [ -n "$CURRENT_NAS_URL" ]; then
 else
   echo "  Piesne:                GitHub"
 fi
+if [ "$WANT_SD_PROTECT" = yes ]; then
+  if /usr/local/sbin/laudate-ochrana zapnut; then REBOOT_NEEDED=1; fi
+fi
+echo "  Ochrana SD karty:      $(/usr/local/sbin/laudate-ochrana stav) Zapnúť/vypnúť: sudo laudate-ochrana zapnut|vypnut"
 if [ "$REBOOT_NEEDED" -eq 1 ]; then
-  echo "  Obrazovka na TV sa zapne po reštarte: sudo reboot"
+  echo "  Zmeny sa prejavia po reštarte: sudo reboot"
 fi
 exit 0
 __PAYLOAD_BELOW__
