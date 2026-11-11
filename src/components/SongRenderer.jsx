@@ -41,7 +41,7 @@ export default function SongRenderer({ lyrics, title, number, imageUrl, currentP
     if (!clientHeight) return;
     setBoxHeight(clientHeight);
     // Hore je nadpis v rohu, dole bodky – text má zvyšných ~86 % výšky
-    setFontSize(fitFontSize(measure, [pages[pageIndex]], clientHeight * 0.86, clientHeight / 7.5));
+    setFontSize(fitFontSize(measure, [pages[pageIndex]], clientHeight * 0.86, clientHeight / 5.5));
   }, [pages, pageIndex]);
 
   useLayoutEffect(() => {
@@ -75,13 +75,15 @@ export default function SongRenderer({ lyrics, title, number, imageUrl, currentP
     return <div className="w-full h-full flex items-center justify-center text-white/50">Žiadny text</div>;
   }
 
-  const textStyle = { lineHeight: LINE_HEIGHT, whiteSpace: 'pre-wrap', textAlign: 'center', fontWeight: 600 };
+  // pre-line: zalomenia riadkov ostanú, medzery na konci riadku sa zahodia (pri pre-wrap v starších
+  // prehliadačoch v TV „trčia“ za okraj a meranie by písmo zbytočne zmenšilo)
+  const textStyle = { lineHeight: LINE_HEIGHT, whiteSpace: 'pre-line', textAlign: 'center', fontWeight: 600 };
   const unit = boxHeight / 100; // 1 % výšky
 
   return (
     <div ref={boxRef} className="relative w-full h-full flex items-center justify-center overflow-hidden text-white">
       {/* Neviditeľný prvok na meranie textu */}
-      <div ref={measureRef} aria-hidden="true" className="song-text absolute invisible pointer-events-none left-0 top-0" style={{ ...textStyle, width: '93%' }} />
+      <div ref={measureRef} aria-hidden="true" className="song-text absolute invisible pointer-events-none left-0 top-0" style={{ ...textStyle, width: '95%' }} />
 
       {!hideTitle && title && (
         <div
@@ -94,7 +96,7 @@ export default function SongRenderer({ lyrics, title, number, imageUrl, currentP
 
       <div
         key={`${pageIndex}-${lyrics.length}`}
-        className="song-text animate-fade-in w-[94%]"
+        className="song-text animate-fade-in w-[96%]"
         style={{ ...textStyle, overflowWrap: 'break-word', hyphens: 'manual', fontSize: fontSize ?? 0, visibility: fontSize ? 'visible' : 'hidden' }}
       >
         {pages[pageIndex].join('\n')}
