@@ -188,6 +188,15 @@ Napojenie zrušíš voľbou `--church-url=` (prázdna adresa); piesne sa potom z
 
 Vývoj administrácie na počítači: `ADMIN_DATA_DIR=admin-data ADMIN_PASSWORD=heslo1234 npm run dev`, potom `http://localhost:5173/#admin`.
 
+## Aplikácia do telefónu a tabletu
+
+V ovládaní ťuknite na **📲** (hore vpravo):
+
+- **Android** – tlačidlo stiahne `Laudate.apk` priamo zo zariadenia v kostole (alebo Chrome ⋮ → *Pridať na plochu*).
+- **iPhone / iPad** – Safari → *Zdieľať* → *Pridať na plochu*; ikona Laudate otvorí ovládanie na celú
+  obrazovku bez panelu Safari (manifest a ikony v `public/`).
+- **Z počítača** – QR kód s adresou ovládania na naskenovanie telefónom.
+
 ## Aplikácia pre Android
 
 Ovládanie z mobilu sa dá používať aj ako aplikácia **Laudate** (`dist-android/Laudate.apk`).
