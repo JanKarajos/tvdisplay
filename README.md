@@ -256,16 +256,18 @@ a chladič (Active Cooler). Orange Pi PC Wi-Fi nemá – pripojí sa káblom ale
 a dve LED na 40-pinovom konektore Orange Pi PC. Tlačidlá bez rezistorov (pin drží vnútorný pull-up),
 každá LED cez rezistor 220–330 Ω (dlhšia nožička LED = + smerom k pinu).
 
-| | Tlačidlo (druhý kontakt GND pin 9) | LED (cez rezistor na GND pin 14) | Podržať |
+| | Pin | Druhý kontakt | Podržať |
 |---|---|---|---|
-| Reštart aplikácie (spustí ju aj keď nebeží) | pin 11 (Orange Pi PA1 / Raspberry Pi GPIO17) | pin 15 (PA3 / GPIO22) | 1 s |
-| Reštart zariadenia | pin 13 (PA0 / GPIO27) | pin 16 (PC4 / GPIO23) | 3 s |
+| Tlačidlo reštart aplikácie (spustí ju aj keď nebeží) | 11 (Orange Pi PA1 / Raspberry Pi GPIO17) | GND pin 9 | 1 s |
+| Tlačidlo reštart zariadenia | 13 (PA0 / GPIO27) | GND pin 9 | 3 s |
+| LED „Laudate beží“ | 15 (PA3 / GPIO22) | rezistor 220–330 Ω → GND | – |
+| LED „zapnuté“ | 16 (PC4 / GPIO23) | rezistor 220–330 Ω → GND pin 14 | – |
 
 ![Zapojenie tlačidiel a LED](docs/zapojenie-tlacidiel.png)
 
-LED sa rozsvieti hneď po stlačení (aj krátkom – vidno, že stlačenie zariadenie zaznamenalo). Po podržaní ostane
-svietiť, kým sa akcia nevykoná: pri reštarte aplikácie zhasne, keď aplikácia znova beží; pri reštarte Orange Pi
-zhasne s vypnutím zariadenia.
+**Kontrolky:** LED „zapnuté“ svieti, kým je zariadenie zapnuté; LED „Laudate beží“ svieti, kým aplikácia
+odpovedá (zhasne pri reštarte aplikácie alebo keď aplikácia nebeží). Pri držaní tlačidla jeho LED bliká –
+vidno, že stlačenie zariadenie zaznamenalo; pri reštarte zariadenia LED „zapnuté“ bliká, kým sa nevypne.
 
 ```
 pin  9 GND ──┬──────────┐            pin 14 GND ──┬──────────────┐
