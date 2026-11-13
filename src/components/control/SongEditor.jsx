@@ -1,5 +1,6 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import Preview from '../Preview';
+import { AccompanimentUpload } from './AccompanimentPanel';
 import { library } from '../../api/api';
 import { stateClient } from '../../api/stateClient';
 import { splitIntoPages } from '../../lib/lyrics';
@@ -91,6 +92,8 @@ export default function SongEditor({ song, categories, onClose, onSave, onDelete
                 lang="sk"
               />
             </label>
+            {/* nahrávky sa ukladajú cez zariadenie v kostole (nie v administrácii) */}
+            {!onSave && <AccompanimentUpload song={song} />}
           </div>
 
           <div className="space-y-2">

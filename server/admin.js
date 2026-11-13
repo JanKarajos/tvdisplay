@@ -12,6 +12,7 @@ import path from 'node:path';
 import crypto from 'node:crypto';
 import { ACCEPTED_EXTENSIONS, PRESENTATION_EXTENSIONS, convertToPdf, countPdfPages } from './presentations.js';
 import { CATEGORY_NAMES, categoryOrder } from './jksCategories.js';
+import { FEATURES, cleanFeatures, effectiveFeatures } from './features.js';
 
 const SESSION_COOKIE = 'tvd_admin';
 const SESSION_TTL_MS = 14 * 24 * 60 * 60 * 1000; // 14 dní
@@ -440,6 +441,21 @@ export function createAdmin({ dataDir, seedSongsFile, churchesDir }) {
     res.json({ ok: true });
   });
 
+  // --- Funkcie zariadenia v kostole (features.json číta Orange Pi / Raspberry Pi) ---
+
+  const featuresFile = (id) => path.join(churchDir(id), 'features.json');
+  api.get('/churches/:churchId/features', (req, res) => {
+    const saved = cleanFeatures(readJsonFile(featuresFile(req.params.churchId), {}));
+    res.json({ list: FEATURES, features: effectiveFeatures(null, saved) });
+  });
+  api.put('/churches/:churchId/features', (req, res) => {
+    requireAdmin(req.user);
+    const current = cleanFeatures(readJsonFile(featuresFile(req.params.churchId), {}));
+    const features = effectiveFeatures(null, { ...current, ...cleanFeatures(req.body) });
+    writeJsonFile(featuresFile(req.params.churchId), features);
+    res.json({ list: FEATURES, features });
+  });
+
   // --- Kategórie ---
 
   api.get('/churches/:churchId/categories', (req, res) => res.json(loadCategories(req.params.churchId)));
@@ -598,6 +614,13 @@ export function createAdmin({ dataDir, seedSongsFile, churchesDir }) {
   const pub = express.Router();
 
   pub.get('/churches', (req, res) => res.json(loadChurches().map((c) => ({ id: c.id, name: c.name }))));
+
+  pub.get('/churches/:churchId/features.json', (req, res) => {
+    const file = path.join(churchDir(req.params.churchId), 'features.json');
+    if (!loadChurches().some((c) => c.id === req.params.churchId) || !fs.existsSync(file)) throw new HttpError(404, 'Nenájdené');
+    res.set('Cache-Control', 'no-cache');
+    res.json(cleanFeatures(readJsonFile(file, {})));
+  });
 
   // res.json posiela ETag, takže Orange Pi pri kontrole zmien dostane 304 bez sťahovania dát
   pub.get('/churches/:churchId/:file', (req, res) => {

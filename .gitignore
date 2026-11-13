@@ -10,3 +10,5 @@ nas-cache/
 # Dáta administrácie – priečinok je v repozitári prázdny (Synology ho musí mať pri spustení kontajnera)
 admin-data/*
 !admin-data/.gitkeep
+# televízor Samsung: IP, MAC a token povolenia (nepatrí do gitu)
+tv.json

@@ -11,13 +11,13 @@ export function readAsDataUrl(file) {
   });
 }
 
-export async function prepareImage(file) {
+export async function prepareImage(file, maxSize = MAX_IMAGE_SIZE) {
   const original = await readAsDataUrl(file);
   if (file.type === 'image/gif') return original;
   const img = new Image();
   img.src = original;
   await img.decode();
-  const scale = Math.min(1, MAX_IMAGE_SIZE / Math.max(img.width, img.height));
+  const scale = Math.min(1, maxSize / Math.max(img.width, img.height));
   if (scale === 1 && file.size < 1024 * 1024) return original;
   const canvas = document.createElement('canvas');
   canvas.width = Math.round(img.width * scale);

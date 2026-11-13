@@ -5,6 +5,8 @@ import { actions } from '../../lib/actions';
 import { THEMES, liturgicalSeason } from '../../lib/liturgy';
 import { ROTATIONS, getRotation } from '../../lib/rotation';
 import DeviceCard from './DeviceCard';
+import TvCard from './TvCard';
+import { useFeature } from '../../lib/features';
 
 function Toggle({ checked, onChange, label, hint }) {
   return (
@@ -31,6 +33,7 @@ export default function ScreenSettings({ state, images, sampleSong, health }) {
   const season = liturgicalSeason();
   const themeOptions = [['auto', `Automaticky – ${THEMES[season].name}`, THEMES[season]], ...Object.entries(THEMES).map(([id, t]) => [id, t.name, t])];
   const rotation = getRotation(settings);
+  const tvControl = useFeature('tv');
   const backgrounds = [
     { label: 'Podľa témy', value: null },
     { label: 'Čierna', value: '#000000', swatch: '#000' },
@@ -121,6 +124,7 @@ export default function ScreenSettings({ state, images, sampleSong, health }) {
         </div>
       </Card>
 
+      {tvControl && <TvCard />}
       <DeviceCard health={health} />
     </div>
   );

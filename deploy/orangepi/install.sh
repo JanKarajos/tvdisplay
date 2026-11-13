@@ -17,6 +17,10 @@
 #              --no-tailscale   nepýtať sa na Tailscale
 #              --church-url=URL piesne kostola z administrácie (Docker na NAS, adresa zo záložky Kostoly)
 #              --no-buttons     neobsluhovať fyzické tlačidlá na pinoch GPIO (reštart aplikácie / zariadenia)
+#              --funkcie=ZOZNAM zapnuté funkcie zariadenia, ostatné sa vypnú a ich balíky sa nestiahnu:
+#                               tv,foto,sprievod,prezentacie,powerpoint (alebo "ziadne"); bez voľby rozhoduje
+#                               administrácia (Kostoly -> Funkcie), inak je všetko zapnuté
+#              --bez-tv, --bez-fotky, --bez-sprievodu, --bez-prezentacii   vypne jednu funkciu
 #              --ochrana-sd     po inštalácii zapnúť systém len na čítanie (karta sa nepoškodí ani pri
 #                               vypnutí prúdu; zmeny v systéme sa po reštarte zahodia), vypnúť: sudo laudate-ochrana vypnut
 #              --wifi-ssid=NÁZOV --wifi-password=HESLO   pripojenie na Wi-Fi v kostole (Raspberry Pi má Wi-Fi
@@ -49,6 +53,11 @@ WANT_BUTTONS=yes
 WIFI_SSID=""
 WIFI_PASSWORD=""
 WANT_SD_PROTECT=no
+# Funkcie zariadenia: tv, photo (pieseň z fotky), audio (sprievod), presentations, powerpoint
+FEATURE_IDS="tv photo audio presentations powerpoint"
+FEATURES_SET=0
+FEATURES_LIST=""
+FEATURES_OFF=""
 for arg in "$@"; do
   case "$arg" in
     --yes) ASSUME_YES=1 ;;
@@ -66,6 +75,11 @@ for arg in "$@"; do
     --wifi-ssid=*) WIFI_SSID="${arg#--wifi-ssid=}" ;;
     --wifi-password=*) WIFI_PASSWORD="${arg#--wifi-password=}" ;;
     --ochrana-sd) WANT_SD_PROTECT=yes ;;
+    --funkcie=*) FEATURES_SET=1; FEATURES_LIST="${arg#--funkcie=}" ;;
+    --bez-tv) FEATURES_SET=1; FEATURES_OFF="$FEATURES_OFF tv" ;;
+    --bez-fotky) FEATURES_SET=1; FEATURES_OFF="$FEATURES_OFF photo" ;;
+    --bez-sprievodu) FEATURES_SET=1; FEATURES_OFF="$FEATURES_OFF audio" ;;
+    --bez-prezentacii) FEATURES_SET=1; FEATURES_OFF="$FEATURES_OFF presentations" ;;
     *) echo "Neznáma voľba: $arg"; exit 2 ;;
   esac
 done
@@ -220,9 +234,6 @@ fi
 if [ "$WANT_KIOSK" = ask ]; then
   if ask_yes "Zobrazovať aplikáciu na TV pripojenej cez HDMI k tomuto zariadeniu?"; then WANT_KIOSK=yes; else WANT_KIOSK=no; fi
 fi
-if [ "$WANT_POWERPOINT" = ask ]; then
-  if ask_yes "Nainštalovať podporu PowerPointu (LibreOffice, približne 500 MB)?"; then WANT_POWERPOINT=yes; else WANT_POWERPOINT=no; fi
-fi
 
 DISPLAY_MANAGER_ACTIVE=0
 if [ "$WANT_KIOSK" = yes ] && systemctl is-active --quiet display-manager 2>/dev/null; then
@@ -289,6 +300,73 @@ if [ "$WANT_TAILSCALE" = yes ]; then
 fi
 
 command -v curl >/dev/null && check_sources
+
+# --- Funkcie zariadenia ----------------------------------------------------
+# Poradie: predvolené (všetko) <- doterajšie .env <- administrácia (features.json kostola) <- voľby inštalátora
+declare -A FEAT FEAT_EXPLICIT
+for f in $FEATURE_IDS; do FEAT[$f]=yes; FEAT_EXPLICIT[$f]=0; done
+feature_id() { # slovenský názov z voľby -> id
+  case "$1" in
+    tv) echo tv ;; foto|photo) echo photo ;; sprievod|audio) echo audio ;;
+    prezentacie|presentations) echo presentations ;; powerpoint) echo powerpoint ;;
+  esac
+}
+apply_list() { # zoznam zapnutých (ostatné vypnuté)
+  local item id
+  for f in $FEATURE_IDS; do FEAT[$f]=no; FEAT_EXPLICIT[$f]=1; done
+  for item in ${1//,/ }; do
+    id=$(feature_id "$item")
+    if [ -n "$id" ]; then
+      FEAT[$id]=yes
+    elif [ "$item" != ziadne ] && [ "$item" != none ]; then
+      warn "Neznáma funkcia \"$item\" (možnosti: tv, foto, sprievod, prezentacie, powerpoint)"
+    fi
+  done
+  return 0
+}
+if [ "$ENV_EXISTS" -eq 1 ] && [ -n "$(env_value LAUDATE_FEATURES)" ]; then
+  apply_list "$(env_value LAUDATE_FEATURES)"
+fi
+REMOTE_FEATURES=""
+if [ -n "$CHURCH_DATA_URL" ]; then
+  REMOTE_FEATURES=$(curl -fsS --max-time 10 "$CHURCH_DATA_URL/features.json" 2>/dev/null || true)
+elif [ -n "$NAS_URL" ]; then
+  cert=()
+  [ "$NAS_IGNORE_CERT" -eq 1 ] && cert=(-k)
+  REMOTE_FEATURES=$(curl -fsS --max-time 15 "${cert[@]}" -u "$NAS_USER:$NAS_PASSWORD" "$NAS_URL/features.json" 2>/dev/null || true)
+fi
+if [ -n "$REMOTE_FEATURES" ] && [ "$FEATURES_SET" -eq 0 ]; then
+  for f in $FEATURE_IDS; do
+    value=$(printf '%s' "$REMOTE_FEATURES" | tr -d ' \n\t' | grep -o "\"$f\":\(true\|false\)" | cut -d: -f2 || true)
+    case "$value" in
+      true) FEAT[$f]=yes; FEAT_EXPLICIT[$f]=1 ;;
+      false) FEAT[$f]=no; FEAT_EXPLICIT[$f]=1 ;;
+    esac
+  done
+  echo "Funkcie zariadenia podľa administrácie."
+fi
+if [ "$FEATURES_SET" -eq 1 ]; then
+  [ -n "$FEATURES_LIST" ] && apply_list "$FEATURES_LIST"
+  for f in $FEATURES_OFF; do FEAT[$f]=no; FEAT_EXPLICIT[$f]=1; done
+fi
+[ "${FEAT[presentations]}" = no ] && FEAT[powerpoint]=no
+FEATURES_VALUE=""
+for f in $FEATURE_IDS; do [ "${FEAT[$f]}" = yes ] && FEATURES_VALUE="$FEATURES_VALUE,$f"; done
+FEATURES_VALUE="${FEATURES_VALUE#,}"
+[ -z "$FEATURES_VALUE" ] && FEATURES_VALUE=none
+
+# PowerPoint: vypnutá funkcia sa neinštaluje; zapnutú výslovne (administrácia/voľba) netreba potvrdzovať
+if [ "${FEAT[powerpoint]}" = no ]; then
+  WANT_POWERPOINT=no
+elif [ "$WANT_POWERPOINT" = ask ]; then
+  if [ "${FEAT_EXPLICIT[powerpoint]}" -eq 1 ]; then
+    WANT_POWERPOINT=yes
+  elif ask_yes "Nainštalovať podporu PowerPointu (LibreOffice, približne 500 MB)?"; then
+    WANT_POWERPOINT=yes
+  else
+    WANT_POWERPOINT=no
+  fi
+fi
 
 # --- Node.js -------------------------------------------------------------
 
@@ -439,6 +517,7 @@ if [ "$ENV_EXISTS" -eq 0 ]; then
       echo "NAS_USER=$NAS_USER"
       echo "NAS_PASSWORD=$NAS_PASSWORD"
       echo "NAS_IGNORE_CERT=$NAS_IGNORE_CERT"
+      [ "$FEATURES_SET" -eq 1 ] && echo "LAUDATE_FEATURES=$FEATURES_VALUE"
     } >"$APP_DIR/.env"
   )
 else
@@ -448,6 +527,7 @@ else
     printf '%s=%s\n' "$1" "$2" >>"$APP_DIR/.env"
   }
   [ "$CHURCH_URL_SET" -eq 1 ] && set_env CHURCH_DATA_URL "$CHURCH_DATA_URL"
+  [ "$FEATURES_SET" -eq 1 ] && set_env LAUDATE_FEATURES "$FEATURES_VALUE"
   if [ "$NAS_SET" -eq 1 ]; then
     set_env NAS_URL "$NAS_URL"
     [ -n "$NAS_USER" ] && set_env NAS_USER "$NAS_USER"
@@ -484,6 +564,21 @@ if [ "$WANT_POWERPOINT" = yes ]; then
   step "Inštalujem LibreOffice (môže to trvať aj 15 minút)"
   apt_install libreoffice-impress fonts-dejavu fonts-liberation \
     || warn "LibreOffice sa nepodarilo nainštalovať. PDF budú fungovať, PowerPoint nie."
+fi
+
+# --- Pieseň z fotky a hudobný sprievod -------------------------------------
+
+if [ "${FEAT[photo]}" = yes ]; then
+  step "Inštalujem rozpoznávanie textu z fotky"
+  apt_install tesseract-ocr tesseract-ocr-slk \
+    || warn "Rozpoznávanie textu sa nepodarilo nainštalovať, pieseň z fotky nebude fungovať."
+fi
+if [ "${FEAT[audio]}" = yes ]; then
+  step "Inštalujem prehrávač hudobného sprievodu"
+  apt_install ffmpeg alsa-utils \
+    || warn "Prehrávač sa nepodarilo nainštalovať, hudobný sprievod nebude fungovať."
+  # Sprievod hrá do zvukovej karty (USB zvuková karta do ozvučenia kostola)
+  usermod -aG audio "$APP_USER" 2>/dev/null || true
 fi
 
 # --- Obrazovka na TV -----------------------------------------------------
@@ -806,6 +901,7 @@ fi
 if [ "$WANT_SD_PROTECT" = yes ]; then
   if /usr/local/sbin/laudate-ochrana zapnut; then REBOOT_NEEDED=1; fi
 fi
+echo "  Funkcie zariadenia:    ${FEATURES_VALUE//,/, } (mení sa v administrácii: Kostoly -> Funkcie, alebo voľbou --funkcie=)"
 echo "  Ochrana SD karty:      $(/usr/local/sbin/laudate-ochrana stav) Zapnúť/vypnúť: sudo laudate-ochrana zapnut|vypnut"
 if [ "$REBOOT_NEEDED" -eq 1 ]; then
   echo "  Zmeny sa prejavia po reštarte: sudo reboot"

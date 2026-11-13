@@ -372,8 +372,9 @@ export const library = {
     return id;
   },
 
-  async addText({ title, lyrics, category }) {
-    songs = [...songs, { id: newId('custom'), title, category, lyrics }];
+  async addText({ title, lyrics, category, number }) {
+    const num = String(number || '').trim();
+    songs = [...songs, { id: newId('custom'), title, category, lyrics, ...(num ? { number: num } : {}) }];
     notify();
     return saveFile('songs.json', songs, `Pridaný text: ${title}`);
   },

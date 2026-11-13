@@ -25,6 +25,10 @@ import { createChurchSync } from './churchSync.js';
 import { createNasStorage, nasMediaName } from './nasStorage.js';
 import { deviceName, runSystemAction, sdProtected, systemActionsAvailable } from './systemActions.js';
 import { writeFileAtomic } from './safeWrite.js';
+import { createSamsungTv } from './samsungTv.js';
+import { ocrAvailable, recognizeText } from './ocr.js';
+import { AUDIO_TYPES, createPlayer, soundOutputs } from './accompaniment.js';
+import { effectiveFeatures, parseFeatureList } from './features.js';
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const STATE_FILE = path.join(ROOT, 'state.json');
@@ -49,6 +53,8 @@ const GITHUB_FILES = new Set(['songs.json', 'images.json']);
 const ADMIN_DATA_DIR = (process.env.ADMIN_DATA_DIR || '').trim();
 const CHURCH_DATA_URL = (process.env.CHURCH_DATA_URL || '').trim();
 const NAS_URL = (process.env.NAS_URL || '').trim();
+// Funkcie zvolené pri inštalácii (null = nenastavené, rozhoduje administrácia)
+const INSTALLER_FEATURES = parseFeatureList(process.env.LAUDATE_FEATURES);
 
 const DEFAULT_STATE = {
   currentSongId: null,
@@ -199,10 +205,16 @@ const nas = NAS_URL && !church
     },
     // Prezentácie vložené na NAS: počet strán, PowerPoint -> PDF (ak je nainštalovaný LibreOffice)
     presentations: { countPdfPages, convertToPdf, canConvert: async () => Boolean(await findSoffice()) },
+    localFeatures: INSTALLER_FEATURES,
     // Zmena na NAS (napr. z iného zariadenia): ovládanie aj TV si knižnicu načítajú znova
     onChange: () => broadcast({ type: 'library', file: 'songs.json' }),
   })
   : null;
+
+// --- Funkcie zariadenia (administrácia / inštalátor) ---------------------
+
+const features = () => effectiveFeatures(INSTALLER_FEATURES, church ? church.readFeatures() : nas ? nas.readFeatures() : null);
+const requireFeature = (id, message) => (req, res, next) => (features()[id] ? next() : res.status(403).json({ error: message }));
 
 // --- Express ------------------------------------------------------------
 
@@ -248,7 +260,10 @@ app.get('/health', (req, res) => {
     admin: Boolean(ADMIN_DATA_DIR),
     system: { actions: systemActionsAvailable(), sdProtected: sdProtected(), ...deviceName() },
     // IP adresy zariadenia v sieti (QR kód na inštaláciu do telefónu, keď je ovládanie otvorené cez localhost)
-    lan: Object.values(os.networkInterfaces()).flat().filter((a) => a && a.family === 'IPv4' && !a.internal).map((a) => a.address),
+    lan: lanAddresses(),
+    features: features(),
+    ocr: ocrAvailable(),
+    audio: { outputs: soundOutputs() },
     library: church
       ? { managed: true, adminUrl: church.adminUrl, lastSync: church.status.lastSync, lastError: church.status.lastError }
       : nas
@@ -261,6 +276,116 @@ app.get('/health', (req, res) => {
       tokenConfigured: Boolean(GITHUB.token),
     },
   });
+});
+
+// --- Televízor Samsung cez sieť (zapnutie, vypnutie, program) ----------------
+
+const lanAddresses = () => Object.values(os.networkInterfaces()).flat().filter((a) => a && a.family === 'IPv4' && !a.internal).map((a) => a.address);
+app.use('/api/tv', requireFeature('tv', 'Ovládanie televízora je pre toto zariadenie vypnuté (administrácia → Kostoly → Funkcie)'));
+const tv = createSamsungTv({
+  file: path.join(ROOT, 'tv.json'),
+  isEnabled: () => features().tv,
+  // TV otvorí obrazovku Laudate na adrese tohto zariadenia v rovnakej sieti ako TV
+  displayUrl: () => {
+    const ips = lanAddresses();
+    const tvNet = tv.publicConfig().ip.split('.').slice(0, 3).join('.');
+    const ip = ips.find((a) => a.startsWith(`${tvNet}.`)) || ips[0] || 'localhost';
+    return `http://${ip}:${APP_PORT}/#display`;
+  },
+});
+
+app.get('/api/tv', async (req, res) => {
+  res.json({ config: tv.publicConfig(), status: await tv.refresh() });
+});
+app.put('/api/tv', requirePin, (req, res) => {
+  try {
+    res.json({ config: tv.update(req.body || {}) });
+  } catch (e) {
+    res.status(400).json({ error: e.message });
+  }
+});
+app.post('/api/tv/:action', requirePin, async (req, res) => {
+  try {
+    await tv.run(req.params.action);
+    res.json({ ok: true, status: tv.status, config: tv.publicConfig() });
+  } catch (e) {
+    res.status(502).json({ error: e.message, status: tv.status });
+  }
+});
+
+// --- Pieseň z fotky -----------------------------------------------------------
+
+ocrAvailable(); // zistí sa hneď pri štarte, aby ovládanie nehlásilo, že rozpoznávanie chýba
+
+app.post('/api/ocr', requirePin, requireFeature('photo', 'Pieseň z fotky je pre toto zariadenie vypnutá'), express.raw({ type: () => true, limit: '25mb' }), async (req, res) => {
+  if (!Buffer.isBuffer(req.body) || !req.body.length) return res.status(400).json({ error: 'Prázdna fotka' });
+  try {
+    res.json({ text: await recognizeText(req.body) });
+  } catch (e) {
+    res.status(e.status || 422).json({ error: e.message });
+  }
+});
+
+// --- Hudobný sprievod ---------------------------------------------------------
+
+function currentSongs() {
+  if (church) return church.readList('songs.json') || [];
+  if (nas) return nas.readList('songs.json') || readLocalList('songs.json');
+  return readLocalList('songs.json');
+}
+
+async function audioPath(url) {
+  if (typeof url !== 'string') return null;
+  const nasName = nasMediaName(url);
+  if (nasName) return nas ? nas.mediaFile(nasName) : null;
+  if (url.startsWith('/uploads/')) {
+    const file = path.join(UPLOADS_DIR, path.basename(url));
+    return fs.existsSync(file) ? file : null;
+  }
+  return null;
+}
+
+const player = createPlayer({
+  // strofa podľa času v nahrávke – iba ak je na TV stále tá istá pieseň
+  onPage: (songId, page) => {
+    if (state.currentSongId === songId && state.currentPage !== page) applyPatch({ currentPage: page });
+  },
+  onChange: (audio) => broadcast({ type: 'audio', audio }),
+});
+
+app.use(['/api/accompaniment', '/api/audio'], requireFeature('audio', 'Hudobný sprievod je pre toto zariadenie vypnutý'));
+app.get('/api/accompaniment', (req, res) => res.json(player.status()));
+app.post('/api/accompaniment/:action', requirePin, async (req, res) => {
+  const { action } = req.params;
+  try {
+    if (action === 'play') {
+      const { songId, pages, from, marking } = req.body || {};
+      const song = currentSongs().find((s) => s.id === songId);
+      if (!song?.audioUrl) return res.status(404).json({ error: 'Pieseň nemá nahrávku sprievodu' });
+      const file = await audioPath(song.audioUrl);
+      if (!file) return res.status(404).json({ error: 'Nahrávka sa nenašla na zariadení ani na NAS' });
+      if (state.currentSongId !== songId || state.isHidden) applyPatch({ currentSongId: songId, currentPage: 0, isHidden: false });
+      return res.json(await player.play({ songId, path: file, audioStarts: song.audioStarts, pages: Math.max(1, Number(pages) || 1), from: Number(from) || 0, marking: Boolean(marking) }));
+    }
+    if (!['pause', 'resume', 'stop', 'mark'].includes(action)) return res.status(400).json({ error: 'Neznáma akcia' });
+    res.json(player[action]());
+  } catch (e) {
+    res.status(500).json({ error: e.message });
+  }
+});
+
+// Nahrávka sprievodu (MP3, M4A, WAV, OGG…) – uloží sa na NAS alebo do uploads/
+app.post('/api/audio', requirePin, rejectWhenManaged, express.raw({ type: () => true, limit: '80mb' }), async (req, res) => {
+  if (!Buffer.isBuffer(req.body) || !req.body.length) return res.status(400).json({ error: 'Prázdny súbor' });
+  const original = decodeURIComponent(req.get('x-filename') || 'sprievod.mp3');
+  const ext = path.extname(original).toLowerCase();
+  if (!AUDIO_TYPES[ext]) return res.status(400).json({ error: `Nepodporovaný typ súboru ${ext || ''} – použi MP3, M4A, WAV alebo OGG` });
+  if (nas) return res.json({ url: await nas.saveMedia(req.body, original, ext) });
+  const safe = path.basename(original, ext).normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/[^a-zA-Z0-9_-]+/g, '-').slice(0, 60) || 'sprievod';
+  const name = `${Date.now()}-${safe}${ext}`;
+  fs.mkdirSync(UPLOADS_DIR, { recursive: true });
+  writeFileAtomic(path.join(UPLOADS_DIR, name), req.body);
+  res.json({ url: `/uploads/${name}` });
 });
 
 app.post('/api/auth/check', requirePin, (req, res) => res.json({ ok: true }));
@@ -363,10 +488,13 @@ app.delete('/api/media/:name', requirePin, async (req, res) => {
   res.json({ ok: true });
 });
 
-app.post('/api/uploads', requirePin, rejectWhenManaged, express.raw({ type: () => true, limit: '100mb' }), async (req, res) => {
+app.post('/api/uploads', requirePin, rejectWhenManaged, requireFeature('presentations', 'Prezentácie sú pre toto zariadenie vypnuté'), express.raw({ type: () => true, limit: '100mb' }), async (req, res) => {
   if (!Buffer.isBuffer(req.body) || !req.body.length) return res.status(400).json({ error: 'Prázdny súbor' });
   const original = decodeURIComponent(req.get('x-filename') || 'prezentacia.pdf');
   const ext = path.extname(original).toLowerCase();
+  if (PRESENTATION_EXTENSIONS.has(ext) && !features().powerpoint) {
+    return res.status(403).json({ error: 'Prevod PowerPointu je pre toto zariadenie vypnutý – nahraj prezentáciu ako PDF' });
+  }
   if (!ACCEPTED_EXTENSIONS.has(ext)) {
     return res.status(400).json({ error: `Nepodporovaný typ súboru ${ext || ''} – použi PDF, PPT, PPTX alebo ODP` });
   }
