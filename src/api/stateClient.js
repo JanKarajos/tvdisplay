@@ -105,6 +105,7 @@ function connect() {
       if (msg.type === 'state') setState(msg.state);
       else if (msg.type === 'hello') onHello(msg.build);
       else if (msg.type === 'library') window.dispatchEvent(new CustomEvent('tvdisplay:library', { detail: msg.file }));
+      else if (msg.type === 'audio') window.dispatchEvent(new CustomEvent('tvdisplay:audio', { detail: msg.audio }));
     } catch (e) {
       console.error('[state] Neplatná správa zo servera', e);
     }

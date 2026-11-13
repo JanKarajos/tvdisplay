@@ -146,7 +146,7 @@ export function createNasStorage({ url, username, password, ignoreCert = false, 
     try {
       const list = JSON.parse(fs.readFileSync(path.join(cacheDir, file), 'utf8'));
       return Array.isArray(list)
-        ? list.map((item) => ({ ...item, ...(item.imageUrl ? { imageUrl: toLocalLink(item.imageUrl) } : {}), ...(item.pdfUrl ? { pdfUrl: toLocalLink(item.pdfUrl) } : {}) }))
+        ? list.map((item) => ({ ...item, ...(item.imageUrl ? { imageUrl: toLocalLink(item.imageUrl) } : {}), ...(item.pdfUrl ? { pdfUrl: toLocalLink(item.pdfUrl) } : {}), ...(item.audioUrl ? { audioUrl: toLocalLink(item.audioUrl) } : {}) }))
         : list;
     } catch {
       return null;
@@ -254,7 +254,7 @@ export function createNasStorage({ url, username, password, ignoreCert = false, 
       const used = new Set();
       for (const file of LIST_FILES) {
         for (const item of combinedList(file) || []) {
-          for (const link of [item.imageUrl, item.pdfUrl]) {
+          for (const link of [item.imageUrl, item.pdfUrl, item.audioUrl]) {
             const name = nasMediaName(link);
             if (name) used.add(name);
           }
@@ -440,7 +440,7 @@ export function createNasStorage({ url, username, password, ignoreCert = false, 
       return { ok: true, queued: pending.files.includes(file) };
     },
 
-    // Nový obrázok alebo PDF; vráti odkaz /nas-media/...
+    // Nový obrázok, PDF alebo nahrávka sprievodu; vráti odkaz /nas-media/...
     async saveMedia(buffer, originalName, ext) {
       const name = newMediaName(originalName, ext);
       writeAtomic(path.join(mediaDir, name), buffer);

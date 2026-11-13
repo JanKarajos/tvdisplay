@@ -256,6 +256,41 @@ dosku rozpozná sám. Raspberry Pi má v sebe **Wi-Fi**, takže nemusí mať ká
 a chladič (Active Cooler). Orange Pi PC Wi-Fi nemá – pripojí sa káblom alebo cez USB Wi-Fi adaptér
 (potom funguje aj `--wifi-ssid`).
 
+## TV cez Wi-Fi bez HDMI kábla
+
+Zariadenie (Raspberry Pi / Orange Pi) nemusí byť pripojené k televízoru. Smart TV otvorí v prehliadači
+`http://<adresa zariadenia>:5173/#display` cez Wi-Fi. Inštalátor spusti s voľbou `--no-kiosk`, aby sa na
+zariadení nespúšťal vlastný prehliadač.
+
+### Zapínanie a vypínanie televízora Samsung
+
+Ovládanie → ⚙ → Obrazovka → **Televízor** (Samsung s Tizen, od roku 2016):
+
+1. V routeri nastav televízoru stálu IP adresu a zadaj ju v ovládaní.
+2. V TV zapni: Nastavenia → Všeobecné → Sieť → Expertné nastavenia → **Zapnúť s mobilným zariadením**.
+3. Pri zapnutej TV stlač **Spárovať** a na TV potvrď ovládačom **Povoliť** (token sa uloží do `tv.json`).
+4. Tlačidlá Zapnúť / Vypnúť / Otvoriť Laudate; **Program** zapne TV v zvolené dni a časy a otvorí na nej
+   Laudate, po omši ju vypne. Zapnutie je cez Wake-on-LAN – MAC adresu si Laudate zistí sám, keď je TV zapnutá.
+
+## Pieseň z fotky
+
+Obsah → Nový text → **📷 Pieseň z fotky**: odfoť stranu spevníka, zariadenie rozpozná text (Tesseract,
+slovenčina, bez internetu), doplní číslo, názov a rozdelí ho na strofy podľa čísel „1.“, „2.“. Pred uložením
+text skontroluj. Inštalátor pridá balíky `tesseract-ocr tesseract-ocr-slk`.
+
+## Hudobný sprievod
+
+Pri piesni (Upraviť → Hudobný sprievod) sa dá nahrať nahrávka (MP3, M4A, WAV, OGG) – napr. organista
+zahrá melódiu toľkokrát, koľko má pieseň strof, a nahrá ju telefónom. Na karte **Teraz na TV** potom:
+
+- **▶ Prehrať sprievod** – zariadenie hrá nahrávku do ozvučenia kostola a strofy na TV sa posúvajú samy,
+- **⏱ Nastaviť časy strof** – pri prvom prehraní ťukáš „Ďalšia strofa“ v správnej chvíli, časy sa uložia
+  k piesni (bez nich sa čas rozdelí rovnomerne).
+
+Zvuk ide cez USB zvukovú kartu (prvá USB karta sa vyberie sama, iná sa dá nastaviť v `.env`:
+`LAUDATE_AUDIO_DEVICE=plughw:CARD=Device`) káblom do mixpultu. Prehráva `ffmpeg` (pridá ho inštalátor).
+Nahrávky sú na NAS v priečinku `media/`.
+
 ## Ochrana SD karty pri výpadku prúdu
 
 V kostole sa prúd často vypína vypínačom. Inštalátor preto vždy:

@@ -8,36 +8,73 @@ import { normalizeText } from '../../lib/lyrics';
 import { stateClient } from '../../api/stateClient';
 import SongEditor from './SongEditor';
 import { prepareImage } from '../../lib/image';
+import { songFromOcr } from '../../lib/ocrSong';
+import { recognizePhoto } from '../../api/device';
 
 const input = 'field';
 const primary = 'btn-primary';
 
 
-function AddText({ categories }) {
+function AddText({ categories, canOcr }) {
+  const [number, setNumber] = useState('');
   const [title, setTitle] = useState('');
   const [category, setCategory] = useState('');
   const [lyrics, setLyrics] = useState('');
   const [busy, setBusy] = useState(false);
+  const [reading, setReading] = useState(false);
 
   const submit = async (e) => {
     e.preventDefault();
     setBusy(true);
-    reportSave(await library.addText({ title, category, lyrics }), 'Text sa neuložil');
+    reportSave(await library.addText({ title, category, lyrics, number }), 'Text sa neuložil');
+    setNumber('');
     setTitle('');
     setLyrics('');
     setBusy(false);
   };
 
+  // Fotka strany spevníka -> text rozpozná zariadenie v kostole, tu sa skontroluje a opraví
+  const fromPhoto = async (e) => {
+    const file = e.target.files?.[0];
+    e.target.value = '';
+    if (!file) return;
+    setReading(true);
+    try {
+      const blob = await (await fetch(await prepareImage(file, 2400))).blob();
+      const song = songFromOcr(await recognizePhoto(blob));
+      if (!song.lyrics) throw new Error('Na fotke sa nenašiel text – odfoťte stranu zblízka, rovno a pri dobrom svetle');
+      setNumber(song.number);
+      setTitle(song.title);
+      setLyrics(song.lyrics);
+      toast('Text je rozpoznaný – skontrolujte ho, opravte chyby a uložte', { tone: 'ok', duration: 6000 });
+    } catch (err) {
+      toast(err.message, { tone: 'danger', duration: 6000 });
+    }
+    setReading(false);
+  };
+
   return (
     <form className="space-y-2" onSubmit={submit}>
+      <div className="flex flex-wrap items-center gap-2 p-3 rounded-xl bg-sunken">
+        <label className={`btn cursor-pointer ${reading || !canOcr ? 'opacity-50 pointer-events-none' : ''}`}>
+          {reading ? 'Rozpoznávam text…' : '📷 Pieseň z fotky'}
+          <input type="file" accept="image/*" capture="environment" className="hidden" onChange={fromPhoto} disabled={reading || !canOcr} />
+        </label>
+        <span className="text-xs text-muted flex-1 min-w-[12rem]">
+          {canOcr
+            ? 'Odfoťte stranu spevníka – text sa doplní nižšie, rozdelený na strofy. Pred uložením ho skontrolujte.'
+            : 'Rozpoznávanie textu z fotky na zariadení v kostole chýba – doplní ho nový inštalátor.'}
+        </span>
+      </div>
       <div className="flex gap-2">
+        <input className={`${input} w-20 tabular-nums`} placeholder="Číslo" value={number} onChange={(e) => setNumber(e.target.value)} inputMode="numeric" />
         <select className={`${input} w-40`} value={category} onChange={(e) => setCategory(e.target.value)} required>
           <option value="">Kategória…</option>
           {categories.map((c) => <option key={c.id} value={c.id}>{c.name}</option>)}
         </select>
         <input className={input} placeholder="Názov" value={title} onChange={(e) => setTitle(e.target.value)} required />
       </div>
-      <textarea className={`${input} py-2`} placeholder={'Text piesne – strofy oddeľ prázdnym riadkom'} value={lyrics} onChange={(e) => setLyrics(e.target.value)} rows={6} required />
+      <textarea className={`${input} py-2`} placeholder={'Text piesne – strofy oddeľ prázdnym riadkom'} value={lyrics} onChange={(e) => setLyrics(e.target.value)} rows={lyrics ? 14 : 6} required />
       <button className={primary} disabled={busy || !title || !category || !lyrics}>{busy ? 'Ukladám…' : 'Pridať text'}</button>
     </form>
   );
@@ -312,7 +349,7 @@ export default function ContentManager({ lib, health }) {
           </button>
         ))}
       </div>
-      {activeTab === 'text' && <AddText categories={lib.categories} />}
+      {activeTab === 'text' && <AddText categories={lib.categories} canOcr={Boolean(health?.ocr)} />}
       {activeTab === 'songs' && <ManageSongs songs={lib.songs} categories={lib.categories} />}
       {activeTab === 'images' && <Images images={lib.images} readOnly={lib.managed} />}
       {activeTab === 'pdf' && <Presentations presentations={lib.presentations} canConvert={Boolean(health?.converter?.powerpoint)} readOnly={lib.managed} />}

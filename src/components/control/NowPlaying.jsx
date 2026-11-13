@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import Card from '../Card';
 import Preview from '../Preview';
 import SongEditor from './SongEditor';
+import AccompanimentPanel from './AccompanimentPanel';
 import { actions } from '../../lib/actions';
 import { getPageCount } from '../../lib/lyrics';
 
@@ -60,6 +61,7 @@ export default function NowPlaying({ state, song, nextSong, categories }) {
           ))}
         </div>
       )}
+      <AccompanimentPanel song={song} pageCount={pageCount} />
       {editing && song && <SongEditor song={song} categories={categories} onClose={() => setEditing(false)} />}
     </Card>
   );

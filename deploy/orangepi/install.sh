@@ -486,6 +486,16 @@ if [ "$WANT_POWERPOINT" = yes ]; then
     || warn "LibreOffice sa nepodarilo nainštalovať. PDF budú fungovať, PowerPoint nie."
 fi
 
+# --- Pieseň z fotky a hudobný sprievod -------------------------------------
+
+step "Inštalujem rozpoznávanie textu z fotky a prehrávač sprievodu"
+apt_install tesseract-ocr tesseract-ocr-slk \
+  || warn "Rozpoznávanie textu sa nepodarilo nainštalovať, pieseň z fotky nebude fungovať."
+apt_install ffmpeg alsa-utils \
+  || warn "Prehrávač sa nepodarilo nainštalovať, hudobný sprievod nebude fungovať."
+# Sprievod hrá do zvukovej karty (USB zvuková karta do ozvučenia kostola)
+usermod -aG audio "$APP_USER" 2>/dev/null || true
+
 # --- Obrazovka na TV -----------------------------------------------------
 
 BROWSER=""

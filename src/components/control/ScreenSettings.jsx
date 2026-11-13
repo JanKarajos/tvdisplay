@@ -5,6 +5,7 @@ import { actions } from '../../lib/actions';
 import { THEMES, liturgicalSeason } from '../../lib/liturgy';
 import { ROTATIONS, getRotation } from '../../lib/rotation';
 import DeviceCard from './DeviceCard';
+import TvCard from './TvCard';
 
 function Toggle({ checked, onChange, label, hint }) {
   return (
@@ -121,6 +122,7 @@ export default function ScreenSettings({ state, images, sampleSong, health }) {
         </div>
       </Card>
 
+      <TvCard />
       <DeviceCard health={health} />
     </div>
   );
