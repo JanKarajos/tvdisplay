@@ -37,6 +37,8 @@ export const adminApi = {
   addJksToAll: () => request('POST', '/churches/add-jks', {}),
   renameChurch: (id, name) => request('PUT', church(id), { name }),
   deleteChurch: (id) => request('DELETE', church(id)),
+  churchFeatures: (id) => request('GET', `${church(id)}/features`),
+  setChurchFeatures: (id, features) => request('PUT', `${church(id)}/features`, features),
 
   listUsers: () => request('GET', '/users'),
   createUser: (user) => request('POST', '/users', user),

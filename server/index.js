@@ -28,6 +28,7 @@ import { writeFileAtomic } from './safeWrite.js';
 import { createSamsungTv } from './samsungTv.js';
 import { ocrAvailable, recognizeText } from './ocr.js';
 import { AUDIO_TYPES, createPlayer, soundOutputs } from './accompaniment.js';
+import { effectiveFeatures, parseFeatureList } from './features.js';
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const STATE_FILE = path.join(ROOT, 'state.json');
@@ -52,6 +53,8 @@ const GITHUB_FILES = new Set(['songs.json', 'images.json']);
 const ADMIN_DATA_DIR = (process.env.ADMIN_DATA_DIR || '').trim();
 const CHURCH_DATA_URL = (process.env.CHURCH_DATA_URL || '').trim();
 const NAS_URL = (process.env.NAS_URL || '').trim();
+// Funkcie zvolené pri inštalácii (null = nenastavené, rozhoduje administrácia)
+const INSTALLER_FEATURES = parseFeatureList(process.env.LAUDATE_FEATURES);
 
 const DEFAULT_STATE = {
   currentSongId: null,
@@ -202,10 +205,16 @@ const nas = NAS_URL && !church
     },
     // Prezentácie vložené na NAS: počet strán, PowerPoint -> PDF (ak je nainštalovaný LibreOffice)
     presentations: { countPdfPages, convertToPdf, canConvert: async () => Boolean(await findSoffice()) },
+    localFeatures: INSTALLER_FEATURES,
     // Zmena na NAS (napr. z iného zariadenia): ovládanie aj TV si knižnicu načítajú znova
     onChange: () => broadcast({ type: 'library', file: 'songs.json' }),
   })
   : null;
+
+// --- Funkcie zariadenia (administrácia / inštalátor) ---------------------
+
+const features = () => effectiveFeatures(INSTALLER_FEATURES, church ? church.readFeatures() : nas ? nas.readFeatures() : null);
+const requireFeature = (id, message) => (req, res, next) => (features()[id] ? next() : res.status(403).json({ error: message }));
 
 // --- Express ------------------------------------------------------------
 
@@ -252,6 +261,7 @@ app.get('/health', (req, res) => {
     system: { actions: systemActionsAvailable(), sdProtected: sdProtected(), ...deviceName() },
     // IP adresy zariadenia v sieti (QR kód na inštaláciu do telefónu, keď je ovládanie otvorené cez localhost)
     lan: lanAddresses(),
+    features: features(),
     ocr: ocrAvailable(),
     audio: { outputs: soundOutputs() },
     library: church
@@ -271,8 +281,10 @@ app.get('/health', (req, res) => {
 // --- Televízor Samsung cez sieť (zapnutie, vypnutie, program) ----------------
 
 const lanAddresses = () => Object.values(os.networkInterfaces()).flat().filter((a) => a && a.family === 'IPv4' && !a.internal).map((a) => a.address);
+app.use('/api/tv', requireFeature('tv', 'Ovládanie televízora je pre toto zariadenie vypnuté (administrácia → Kostoly → Funkcie)'));
 const tv = createSamsungTv({
   file: path.join(ROOT, 'tv.json'),
+  isEnabled: () => features().tv,
   // TV otvorí obrazovku Laudate na adrese tohto zariadenia v rovnakej sieti ako TV
   displayUrl: () => {
     const ips = lanAddresses();
@@ -305,7 +317,7 @@ app.post('/api/tv/:action', requirePin, async (req, res) => {
 
 ocrAvailable(); // zistí sa hneď pri štarte, aby ovládanie nehlásilo, že rozpoznávanie chýba
 
-app.post('/api/ocr', requirePin, express.raw({ type: () => true, limit: '25mb' }), async (req, res) => {
+app.post('/api/ocr', requirePin, requireFeature('photo', 'Pieseň z fotky je pre toto zariadenie vypnutá'), express.raw({ type: () => true, limit: '25mb' }), async (req, res) => {
   if (!Buffer.isBuffer(req.body) || !req.body.length) return res.status(400).json({ error: 'Prázdna fotka' });
   try {
     res.json({ text: await recognizeText(req.body) });
@@ -341,6 +353,7 @@ const player = createPlayer({
   onChange: (audio) => broadcast({ type: 'audio', audio }),
 });
 
+app.use(['/api/accompaniment', '/api/audio'], requireFeature('audio', 'Hudobný sprievod je pre toto zariadenie vypnutý'));
 app.get('/api/accompaniment', (req, res) => res.json(player.status()));
 app.post('/api/accompaniment/:action', requirePin, async (req, res) => {
   const { action } = req.params;
@@ -475,10 +488,13 @@ app.delete('/api/media/:name', requirePin, async (req, res) => {
   res.json({ ok: true });
 });
 
-app.post('/api/uploads', requirePin, rejectWhenManaged, express.raw({ type: () => true, limit: '100mb' }), async (req, res) => {
+app.post('/api/uploads', requirePin, rejectWhenManaged, requireFeature('presentations', 'Prezentácie sú pre toto zariadenie vypnuté'), express.raw({ type: () => true, limit: '100mb' }), async (req, res) => {
   if (!Buffer.isBuffer(req.body) || !req.body.length) return res.status(400).json({ error: 'Prázdny súbor' });
   const original = decodeURIComponent(req.get('x-filename') || 'prezentacia.pdf');
   const ext = path.extname(original).toLowerCase();
+  if (PRESENTATION_EXTENSIONS.has(ext) && !features().powerpoint) {
+    return res.status(403).json({ error: 'Prevod PowerPointu je pre toto zariadenie vypnutý – nahraj prezentáciu ako PDF' });
+  }
   if (!ACCEPTED_EXTENSIONS.has(ext)) {
     return res.status(400).json({ error: `Nepodporovaný typ súboru ${ext || ''} – použi PDF, PPT, PPTX alebo ODP` });
   }

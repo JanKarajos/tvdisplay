@@ -256,6 +256,20 @@ dosku rozpozná sám. Raspberry Pi má v sebe **Wi-Fi**, takže nemusí mať ká
 a chladič (Active Cooler). Orange Pi PC Wi-Fi nemá – pripojí sa káblom alebo cez USB Wi-Fi adaptér
 (potom funguje aj `--wifi-ssid`).
 
+## Funkcie zariadenia (čo sa dá v kostole robiť)
+
+Pre každé zariadenie sa dá zapnúť alebo vypnúť: **ovládanie televízora Samsung**, **pieseň z fotky**,
+**hudobný sprievod**, **prezentácie (PDF)** a **prevod PowerPointu**. Vypnutá funkcia sa v ovládaní
+nezobrazí, server ju odmietne a inštalátor nestiahne jej balíky (Tesseract, ffmpeg, LibreOffice).
+
+- **Administrácia** → Kostoly → **⚙ Funkcie** pri kostole: zaškrtávacie políčka. Uloží sa do
+  `features.json` v priečinku kostola na NAS; zariadenie si zmenu stiahne do minúty. Balíky novo zapnutej
+  funkcie doinštaluje najbližšie spustenie inštalátora.
+- **Inštalátor**: `--funkcie=tv,foto,sprievod,prezentacie,powerpoint` (iba vymenované sú zapnuté,
+  `--funkcie=ziadne` vypne všetky) alebo `--bez-tv`, `--bez-fotky`, `--bez-sprievodu`, `--bez-prezentacii`.
+  Voľby sa zapíšu do `.env` (`LAUDATE_FEATURES`) a pri prvom spojení aj na NAS, takže ich administrácia
+  hneď ukazuje. Bez volieb inštalátor použije nastavenie z administrácie, inak je všetko zapnuté.
+
 ## TV cez Wi-Fi bez HDMI kábla
 
 Zariadenie (Raspberry Pi / Orange Pi) nemusí byť pripojené k televízoru. Smart TV otvorí v prehliadači

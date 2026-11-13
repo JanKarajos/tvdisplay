@@ -72,6 +72,15 @@ export function createChurchSync({ dataUrl, cacheDir, intervalMs = 60000, onChan
         changed = true;
       }
       if (changed) writeAtomic(metaFile, JSON.stringify(etags));
+      // Funkcie zariadenia z administrácie (nepovinné – staršia administrácia ich nemá)
+      const fres = await fetch(`${base}/features.json`, { signal: AbortSignal.timeout(TIMEOUT_MS) }).catch(() => null);
+      if (fres?.ok) {
+        const obj = await fres.json().catch(() => null);
+        if (obj && typeof obj === 'object' && !Array.isArray(obj) && JSON.stringify(obj) !== JSON.stringify(readFeatures())) {
+          writeAtomic(path.join(cacheDir, 'features.json'), JSON.stringify(obj));
+          changed = true;
+        }
+      }
       await syncMedia();
       status.lastSync = Date.now();
       status.lastError = null;
@@ -94,6 +103,14 @@ export function createChurchSync({ dataUrl, cacheDir, intervalMs = 60000, onChan
     }
   }
 
+  function readFeatures() {
+    try {
+      return JSON.parse(fs.readFileSync(path.join(cacheDir, 'features.json'), 'utf8'));
+    } catch {
+      return null;
+    }
+  }
+
   let running = false;
   async function tick() {
     if (running) return;
@@ -113,6 +130,7 @@ export function createChurchSync({ dataUrl, cacheDir, intervalMs = 60000, onChan
     syncNow: tick,
     status,
     readList,
+    readFeatures,
     // Súbor obrázka/PDF; keď chýba, skúsi ho stiahnuť
     async mediaFile(name) {
       if (name !== path.basename(name)) return null;

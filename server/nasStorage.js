@@ -57,7 +57,7 @@ export function nasMediaName(url) {
   return name && name === path.basename(name) ? name : null;
 }
 
-export function createNasStorage({ url, username, password, ignoreCert = false, cacheDir, seed, presentations, intervalMs = 60000, onChange }) {
+export function createNasStorage({ url, username, password, ignoreCert = false, cacheDir, seed, presentations, localFeatures = null, intervalMs = 60000, onChange }) {
   const base = new URL(url.endsWith('/') ? url : `${url}/`);
   const auth = username ? `Basic ${Buffer.from(`${username}:${password || ''}`).toString('base64')}` : null;
   const mediaDir = path.join(cacheDir, 'media');
@@ -236,6 +236,37 @@ export function createNasStorage({ url, username, password, ignoreCert = false, 
           writeCache(file, list);
           changed = true;
         }
+      }
+
+      // Funkcie zariadenia (features.json) nastavuje administrácia. Keď sa zmenili voľby inštalátora,
+      // nahrajú sa na NAS (aby ich administrácia ukazovala) – inak má prednosť NAS.
+      const featuresMarker = path.join(cacheDir, 'features-installer.json');
+      if (localFeatures) {
+        const mine = JSON.stringify(localFeatures);
+        let sent = '';
+        try {
+          sent = fs.readFileSync(featuresMarker, 'utf8');
+        } catch {
+          // ešte neposlané
+        }
+        if (sent !== mine) {
+          await putFile('features.json', JSON.stringify(localFeatures, null, 2));
+          writeAtomic(featuresMarker, mine);
+        }
+      }
+      const featuresRes = await dav('GET', 'features.json');
+      if (featuresRes.status === 200) {
+        try {
+          const obj = JSON.parse(featuresRes.body.toString('utf8'));
+          if (obj && typeof obj === 'object' && !Array.isArray(obj) && JSON.stringify(obj) !== JSON.stringify(readCache('features.json'))) {
+            writeCache('features.json', obj);
+            changed = true;
+          }
+        } catch {
+          status.fileErrors = [...status.fileErrors.filter((e) => !e.startsWith('features.json')), 'features.json: neplatný súbor'];
+        }
+      } else if (featuresRes.status === 404) {
+        fs.rmSync(path.join(cacheDir, 'features.json'), { force: true });
       }
 
       // Kategórie z administrácie (názvy s diakritikou); na Orange Pi sa iba čítajú
@@ -428,6 +459,7 @@ export function createNasStorage({ url, username, password, ignoreCert = false, 
     syncNow: sync,
     // Zoznam z kópie na disku vrátane súborov vložených na NAS (null, kým sa prvýkrát nestiahne)
     readList: (file) => (file === 'categories.json' ? fileCategories() : combinedList(file)),
+    readFeatures: () => readCache('features.json'),
 
     // Uloží zoznam: hneď do kópie, na NAS hneď alebo neskôr (keď nie je spojenie).
     // Položky zo súborov na NAS sa do zoznamu neukladajú – sú v priečinkoch texty/, obrazky/, prezentacie/.

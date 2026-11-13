@@ -10,6 +10,7 @@ import SongEditor from './SongEditor';
 import { prepareImage } from '../../lib/image';
 import { songFromOcr } from '../../lib/ocrSong';
 import { recognizePhoto } from '../../api/device';
+import { useFeature } from '../../lib/features';
 
 const input = 'field';
 const primary = 'btn-primary';
@@ -22,6 +23,7 @@ function AddText({ categories, canOcr }) {
   const [lyrics, setLyrics] = useState('');
   const [busy, setBusy] = useState(false);
   const [reading, setReading] = useState(false);
+  const photo = useFeature('photo');
 
   const submit = async (e) => {
     e.preventDefault();
@@ -55,7 +57,7 @@ function AddText({ categories, canOcr }) {
 
   return (
     <form className="space-y-2" onSubmit={submit}>
-      <div className="flex flex-wrap items-center gap-2 p-3 rounded-xl bg-sunken">
+      {photo && <div className="flex flex-wrap items-center gap-2 p-3 rounded-xl bg-sunken">
         <label className={`btn cursor-pointer ${reading || !canOcr ? 'opacity-50 pointer-events-none' : ''}`}>
           {reading ? 'Rozpoznávam text…' : '📷 Pieseň z fotky'}
           <input type="file" accept="image/*" capture="environment" className="hidden" onChange={fromPhoto} disabled={reading || !canOcr} />
@@ -65,7 +67,7 @@ function AddText({ categories, canOcr }) {
             ? 'Odfoťte stranu spevníka – text sa doplní nižšie, rozdelený na strofy. Pred uložením ho skontrolujte.'
             : 'Rozpoznávanie textu z fotky na zariadení v kostole chýba – doplní ho nový inštalátor.'}
         </span>
-      </div>
+      </div>}
       <div className="flex gap-2">
         <input className={`${input} w-20 tabular-nums`} placeholder="Číslo" value={number} onChange={(e) => setNumber(e.target.value)} inputMode="numeric" />
         <select className={`${input} w-40`} value={category} onChange={(e) => setCategory(e.target.value)} required>
@@ -144,7 +146,7 @@ function titleFromFile(name) {
   return name.replace(/\.[^.]+$/, '').replace(/[_-]+/g, ' ').trim();
 }
 
-function Presentations({ presentations, canConvert, readOnly }) {
+function Presentations({ presentations, canConvert, powerpoint, readOnly }) {
   const [title, setTitle] = useState('');
   const [file, setFile] = useState(null);
   const [busy, setBusy] = useState(false);
@@ -173,7 +175,7 @@ function Presentations({ presentations, canConvert, readOnly }) {
         <div className="flex flex-wrap items-end gap-2">
           <input
             type="file"
-            accept={PRESENTATION_ACCEPT}
+            accept={powerpoint ? PRESENTATION_ACCEPT : '.pdf,application/pdf'}
             required
             className="text-sm flex-1 min-w-[12rem] file:btn file:mr-3 file:!min-h-[40px]"
             onChange={(e) => {
@@ -188,10 +190,10 @@ function Presentations({ presentations, canConvert, readOnly }) {
           </button>
         </div>
         <p className="text-xs text-muted">
-          PDF alebo PowerPoint (PPT, PPTX), prípadne ODP. Počet strán sa zistí automaticky.
+          {powerpoint ? 'PDF alebo PowerPoint (PPT, PPTX), prípadne ODP.' : 'PDF (prevod PowerPointu je na tomto zariadení vypnutý).'} Počet strán sa zistí automaticky.
           {isPowerPoint && ' Prevod PowerPointu môže trvať do minúty.'}
         </p>
-        {isPowerPoint && !canConvert && (
+        {powerpoint && isPowerPoint && !canConvert && (
           <p className="text-xs text-warn">Na serveri zatiaľ nie je LibreOffice, PowerPoint sa nepodarí previesť. Na Raspberry Pi: <code>sudo apt install libreoffice-impress</code></p>
         )}
       </form>}
@@ -321,7 +323,8 @@ const MANAGED_TABS = [
 
 export default function ContentManager({ lib, health }) {
   const [tab, setTab] = useState('text');
-  const tabs = lib.managed ? MANAGED_TABS : TABS;
+  const presentations = useFeature('presentations');
+  const tabs = (lib.managed ? MANAGED_TABS : TABS).filter(([id]) => presentations || id !== 'pdf');
   const activeTab = tabs.some(([id]) => id === tab) ? tab : tabs[0][0];
   return (
     <Card
@@ -352,7 +355,7 @@ export default function ContentManager({ lib, health }) {
       {activeTab === 'text' && <AddText categories={lib.categories} canOcr={Boolean(health?.ocr)} />}
       {activeTab === 'songs' && <ManageSongs songs={lib.songs} categories={lib.categories} />}
       {activeTab === 'images' && <Images images={lib.images} readOnly={lib.managed} />}
-      {activeTab === 'pdf' && <Presentations presentations={lib.presentations} canConvert={Boolean(health?.converter?.powerpoint)} readOnly={lib.managed} />}
+      {activeTab === 'pdf' && <Presentations presentations={lib.presentations} canConvert={Boolean(health?.converter?.powerpoint)} powerpoint={health?.features?.powerpoint !== false} readOnly={lib.managed} />}
       {activeTab === 'sync' && <Sync lib={lib} health={health} />}
     </Card>
   );

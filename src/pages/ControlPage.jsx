@@ -1,4 +1,5 @@
 import React, { useEffect, useMemo, useState } from 'react';
+import { setFeatures } from '../lib/features';
 import Header from '../components/Header';
 import PinDialog from '../components/PinDialog';
 import Toaster from '../components/Toaster';
@@ -45,6 +46,7 @@ export default function ControlPage() {
   const { state, status, authRequired } = useAppState();
   const lib = useLibrary();
   const health = useServerHealth(status);
+  useEffect(() => setFeatures(health?.features), [health]);
   const { mode: uiTheme, cycle: cycleUiTheme } = useUiTheme();
   const [settingsOpen, setSettingsOpen] = useState(readSettingsOpen);
   const [installOpen, setInstallOpen] = useState(false);

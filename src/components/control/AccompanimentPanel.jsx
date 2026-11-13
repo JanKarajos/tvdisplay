@@ -3,6 +3,7 @@ import { accompaniment } from '../../api/device';
 import { library } from '../../api/api';
 import { reportSave } from '../../lib/notify';
 import { toast } from '../../lib/toast';
+import { useFeature } from '../../lib/features';
 
 const fmt = (s) => {
   const t = Math.max(0, Math.floor(s || 0));
@@ -29,7 +30,8 @@ export function useAccompaniment() {
 export default function AccompanimentPanel({ song, pageCount }) {
   const audio = useAccompaniment();
   const [busy, setBusy] = useState(false);
-  if (!song?.audioUrl) return null;
+  const enabled = useFeature('audio');
+  if (!song?.audioUrl || !enabled) return null;
 
   const mine = audio && audio.songId === song.id && audio.state !== 'stopped';
   const marking = mine && audio.marking;
@@ -93,7 +95,8 @@ export default function AccompanimentPanel({ song, pageCount }) {
 export function AccompanimentUpload({ song }) {
   const [busy, setBusy] = useState(false);
   const [current, setCurrent] = useState(song.audioUrl || '');
-  if (!song.id) return null;
+  const enabled = useFeature('audio');
+  if (!song.id || !enabled) return null;
 
   const upload = async (e) => {
     const file = e.target.files?.[0];

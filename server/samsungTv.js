@@ -12,9 +12,8 @@ import { writeFileAtomic } from './safeWrite.js';
 
 const APP_NAME = Buffer.from('Laudate').toString('base64');
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
-const DAYS = ['ne', 'po', 'ut', 'st', 'št', 'pi', 'so'];
 
-export function createSamsungTv({ file, displayUrl, log = console.log }) {
+export function createSamsungTv({ file, displayUrl, isEnabled = () => true, log = console.log }) {
   let config = { enabled: false, ip: '', mac: '', token: '', schedule: [] };
   try {
     config = { ...config, ...JSON.parse(fs.readFileSync(file, 'utf8')) };
@@ -176,7 +175,7 @@ export function createSamsungTv({ file, displayUrl, log = console.log }) {
   // Program: každú minútu skontroluje, či nie je čas zapnúť alebo vypnúť TV
   let lastMinute = '';
   setInterval(() => {
-    if (!config.enabled || !config.ip) return;
+    if (!config.enabled || !config.ip || !isEnabled()) return;
     const now = new Date();
     const hm = `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`;
     const stamp = `${now.toDateString()} ${hm}`;
@@ -240,4 +239,3 @@ function cleanScheduleItem(item) {
   return { days, on, off };
 }
 
-export const DAY_NAMES = DAYS;
