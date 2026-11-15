@@ -86,5 +86,99 @@ export async function prepareForOcr(file, maxSize = 2400) {
     px[i] = px[i + 1] = px[i + 2] = v;
   }
   ctx.putImageData(data, 0, 0);
-  return new Promise((resolve) => canvas.toBlob(resolve, 'image/jpeg', 0.9));
+
+  // Natočená fotka: najprv sa vyrovná celá strana, potom každý pás riadkov zvlášť
+  // (fotka zo šikmého uhla alebo zakrivená strana má hore a dole iný sklon)
+  const straight = rotated(canvas, skewAngle(px, w, h, 0, h, 10));
+  const sp = straight.getContext('2d').getImageData(0, 0, w, h).data;
+  const out = document.createElement('canvas');
+  out.width = w;
+  out.height = h;
+  const octx = out.getContext('2d');
+  octx.fillStyle = '#fff';
+  octx.fillRect(0, 0, w, h);
+  for (const [top, bottom] of lineBands(sp, w, h)) {
+    const angle = skewAngle(sp, w, h, top, bottom, 4);
+    octx.save();
+    octx.beginPath();
+    octx.rect(0, top, w, bottom - top);
+    octx.clip();
+    octx.translate(w / 2, (top + bottom) / 2);
+    octx.rotate((angle * Math.PI) / 180);
+    octx.drawImage(straight, -w / 2, -(top + bottom) / 2);
+    octx.restore();
+  }
+  return new Promise((resolve) => out.toBlob(resolve, 'image/jpeg', 0.9));
+}
+
+function rotated(source, angle) {
+  if (Math.abs(angle) < 0.2) return source;
+  const { width: w, height: h } = source;
+  const out = document.createElement('canvas');
+  out.width = w;
+  out.height = h;
+  const ctx = out.getContext('2d');
+  ctx.fillStyle = '#fff';
+  ctx.fillRect(0, 0, w, h);
+  ctx.translate(w / 2, h / 2);
+  ctx.rotate((angle * Math.PI) / 180);
+  ctx.drawImage(source, -w / 2, -h / 2);
+  return out;
+}
+
+// Pásy po ~6 riadkoch: hranice sa hľadajú v medzerách medzi riadkami (najmenej tmavých bodov)
+function lineBands(px, w, h) {
+  const dark = new Array(h).fill(0);
+  for (let y = 0; y < h; y++) {
+    for (let x = 0; x < w; x += 2) if (px[(y * w + x) * 4] < 110) dark[y] += 1;
+  }
+  const count = Math.max(1, Math.round(h / 400));
+  const cuts = [0];
+  for (let k = 1; k < count; k++) {
+    const c = Math.round((h * k) / count);
+    const r = Math.round(h / (3 * count));
+    let best = c;
+    for (let y = Math.max(0, c - r); y < Math.min(h, c + r); y++) if (dark[y] < dark[best]) best = y;
+    cuts.push(best);
+  }
+  cuts.push(h);
+  return cuts.slice(1).map((b, i) => [cuts[i], b]).filter(([a, b]) => b - a > 10);
+}
+
+// Uhol natočenia textu v stupňoch v riadkoch top..bottom (kladný = riadky stúpajú doprava)
+function skewAngle(px, w, h, top, bottom, range) {
+  const step = Math.max(1, Math.round(w / 700));
+  const xs = [];
+  const ys = [];
+  for (let y = top; y < bottom; y += step) {
+    for (let x = 0; x < w; x += step) {
+      if (px[(y * w + x) * 4] < 110) {
+        xs.push(x);
+        ys.push(y);
+      }
+    }
+  }
+  if (xs.length < 200) return 0;
+  const score = (deg) => {
+    const t = Math.tan((deg * Math.PI) / 180);
+    const bins = new Map();
+    for (let i = 0; i < xs.length; i++) {
+      const b = Math.round((ys[i] + xs[i] * t) / step);
+      bins.set(b, (bins.get(b) || 0) + 1);
+    }
+    let sum = 0;
+    for (const v of bins.values()) sum += v * v;
+    return sum;
+  };
+  let best = 0;
+  let bestScore = score(0);
+  for (let deg = -range; deg <= range; deg += 0.5) {
+    const sc = score(deg);
+    if (sc > bestScore) { best = deg; bestScore = sc; }
+  }
+  for (let deg = best - 0.4; deg <= best + 0.4; deg += 0.1) {
+    const sc = score(deg);
+    if (sc > bestScore) { best = deg; bestScore = sc; }
+  }
+  return best;
 }
