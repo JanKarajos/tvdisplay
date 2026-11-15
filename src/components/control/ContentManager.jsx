@@ -22,7 +22,8 @@ function AddText({ categories, canOcr }) {
   const [category, setCategory] = useState('');
   const [lyrics, setLyrics] = useState('');
   const [busy, setBusy] = useState(false);
-  const [reading, setReading] = useState(false);
+  const [reading, setReading] = useState(null); // { done, total } počas rozpoznávania
+  const [photoPages, setPhotoPages] = useState(0); // koľko fotiek je už v texte
   const photo = useFeature('photo');
 
   const submit = async (e) => {
@@ -32,41 +33,76 @@ function AddText({ categories, canOcr }) {
     setNumber('');
     setTitle('');
     setLyrics('');
+    setPhotoPages(0);
     setBusy(false);
   };
 
-  // Fotka strany spevníka -> text rozpozná zariadenie v kostole, tu sa skontroluje a opraví
-  const fromPhoto = async (e) => {
-    const file = e.target.files?.[0];
+  // Fotky strán spevníka (odfotené alebo z galérie, aj viac naraz) -> text rozpozná zariadenie
+  // v kostole. Pieseň na viacerých stranách: texty sa spoja v poradí, ako boli fotky urobené;
+  // ďalšie fotky sa dajú pridať aj neskôr – ich text sa pripojí na koniec.
+  const fromPhotos = async (e) => {
+    const files = [...(e.target.files || [])].sort((a, b) => a.lastModified - b.lastModified || a.name.localeCompare(b.name, 'sk', { numeric: true }));
     e.target.value = '';
-    if (!file) return;
-    setReading(true);
+    if (!files.length) return;
+    const texts = [];
     try {
-      const blob = await (await fetch(await prepareImage(file, 2400))).blob();
-      const song = songFromOcr(await recognizePhoto(blob));
-      if (!song.lyrics) throw new Error('Na fotke sa nenašiel text – odfoťte stranu zblízka, rovno a pri dobrom svetle');
-      setNumber(song.number);
-      setTitle(song.title);
-      setLyrics(song.lyrics);
-      toast('Text je rozpoznaný – skontrolujte ho, opravte chyby a uložte', { tone: 'ok', duration: 6000 });
+      for (let i = 0; i < files.length; i++) {
+        setReading({ done: i, total: files.length });
+        const blob = await (await fetch(await prepareImage(files[i], 2400))).blob();
+        texts.push(await recognizePhoto(blob));
+      }
+      const song = songFromOcr(texts.join('\n\n'));
+      if (!song.lyrics) throw new Error('Na fotkách sa nenašiel text – fotte stranu zblízka, rovno a pri dobrom svetle');
+      if (lyrics.trim()) {
+        // pokračovanie piesne z ďalších strán
+        setLyrics(`${lyrics.trim()}\n\n${song.lyrics}`);
+        if (!number && song.number) setNumber(song.number);
+      } else {
+        setNumber(song.number);
+        setTitle(song.title);
+        setLyrics(song.lyrics);
+      }
+      setPhotoPages((n) => n + files.length);
+      toast(`Text z ${files.length === 1 ? 'fotky' : `${files.length} fotiek`} je rozpoznaný – skontrolujte ho, opravte chyby a uložte`, { tone: 'ok', duration: 6000 });
     } catch (err) {
       toast(err.message, { tone: 'danger', duration: 6000 });
     }
-    setReading(false);
+    setReading(null);
   };
 
+  const clearPhotos = () => {
+    if (lyrics && !window.confirm('Zmazať rozpoznaný text a začať odznova?')) return;
+    setNumber('');
+    setTitle('');
+    setLyrics('');
+    setPhotoPages(0);
+  };
+
+  const photoBtn = `btn cursor-pointer ${reading || !canOcr ? 'opacity-50 pointer-events-none' : ''}`;
   return (
     <form className="space-y-2" onSubmit={submit}>
-      {photo && <div className="flex flex-wrap items-center gap-2 p-3 rounded-xl bg-sunken">
-        <label className={`btn cursor-pointer ${reading || !canOcr ? 'opacity-50 pointer-events-none' : ''}`}>
-          {reading ? 'Rozpoznávam text…' : '📷 Pieseň z fotky'}
-          <input type="file" accept="image/*" capture="environment" className="hidden" onChange={fromPhoto} disabled={reading || !canOcr} />
-        </label>
-        <span className="text-xs text-muted flex-1 min-w-[12rem]">
-          {canOcr
-            ? 'Odfoťte stranu spevníka – text sa doplní nižšie, rozdelený na strofy. Pred uložením ho skontrolujte.'
-            : 'Rozpoznávanie textu z fotky na zariadení v kostole chýba – doplní ho nový inštalátor.'}
-        </span>
+      {photo && <div className="p-3 rounded-xl bg-sunken space-y-2">
+        <div className="flex flex-wrap items-center gap-2">
+          <span className="text-sm font-semibold mr-1">Pieseň z fotky</span>
+          <label className={photoBtn}>
+            📷 {photoPages ? 'Odfotiť ďalšiu stranu' : 'Odfotiť'}
+            <input type="file" accept="image/*" capture="environment" className="hidden" onChange={fromPhotos} disabled={Boolean(reading) || !canOcr} />
+          </label>
+          <label className={photoBtn}>
+            🖼 {photoPages ? 'Ďalšie strany z galérie' : 'Z galérie (aj viac fotiek)'}
+            <input type="file" accept="image/*" multiple className="hidden" onChange={fromPhotos} disabled={Boolean(reading) || !canOcr} />
+          </label>
+          {photoPages > 0 && !reading && <button type="button" className="btn-icon hover:!text-danger" onClick={clearPhotos} title="Začať odznova" aria-label="Začať odznova">✕</button>}
+        </div>
+        <div className="text-xs text-muted">
+          {reading
+            ? <b className="text-fg">Rozpoznávam fotku {reading.done + 1} z {reading.total}…</b>
+            : !canOcr
+              ? 'Rozpoznávanie textu z fotky na zariadení v kostole chýba – doplní ho nový inštalátor.'
+              : photoPages
+                ? `V texte sú ${photoPages} ${photoPages === 1 ? 'fotka' : photoPages <= 4 ? 'fotky' : 'fotiek'}. Ak pieseň pokračuje na ďalšej strane, pridajte ju – text sa pripojí na koniec.`
+                : 'Odfoťte stranu spevníka alebo vyberte fotky z galérie. Ak je pieseň na viacerých stranách, vyberte všetky naraz – spoja sa v poradí, ako boli odfotené. Pred uložením text skontrolujte.'}
+        </div>
       </div>}
       <div className="flex gap-2">
         <input className={`${input} w-20 tabular-nums`} placeholder="Číslo" value={number} onChange={(e) => setNumber(e.target.value)} inputMode="numeric" />
