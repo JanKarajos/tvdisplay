@@ -7,7 +7,7 @@ import { toast } from '../../lib/toast';
 import { normalizeText } from '../../lib/lyrics';
 import { stateClient } from '../../api/stateClient';
 import SongEditor from './SongEditor';
-import { prepareImage } from '../../lib/image';
+import { prepareForOcr, prepareImage } from '../../lib/image';
 import { songFromOcr } from '../../lib/ocrSong';
 import { recognizePhoto } from '../../api/device';
 import { useFeature } from '../../lib/features';
@@ -48,7 +48,7 @@ function AddText({ categories, canOcr }) {
     try {
       for (let i = 0; i < files.length; i++) {
         setReading({ done: i, total: files.length });
-        const blob = await (await fetch(await prepareImage(files[i], 2400))).blob();
+        const blob = await prepareForOcr(files[i]);
         texts.push(await recognizePhoto(blob));
       }
       const song = songFromOcr(texts.join('\n\n'));

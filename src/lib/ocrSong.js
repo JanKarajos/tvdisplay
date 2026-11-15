@@ -7,6 +7,9 @@ const HEADING = /^(\d{1,4})\s*[.)]?\s+(\p{Lu}.{2,60})$/u;
 
 function cleanLine(line) {
   let out = line
+    .normalize('NFC')
+    .replace(/ﬁ/g, 'fi')
+    .replace(/ﬂ/g, 'fl')
     .replace(/[|_~«»]/g, ' ')
     .replace(/[‘’`]/g, "'")
     .replace(/[“”„]/g, '"')
