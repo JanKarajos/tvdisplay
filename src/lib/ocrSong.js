@@ -1,7 +1,8 @@
 // Text rozpoznaný z fotky strany spevníka -> číslo, názov a strofy piesne.
 // Strofy sa delia podľa čísel "1.", "2." na začiatku riadku, inak podľa prázdnych riadkov.
 
-const STROPHE = /^(\d{1,2})\s*[.)]\s*(\S.*)$/;
+// "1. Text", "1) Text" aj "1 Text" (rozpoznávanie bodku za číslom niekedy vynechá)
+const STROPHE = /^(\d{1,2})(?:\s*[.)]\s*|\s+(?=\p{Lu}))(\S.*)$/u;
 const HEADING = /^(\d{1,4})\s*[.)]?\s+(\p{Lu}.{2,60})$/u;
 
 function cleanLine(line) {
@@ -41,9 +42,10 @@ export function songFromOcr(text) {
     }
     if (isNoise(line)) continue;
     // Prvý riadok "123 Názov piesne" (pred prvou strofou)
-    if (!title && !content.some(Boolean) && !STROPHE.test(line)) {
+    // (číslo 1 na začiatku je skôr prvá strofa ako pieseň č. 1)
+    if (!title && !content.some(Boolean)) {
       const h = HEADING.exec(line);
-      if (h) {
+      if (h && h[1] !== '1' && !(STROPHE.test(line) && /^\d\s*[.)]/.test(line))) {
         number = h[1];
         title = h[2].trim();
         continue;

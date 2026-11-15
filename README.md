@@ -288,7 +288,8 @@ Ovládanie → ⚙ → Obrazovka → **Televízor** (Samsung s Tizen, od roku 20
 
 ## Pieseň z fotky
 
-Obsah → Nový text → **📷 Pieseň z fotky**: odfoť stranu spevníka, zariadenie rozpozná text (Tesseract,
+Obsah → Nový text → **📷 Odfotiť** alebo **🖼 Z galérie** (aj viac fotiek naraz – pieseň na viacerých stranách sa
+spojí v poradí, ako boli fotky urobené; ďalšie strany sa dajú pridať aj neskôr): odfoť stranu spevníka, zariadenie rozpozná text (Tesseract,
 slovenčina, bez internetu), doplní číslo, názov a rozdelí ho na strofy podľa čísel „1.“, „2.“. Pred uložením
 text skontroluj. Inštalátor pridá balíky `tesseract-ocr tesseract-ocr-slk`.
 
